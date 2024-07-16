@@ -19,9 +19,7 @@ class GameState extends StatelessWidget {
           return const SizedBox();
         }
 
-        List<String> chessList = ChessUtils.readGameState(
-          state.gameStates[state.currentState]!,
-        );
+        List<String> chessList = state.gameStates[state.currentState]!;
 
         return GridView.builder(
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -57,7 +55,7 @@ class GameState extends StatelessWidget {
               onTap: () {
                 context.read<ChessGameBloc>().add(ChessSelectedEvent(
                       index: index,
-                      hintMoves: chess.getPossibleMove(),
+                      hintMoves: chess.getPossibleMove(chessList),
                     ));
               },
               child: Center(

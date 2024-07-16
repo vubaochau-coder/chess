@@ -15,10 +15,15 @@ class ChessGameBloc extends Bloc<ChessGameEvent, ChessGameState> {
   }
 
   _onInit(ChessGameInit event, Emitter emit) {
+    Map<int, List<String>> initState = {};
+
+    List<String> gameState = ChessUtils.readGameState(event.initGameState);
+    initState[0] = gameState;
+
     emit(state.copyWith(
       isLoading: false,
-      currentState: event.gameState.keys.last,
-      gameStates: event.gameState,
+      currentState: 0,
+      gameStates: initState,
     ));
   }
 
@@ -50,18 +55,15 @@ class ChessGameBloc extends Bloc<ChessGameEvent, ChessGameState> {
   _onMoveTo(MoveChessToEvent event, Emitter emit) {
     if (state.hintMoves.contains(event.index)) {
       // Get current chess
-      List<String> currentChess = ChessUtils.readGameState(
-        state.gameStates[state.currentState]!,
-      );
+      List<String> currentChess = state.gameStates[state.currentState]!;
       String selectedChess = currentChess[state.selectedChess!];
 
       List<String> newChess = List.from(currentChess);
       newChess[state.selectedChess!] = '';
       newChess[event.index] = selectedChess;
 
-      String newState = ChessUtils.saveGameState(newChess);
-      Map<int, String> gameHistory = Map.from(state.gameStates);
-      gameHistory.addAll({state.gameStates.length: newState});
+      Map<int, List<String>> gameHistory = Map.from(state.gameStates);
+      gameHistory.addAll({state.gameStates.length: newChess});
 
       emit(
         state.copyWith(

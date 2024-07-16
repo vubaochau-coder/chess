@@ -6,9 +6,9 @@ class ChessGameEvent extends Equatable {
 }
 
 class ChessGameInit extends ChessGameEvent {
-  final Map<int, String> gameState;
+  final String initGameState;
 
-  ChessGameInit({required this.gameState});
+  ChessGameInit({required this.initGameState});
 }
 
 class ChessSelectedEvent extends ChessGameEvent {

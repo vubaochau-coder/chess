@@ -17,7 +17,7 @@ abstract class Chess {
 
   bool canMoveTo(Position target);
 
-  List<Position> getPossibleMove();
+  List<Position> getPossibleMove(List<String> gameState);
 
   String toText();
 

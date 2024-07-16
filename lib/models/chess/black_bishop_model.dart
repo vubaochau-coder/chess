@@ -13,8 +13,37 @@ class BlackBishopModel extends BlackChess {
   }
 
   @override
-  List<Position> getPossibleMove() {
+  List<Position> getPossibleMove(List<String> gameState) {
     List<Position> possibleMoves = [];
+
+    // Directions the bishop can move: top-right, top-left, bottom-right, bottom-left
+    List<Position> directions = [
+      Position(x: 1, y: 1),
+      Position(x: 1, y: -1),
+      Position(x: -1, y: 1),
+      Position(x: -1, y: -1),
+    ];
+
+    for (var direction in directions) {
+      int newX = position.x;
+      int newY = position.y;
+
+      while (true) {
+        newX += direction.x;
+        newY += direction.y;
+
+        if (newX >= 0 && newX < 8 && newY >= 0 && newY < 8) {
+          final targetSqare = Position(x: newX, y: newY);
+          if (gameState[targetSqare.toIndex()].isNotEmpty) {
+            break;
+          }
+
+          possibleMoves.add(targetSqare);
+        } else {
+          break;
+        }
+      }
+    }
 
     return possibleMoves;
   }

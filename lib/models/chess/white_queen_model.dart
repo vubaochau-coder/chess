@@ -14,7 +14,7 @@ class WhiteQueenModel extends WhiteChess {
   }
 
   @override
-  List<Position> getPossibleMove() {
+  List<Position> getPossibleMove(List<String> gameState) {
     List<Position> possibleMoves = [];
 
     return possibleMoves;

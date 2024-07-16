@@ -13,13 +13,20 @@ class WhitePawnModel extends WhiteChess {
   }
 
   @override
-  List<Position> getPossibleMove() {
+  List<Position> getPossibleMove(List<String> gameState) {
     List<Position> possibleMoves = [];
     if (position.x == 0) return possibleMoves;
 
-    possibleMoves.add(Position(x: position.x - 1, y: position.y));
-    if (position.x == 6) {
-      possibleMoves.add(Position(x: position.x - 2, y: position.y));
+    final sqr1 = Position(x: position.x - 1, y: position.y);
+    if (gameState[sqr1.toIndex()].isEmpty) {
+      possibleMoves.add(sqr1);
+
+      if (position.x == 6) {
+        final sqr2 = Position(x: position.x - 2, y: position.y);
+        if (gameState[sqr2.toIndex()].isEmpty) {
+          possibleMoves.add(sqr2);
+        }
+      }
     }
 
     return possibleMoves;

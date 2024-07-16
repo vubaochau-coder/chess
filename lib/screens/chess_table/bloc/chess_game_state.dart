@@ -3,7 +3,7 @@ part of 'chess_game_bloc.dart';
 class ChessGameState extends Equatable {
   final bool isLoading;
   final int currentState;
-  final Map<int, String> gameStates;
+  final Map<int, List<String>> gameStates;
   final int? selectedChess;
   final List<int> hintMoves;
   final List<int> hightLights;
@@ -30,7 +30,7 @@ class ChessGameState extends Equatable {
   ChessGameState copyWith({
     bool? isLoading,
     int? currentState,
-    Map<int, String>? gameStates,
+    Map<int, List<String>>? gameStates,
     int? selectedChess,
     bool isClearSelected = false,
     List<int>? hintMoves,

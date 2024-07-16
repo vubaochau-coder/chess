@@ -13,7 +13,7 @@ class ChessTable extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => ChessGameBloc()
-        ..add(ChessGameInit(gameState: {0: ChessUtils.initGame})),
+        ..add(ChessGameInit(initGameState: ChessUtils.initGame)),
       child: _PageContent(),
     );
   }
