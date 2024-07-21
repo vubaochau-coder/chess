@@ -1,5 +1,5 @@
 import 'chess_model.dart';
 
-abstract class WhiteChess extends Chess {
-  WhiteChess({required super.type, required super.position}) : super(team: 0);
+abstract class WhiteChess extends ChessModel {
+  WhiteChess({required super.type}) : super(team: 0);
 }

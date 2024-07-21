@@ -64,7 +64,7 @@ class ChessGameBloc extends Bloc<ChessGameEvent, ChessGameState> {
 
       Map<int, List<String>> gameHistory = Map.from(state.gameStates);
       gameHistory.addAll({state.gameStates.length: newChess});
-
+      
       emit(
         state.copyWith(
           currentState: gameHistory.length - 1,

@@ -34,13 +34,16 @@ class GameBoardPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    List<int> currentSelects = List.from(hightLight);
+    List<int> currentHints = List.from(hints);
+
     // Draw game table
     for (int i = 0; i < 8; i++) {
       for (int j = 0; j < 8; j++) {
         int currentIndex = i * 8 + j;
         bool isDark = (j + i) % 2 == 1;
-        bool isSelect = hightLight.contains(currentIndex);
-        bool isHint = hints.contains(currentIndex);
+        bool isSelect = currentSelects.remove(currentIndex);
+        bool isHint = currentHints.remove(currentIndex);
 
         final paint = _createPaint(isDark, isSelect);
         canvas.drawRect(

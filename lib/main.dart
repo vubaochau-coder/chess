@@ -1,7 +1,9 @@
+import 'package:chess/models/factories.dart/chess_factory.dart';
 import 'package:chess/screens/chess_table/chess_table.dart';
 import 'package:flutter/material.dart';
 
 void main() {
+  Chess().initChess();
   runApp(const MyApp());
 }
 

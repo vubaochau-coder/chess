@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:chess_vectors_flutter/chess_vectors_flutter.dart' as vector;
 
 class WhiteBishopModel extends WhiteChess {
-  WhiteBishopModel(Position p) : super(position: p, type: ChessType.bishop);
+  WhiteBishopModel() : super(type: ChessType.bishop);
 
   @override
   bool canMoveTo(Position target) {
@@ -13,7 +13,7 @@ class WhiteBishopModel extends WhiteChess {
   }
 
   @override
-  List<Position> getPossibleMove(List<String> gameState) {
+  List<Position> getPossibleMove(Position position, List<String> gameState) {
     List<Position> possibleMoves = [];
 
     // Directions the bishop can move: top-right, top-left, bottom-right, bottom-left

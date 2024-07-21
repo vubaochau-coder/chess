@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:chess_vectors_flutter/chess_vectors_flutter.dart' as vector;
 
 class BlackQueenModel extends BlackChess {
-  BlackQueenModel(Position p) : super(position: p, type: ChessType.queen);
+  BlackQueenModel() : super(type: ChessType.queen);
 
   @override
   bool canMoveTo(Position target) {
@@ -13,7 +13,7 @@ class BlackQueenModel extends BlackChess {
   }
 
   @override
-  List<Position> getPossibleMove(List<String> gameState) {
+  List<Position> getPossibleMove(Position position, List<String> gameState) {
     List<Position> possibleMoves = [];
 
     return possibleMoves;

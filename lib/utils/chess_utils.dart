@@ -1,16 +1,3 @@
-import 'package:chess/models/abstract/chess_model.dart';
-import 'package:chess/models/chess/black_bishop_model.dart';
-import 'package:chess/models/chess/black_knight_model.dart';
-import 'package:chess/models/chess/black_king_model.dart';
-import 'package:chess/models/chess/black_pawn_model.dart';
-import 'package:chess/models/chess/black_queen_model.dart';
-import 'package:chess/models/chess/black_rook_model.dart';
-import 'package:chess/models/chess/white_bishop_model.dart';
-import 'package:chess/models/chess/white_king_model.dart';
-import 'package:chess/models/chess/white_knight_model.dart';
-import 'package:chess/models/chess/white_pawn_model.dart';
-import 'package:chess/models/chess/white_queen_model.dart';
-import 'package:chess/models/chess/white_rook_model.dart';
 import 'package:chess/models/position_model.dart';
 
 /*
@@ -48,37 +35,6 @@ class ChessUtils {
     'n',
     'p',
   ];
-
-  static Chess? strToChess(String chess, Position p) {
-    switch (chess) {
-      case 'K':
-        return WhiteKingModel(p);
-      case 'Q':
-        return WhiteQueenModel(p);
-      case 'R':
-        return WhiteRookModel(p);
-      case 'B':
-        return WhiteBishopModel(p);
-      case 'N':
-        return WhiteKnightModel(p);
-      case 'P':
-        return WhitePawnModel(p);
-      case 'k':
-        return BlackKingModel(p);
-      case 'q':
-        return BlackQueenModel(p);
-      case 'r':
-        return BlackRookModel(p);
-      case 'b':
-        return BlackBishopModel(p);
-      case 'n':
-        return BlackKnightModel(p);
-      case 'p':
-        return BlackPawnModel(p);
-      default:
-        return null;
-    }
-  }
 
   static bool isWhitePawnInit(Position p) {
     return p.x == 6;

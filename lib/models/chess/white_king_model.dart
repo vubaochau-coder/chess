@@ -5,7 +5,7 @@ import 'package:chess_vectors_flutter/chess_vectors_flutter.dart' as vector;
 import '../../enums/chess_type.dart';
 
 class WhiteKingModel extends WhiteChess {
-  WhiteKingModel(Position p) : super(position: p, type: ChessType.king);
+  WhiteKingModel() : super(type: ChessType.king);
 
   @override
   bool canMoveTo(Position target) {
@@ -13,7 +13,7 @@ class WhiteKingModel extends WhiteChess {
   }
 
   @override
-  List<Position> getPossibleMove(List<String> gameState) {
+  List<Position> getPossibleMove(Position position, List<String> gameState) {
     List<Position> possibleMoves = [];
 
     return possibleMoves;

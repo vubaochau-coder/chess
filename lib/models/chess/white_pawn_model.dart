@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:chess_vectors_flutter/chess_vectors_flutter.dart' as vector;
 
 class WhitePawnModel extends WhiteChess {
-  WhitePawnModel(Position p) : super(position: p, type: ChessType.pawn);
+  WhitePawnModel() : super(type: ChessType.pawn);
 
   @override
   bool canMoveTo(Position target) {
@@ -13,7 +13,7 @@ class WhitePawnModel extends WhiteChess {
   }
 
   @override
-  List<Position> getPossibleMove(List<String> gameState) {
+  List<Position> getPossibleMove(Position position, List<String> gameState) {
     List<Position> possibleMoves = [];
     if (position.x == 0) return possibleMoves;
 

@@ -2,22 +2,20 @@ import 'package:chess/enums/chess_type.dart';
 import 'package:chess/models/position_model.dart';
 import 'package:flutter/material.dart';
 
-abstract class Chess {
-  final Position position;
+abstract class ChessModel {
   final ChessType type;
   final int team;
   final double size;
 
-  Chess({
+  ChessModel({
     required this.team,
     required this.type,
-    required this.position,
-    this.size = 30,
+    this.size = 34,
   });
 
   bool canMoveTo(Position target);
 
-  List<Position> getPossibleMove(List<String> gameState);
+  List<Position> getPossibleMove(Position position, List<String> gameState);
 
   String toText();
 
