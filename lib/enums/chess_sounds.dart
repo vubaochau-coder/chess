@@ -1,0 +1,36 @@
+class ChessSounds {
+  static String achievement = 'audio/achievement.mp3';
+  static String capture = 'audio/capture.mp3';
+  static String castle = 'audio/castle.mp3';
+  static String click = 'audio/click.mp3';
+  static String correct = 'audio/correct.mp3';
+  static String decline = 'audio/decline.mp3';
+  static String drawoffer = 'audio/drawoffer.mp3';
+  static String eventEnd = 'audio/event-end.mp3';
+  static String eventStart = 'audio/event-start.mp3';
+  static String eventWarning = 'audio/event-warning.mp3';
+  static String gameDraw = 'audio/game-draw.mp3';
+  static String gameEnd = 'audio/game-end.mp3';
+  static String gameLose = 'audio/game-lose.mp3';
+  static String gameLoseLong = 'audio/game-lose-long.mp3';
+  static String gameStart = 'audio/game-start.mp3';
+  static String gameWin = 'audio/game-win.mp3';
+  static String gameWinLong = 'audio/game-win-long.mp3';
+  static String illegal = 'audio/illegal.mp3';
+  static String incorrect = 'audio/incorrect.mp3';
+  static String lessonFail = 'audio/lesson-fail.mp3';
+  static String lessonPass = 'audio/lesson-pass.mp3';
+  static String moveCheck = 'audio/move-check.mp3';
+  static String moveOpponent = 'audio/move-opponent.mp3';
+  static String moveSelf = 'audio/move-self.mp3';
+  static String notification = 'audio/notification.mp3';
+  static String notify = 'audio/notify.mp3';
+  static String premove = 'audio/premove.mp3';
+  static String promote = 'audio/promote.mp3';
+  static String puzzleCorrect = 'audio/puzzle-correct.mp3';
+  static String puzzleCorrect2 = 'audio/puzzle-correct-2.mp3';
+  static String puzzleWrong = 'audio/puzzle-wrong.mp3';
+  static String scatter = 'audio/scatter.mp3';
+  static String shoutout = 'audio/shoutout.mp3';
+  static String tenseconds = 'audio/tenseconds.mp3';
+}

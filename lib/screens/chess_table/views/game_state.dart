@@ -37,9 +37,9 @@ class GameState extends StatelessWidget {
               return InkWell(
                 onTap: () {
                   if (state.selectedChess != null) {
-                    context
-                        .read<ChessGameBloc>()
-                        .add(MoveChessToEvent(index: index));
+                    BlocProvider.of<ChessGameBloc>(context).add(
+                      MoveChessToEvent(index: index),
+                    );
                   }
                 },
                 child: SizedBox.fromSize(
@@ -50,15 +50,15 @@ class GameState extends StatelessWidget {
 
             return InkWell(
               onTap: () {
-                context.read<ChessGameBloc>().add(
-                      ChessSelectedEvent(
-                        index: index,
-                        hintMoves: chess.getPossibleMove(
-                          Position.fromIndex(index),
-                          chessList,
-                        ),
-                      ),
-                    );
+                BlocProvider.of<ChessGameBloc>(context).add(
+                  ChessSelectedEvent(
+                    index: index,
+                    hintMoves: chess.getPossibleMove(
+                      Position.fromIndex(index),
+                      chessList,
+                    ),
+                  ),
+                );
               },
               child: Center(
                 child: chess.draw(context, isSelect ? 40 : null),

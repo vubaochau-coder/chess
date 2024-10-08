@@ -1,4 +1,6 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:bloc/bloc.dart';
+import 'package:chess/enums/chess_sounds.dart';
 import 'package:chess/utils/chess_utils.dart';
 import 'package:equatable/equatable.dart';
 
@@ -8,10 +10,21 @@ part 'chess_game_event.dart';
 part 'chess_game_state.dart';
 
 class ChessGameBloc extends Bloc<ChessGameEvent, ChessGameState> {
+  late final AudioPlayer player;
+
   ChessGameBloc() : super(const ChessGameState()) {
+    player = AudioPlayer();
+
     on<ChessGameInit>(_onInit);
     on<ChessSelectedEvent>(_onChessSelected);
     on<MoveChessToEvent>(_onMoveTo);
+  }
+
+  @override
+  Future<void> close() {
+    player.dispose();
+
+    return super.close();
   }
 
   _onInit(ChessGameInit event, Emitter emit) {
@@ -27,7 +40,9 @@ class ChessGameBloc extends Bloc<ChessGameEvent, ChessGameState> {
     ));
   }
 
-  _onChessSelected(ChessSelectedEvent event, Emitter emit) {
+  _onChessSelected(ChessSelectedEvent event, Emitter emit) async {
+    player.play(AssetSource(ChessSounds.click), volume: 0.5);
+
     if (state.selectedChess == event.index) {
       emit(
         state.copyWith(
@@ -52,8 +67,10 @@ class ChessGameBloc extends Bloc<ChessGameEvent, ChessGameState> {
     }
   }
 
-  _onMoveTo(MoveChessToEvent event, Emitter emit) {
+  _onMoveTo(MoveChessToEvent event, Emitter emit) async {
     if (state.hintMoves.contains(event.index)) {
+      player.play(AssetSource(ChessSounds.moveSelf), volume: 1);
+
       // Get current chess
       List<String> currentChess = state.gameStates[state.currentState]!;
       String selectedChess = currentChess[state.selectedChess!];
@@ -64,7 +81,7 @@ class ChessGameBloc extends Bloc<ChessGameEvent, ChessGameState> {
 
       Map<int, List<String>> gameHistory = Map.from(state.gameStates);
       gameHistory.addAll({state.gameStates.length: newChess});
-      
+
       emit(
         state.copyWith(
           currentState: gameHistory.length - 1,
@@ -74,6 +91,8 @@ class ChessGameBloc extends Bloc<ChessGameEvent, ChessGameState> {
           isClearSelected: true,
         ),
       );
+    } else {
+      player.play(AssetSource(ChessSounds.illegal), volume: 1);
     }
   }
 }

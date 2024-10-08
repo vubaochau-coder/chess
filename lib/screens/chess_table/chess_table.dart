@@ -22,7 +22,7 @@ class ChessTable extends StatelessWidget {
 class _PageContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    double width = MediaQuery.of(context).size.width;
+    double width = MediaQuery.sizeOf(context).width;
     double cellSize = width / 8;
 
     return Scaffold(
