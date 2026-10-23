@@ -21,6 +21,10 @@ class GameStatusBar extends StatelessWidget {
           GameStatus.check => 'Chiếu! Lượt đi: $side',
           GameStatus.checkmate => 'Chiếu hết! $winner thắng',
           GameStatus.stalemate => 'Hết nước đi - Hòa',
+          GameStatus.drawFiftyMove => 'Hòa - luật 50 nước',
+          GameStatus.drawRepetition => 'Hòa - lặp lại 3 lần',
+          GameStatus.drawInsufficientMaterial =>
+            'Hòa - không đủ quân chiếu hết',
         };
         return Text(text, style: Theme.of(context).textTheme.titleLarge);
       },

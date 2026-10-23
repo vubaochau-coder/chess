@@ -15,7 +15,7 @@ final class ChessGameState extends Equatable {
   factory ChessGameState.initial(GamePosition start) {
     return ChessGameState(
       history: [start],
-      status: ChessRules.status(start),
+      status: ChessRules.gameStatus([start]),
       checkSquare: _checkSquareOf(start),
     );
   }
@@ -38,8 +38,7 @@ final class ChessGameState extends Equatable {
 
   GamePosition get position => history.last;
 
-  bool get isGameOver =>
-      status == GameStatus.checkmate || status == GameStatus.stalemate;
+  bool get isGameOver => status.isGameOver;
 
   static int? _checkSquareOf(GamePosition position) {
     if (!ChessRules.isInCheck(position.board, position.whiteToMove)) {
@@ -50,9 +49,10 @@ final class ChessGameState extends Equatable {
 
   /// Trạng thái sau khi đi một nước tới thế cờ [next].
   ChessGameState afterMove(GamePosition next, LastMove move) {
+    final nextHistory = [...history, next];
     return ChessGameState(
-      history: [...history, next],
-      status: ChessRules.status(next),
+      history: nextHistory,
+      status: ChessRules.gameStatus(nextHistory),
       lastMove: move,
       checkSquare: _checkSquareOf(next),
     );

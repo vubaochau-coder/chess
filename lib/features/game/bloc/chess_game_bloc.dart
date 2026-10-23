@@ -67,13 +67,15 @@ class ChessGameBloc extends Bloc<ChessGameEvent, ChessGameState> {
   }
 
   SoundEffect _moveSound(MoveResult result, GameStatus status) {
+    if (status.isGameOver) {
+      return SoundEffect.gameEnd;
+    }
     return switch (status) {
-      GameStatus.checkmate || GameStatus.stalemate => SoundEffect.gameEnd,
       GameStatus.check => SoundEffect.check,
       GameStatus.playing when result.isPromotion => SoundEffect.promote,
       GameStatus.playing when result.isCastle => SoundEffect.castle,
       GameStatus.playing when result.isCapture => SoundEffect.capture,
-      GameStatus.playing => SoundEffect.move,
+      _ => SoundEffect.move,
     };
   }
 }
