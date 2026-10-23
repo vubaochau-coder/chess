@@ -44,3 +44,8 @@ final class PromotionPieceSelected extends ChessGameEvent {
 final class PromotionCancelled extends ChessGameEvent {
   const PromotionCancelled();
 }
+
+/// Quay lại 1 nước đi.
+final class UndoRequested extends ChessGameEvent {
+  const UndoRequested();
+}
