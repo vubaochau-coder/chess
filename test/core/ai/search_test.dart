@@ -54,10 +54,16 @@ void main() {
       expect(result.scoreCp, greaterThan(90000));
     });
 
-    test('2. Cornered king mate in 2', () {
-      final pos = Fen.parse('k7/8/1K6/8/8/8/1Q6/8 w - - 0 1');
+    test('2. Pure mate in 2: King and Rook endgame', () {
+      // 8/8/8/8/8/5K2/4R3/7k w - - 0 1
+      // Không có mate in 1: 1. Kg3! Kg1 2. Re1#
+      final pos = Fen.parse('8/8/8/8/8/5K2/4R3/7k w - - 0 1');
+      // Ở depth 2 không thể tìm ra mate vì mate ở ply 3
+      final resultD2 = search([pos], const SearchConfig(maxDepth: 2));
+      expect(resultD2.scoreCp, lessThan(90000));
+
       final result = search([pos], const SearchConfig(maxDepth: 4));
-      // 1. Qh8# is mate in 1, or 1. Qg7/Qh2 followed by mate in 2
+      expect(result.bestMove.toUci(), 'f3g3');
       expect(result.scoreCp, greaterThan(90000));
     });
 
@@ -187,5 +193,29 @@ void main() {
       expect(sw.elapsedMilliseconds, lessThanOrEqualTo(400));
       expect(result.depthReached, greaterThanOrEqualTo(1));
     }, tags: ['slow']);
+
+    test('Draw conditions evaluated to scoreCp: 0', () {
+      // 1. Halfmove clock >= 100 -> scoreCp: 0
+      final halfmovePos = Fen.parse('8/8/8/8/8/5K2/8/k6N w - - 100 1');
+      final resHalfmove = search([
+        halfmovePos,
+      ], const SearchConfig(maxDepth: 2));
+      expect(resHalfmove.scoreCp, equals(0));
+
+      // 2. Insufficient material: K+N vs K -> scoreCp: 0
+      final knkPos = Fen.parse('8/8/8/8/8/5K2/8/k6N w - - 0 1');
+      final resKnk = search([knkPos], const SearchConfig(maxDepth: 2));
+      expect(resKnk.scoreCp, equals(0));
+
+      // 3. Insufficient material: K+B vs K -> scoreCp: 0
+      final kbkPos = Fen.parse('8/8/8/8/8/5K2/8/k6B w - - 0 1');
+      final resKbk = search([kbkPos], const SearchConfig(maxDepth: 2));
+      expect(resKbk.scoreCp, equals(0));
+
+      // 4. Insufficient material: K vs K -> scoreCp: 0
+      final kkPos = Fen.parse('8/8/8/8/8/5K2/8/k7 w - - 0 1');
+      final resKk = search([kkPos], const SearchConfig(maxDepth: 2));
+      expect(resKk.scoreCp, equals(0));
+    });
   });
 }

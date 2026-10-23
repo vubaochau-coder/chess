@@ -119,6 +119,7 @@ final class _SearchContext {
 
   bool isDraw(int ply) {
     if (board.halfmoveClock >= 100) return true;
+    if (board.isInsufficientMaterial()) return true;
 
     // Lặp lại 3 lần: tính cả history trước đó và trong cây tìm kiếm hiện tại
     final currentKey = board.zobristKey;
@@ -146,10 +147,6 @@ final class _SearchContext {
     final isCap = (move & SearchBoard.flagCapture) != 0;
     final promo = SearchBoard.movePromo(move);
 
-    if (promo != 0) {
-      return 800000 + promo * 100;
-    }
-
     if (isCap) {
       final from = SearchBoard.moveFrom(move);
       final to = SearchBoard.moveTo(move);
@@ -158,7 +155,11 @@ final class _SearchContext {
       if ((move & SearchBoard.flagEnPassant) != 0) {
         victim = 1; // pawn
       }
-      return 100000 + (victim * 10 - attacker);
+      return 200000 + (victim * 10 - attacker);
+    }
+
+    if (promo != 0) {
+      return 100000 + promo * 100;
     }
 
     if (killer1[ply] == move) return 90000;
@@ -232,13 +233,14 @@ SearchResult search(List<GamePosition> history, SearchConfig config) {
   var bestMove = rootMoves.first;
   var bestScore = 0;
   var completedDepth = 1;
-  final rootScores = <int, int>{};
+  var completedRootScores = <int, int>{};
 
   for (var depth = 1; depth <= config.maxDepth; depth++) {
     var alpha = -1000000;
     const beta = 1000000;
     var currentDepthBestMove = rootMoves.first;
     var currentDepthBestScore = -1000000;
+    final currentDepthScores = <int, int>{};
 
     final ttIdx = board.zobristKey & _TranspositionTable.mask;
     final ttMove =
@@ -261,7 +263,7 @@ SearchResult search(List<GamePosition> history, SearchConfig config) {
         break;
       }
 
-      rootScores[m] = score;
+      currentDepthScores[m] = score;
 
       if (score > currentDepthBestScore) {
         currentDepthBestScore = score;
@@ -280,6 +282,7 @@ SearchResult search(List<GamePosition> history, SearchConfig config) {
     bestMove = currentDepthBestMove;
     bestScore = currentDepthBestScore;
     completedDepth = depth;
+    completedRootScores = currentDepthScores;
 
     // Chiếu hết tìm thấy
     if (bestScore > 90000 || bestScore < -90000) {
@@ -291,7 +294,7 @@ SearchResult search(List<GamePosition> history, SearchConfig config) {
   final chosenMove = _selectFinalMove(
     ctx,
     rootMoves,
-    rootScores,
+    completedRootScores,
     bestMove,
     bestScore,
   );
@@ -345,14 +348,11 @@ int _negamax(_SearchContext ctx, int depth, int alpha, int beta, int ply) {
 
   if (ctx.isDraw(ply)) return 0;
 
-  final isRoot = ply == 0;
   final key = ctx.board.zobristKey;
   final ttIdx = key & _TranspositionTable.mask;
 
   var ttMove = 0;
-  if (!isRoot &&
-      ctx.config.useTranspositionTable &&
-      ctx.tt.keys[ttIdx] == key) {
+  if (ctx.config.useTranspositionTable && ctx.tt.keys[ttIdx] == key) {
     final entryDepth = ctx.tt.depths[ttIdx];
     final entryFlag = ctx.tt.flags[ttIdx];
     var entryScore = ctx.tt.scores[ttIdx];
