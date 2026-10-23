@@ -62,6 +62,9 @@ test/                       # song song với lib/, helper dùng chung ở test/
   Không bao giờ sửa `board` tại chỗ; mọi thay đổi tạo `GamePosition` mới qua `ChessRules.applyMove`.
 - API engine công khai: `ChessRules.legalMoves`, `applyMove`, `status`, `isInCheck`, `pseudoMoves`.
   Task nào cần đổi API này sẽ ghi rõ trong đặc tả.
+- `SearchBoard` (`lib/core/ai/search_board.dart`): Bàn cờ nội bộ tốc độ cao cho AI (`Int8List(64)`,
+  mã hóa nước đi `int`, Zobrist hash 64-bit, `makeMove`/`unmakeMove` khôi phục tại chỗ phục vụ tìm kiếm).
+
 
 ## 3. Dependency injection
 
