@@ -307,10 +307,19 @@ class ChessRules {
 
     final lastRow = to ~/ 8 == 0 || to ~/ 8 == 7;
     if (type == 'p' && lastRow) {
-      next[to] = isWhite(piece) ? promotion.toUpperCase() : promotion;
+      next[to] = isWhite(piece)
+          ? promotion.toUpperCase()
+          : promotion.toLowerCase();
     }
 
     return next;
+  }
+
+  static bool isPromotionMove(GamePosition position, int from, int to) {
+    final piece = position.board[from];
+    if (piece.toLowerCase() != 'p') return false;
+    final targetRank = to ~/ 8;
+    return targetRank == (isWhite(piece) ? 0 : 7);
   }
 
   /// Thực hiện nước đi (giả định đã hợp lệ) và trả về thế cờ mới.
@@ -325,7 +334,7 @@ class ChessRules {
     final isEnPassant = type == 'p' && to == pos.enPassant;
     final isCapture = pos.board[to].isNotEmpty || isEnPassant;
     final isCastle = type == 'k' && (to - from).abs() == 2;
-    final isPromotion = type == 'p' && (to ~/ 8 == 0 || to ~/ 8 == 7);
+    final isPromotion = isPromotionMove(pos, from, to);
 
     final board = _movePieces(
       pos.board,

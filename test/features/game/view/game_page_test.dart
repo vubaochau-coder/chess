@@ -1,7 +1,10 @@
 import 'package:chess/core/audio/sound_player.dart';
+import 'package:chess/core/engine/chess_rules.dart';
+import 'package:chess/core/engine/fen.dart';
 import 'package:chess/features/game/view/game_page.dart';
 import 'package:chess/features/game/widgets/chess_board.dart';
 import 'package:chess/features/game/widgets/piece_view.dart';
+import 'package:chess/features/game/widgets/promotion_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -11,7 +14,10 @@ import '../../../helpers/mocks.dart';
 void main() {
   setUpAll(registerFallbacks);
 
-  Future<void> pumpGame(WidgetTester tester) async {
+  Future<void> pumpGame(
+    WidgetTester tester, {
+    GamePosition? startPosition,
+  }) async {
     tester.view.physicalSize = const Size(800, 1200);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -19,7 +25,7 @@ void main() {
     await tester.pumpWidget(
       RepositoryProvider<SoundPlayer>.value(
         value: MockSoundPlayer(),
-        child: const MaterialApp(home: GamePage()),
+        child: MaterialApp(home: GamePage(startPosition: startPosition)),
       ),
     );
   }
@@ -112,5 +118,61 @@ void main() {
     await tapSquare(tester, 'g8');
 
     expect(find.text('Hòa - lặp lại 3 lần'), findsOneWidget);
+  });
+
+  testWidgets(
+    'pawn reaches last rank shows promotion dialog and selecting Knight promotes to N',
+    (tester) async {
+      await pumpGame(
+        tester,
+        startPosition: Fen.parse('8/P6k/8/8/8/8/8/K7 w - - 0 1'),
+      );
+
+      await tapSquare(tester, 'a7');
+      await tapSquare(tester, 'a8');
+      await tester.pumpAndSettle();
+
+      expect(find.byType(PromotionDialog), findsOneWidget);
+      expect(find.text('Phong cấp'), findsOneWidget);
+
+      // 4 choices: Q, R, B, N
+      final knightButton = find.descendant(
+        of: find.byType(PromotionDialog),
+        matching: find.byWidgetPredicate(
+          (w) => w is PieceView && w.piece == 'N',
+        ),
+      );
+      expect(knightButton, findsOneWidget);
+
+      await tester.tap(knightButton);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(PromotionDialog), findsNothing);
+      expect(pieceAt(tester, 'a8'), 'N');
+      expect(pieceAt(tester, 'a7'), isNull);
+    },
+  );
+
+  testWidgets('pawn reaches last rank and tapping outside cancels promotion', (
+    tester,
+  ) async {
+    await pumpGame(
+      tester,
+      startPosition: Fen.parse('8/P6k/8/8/8/8/8/K7 w - - 0 1'),
+    );
+
+    await tapSquare(tester, 'a7');
+    await tapSquare(tester, 'a8');
+    await tester.pumpAndSettle();
+
+    expect(find.byType(PromotionDialog), findsOneWidget);
+
+    // Tap outside dialog to dismiss
+    await tester.tapAt(const Offset(10, 10));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(PromotionDialog), findsNothing);
+    expect(pieceAt(tester, 'a7'), 'P');
+    expect(pieceAt(tester, 'a8'), isNull);
   });
 }

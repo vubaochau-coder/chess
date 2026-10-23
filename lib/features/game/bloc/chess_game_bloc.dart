@@ -15,6 +15,8 @@ class ChessGameBloc extends Bloc<ChessGameEvent, ChessGameState> {
     : super(ChessGameState.initial(_start)) {
     on<NewGameRequested>(_onNewGameRequested);
     on<SquareTapped>(_onSquareTapped);
+    on<PromotionPieceSelected>(_onPromotionPieceSelected);
+    on<PromotionCancelled>(_onPromotionCancelled);
   }
 
   // Bloc không sở hữu SoundPlayer nên không dispose nó trong close().
@@ -29,7 +31,7 @@ class ChessGameBloc extends Bloc<ChessGameEvent, ChessGameState> {
   }
 
   void _onSquareTapped(SquareTapped event, Emitter<ChessGameState> emit) {
-    if (state.isGameOver) return;
+    if (state.isGameOver || state.pendingPromotion != null) return;
 
     final square = event.index;
     final piece = state.position.board[square];
@@ -60,10 +62,41 @@ class ChessGameBloc extends Bloc<ChessGameEvent, ChessGameState> {
       return;
     }
 
+    if (ChessRules.isPromotionMove(state.position, from, square)) {
+      emit(state.withPendingPromotion((from: from, to: square)));
+      return;
+    }
+
     final result = ChessRules.applyMove(state.position, from, square);
     final next = state.afterMove(result.position, (from: from, to: square));
     _sound.play(_moveSound(result, next.status));
     emit(next);
+  }
+
+  void _onPromotionPieceSelected(
+    PromotionPieceSelected event,
+    Emitter<ChessGameState> emit,
+  ) {
+    final pending = state.pendingPromotion;
+    if (pending == null) return;
+
+    final result = ChessRules.applyMove(
+      state.position,
+      pending.from,
+      pending.to,
+      promotion: event.piece,
+    );
+    final next = state.afterMove(result.position, pending);
+    _sound.play(_moveSound(result, next.status));
+    emit(next);
+  }
+
+  void _onPromotionCancelled(
+    PromotionCancelled event,
+    Emitter<ChessGameState> emit,
+  ) {
+    if (state.pendingPromotion == null) return;
+    emit(state.withoutPendingPromotion());
   }
 
   SoundEffect _moveSound(MoveResult result, GameStatus status) {
