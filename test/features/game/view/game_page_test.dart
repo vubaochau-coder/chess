@@ -81,4 +81,36 @@ void main() {
     expect(pieceAt(tester, 'e2'), 'P');
     expect(find.text('Lượt đi: Trắng'), findsOneWidget);
   });
+
+  testWidgets('displays draw status text when threefold repetition occurs', (
+    tester,
+  ) async {
+    await pumpGame(tester);
+
+    // 1. Nf3 Nf6
+    await tapSquare(tester, 'g1');
+    await tapSquare(tester, 'f3');
+    await tapSquare(tester, 'g8');
+    await tapSquare(tester, 'f6');
+
+    // 2. Ng1 Ng8
+    await tapSquare(tester, 'f3');
+    await tapSquare(tester, 'g1');
+    await tapSquare(tester, 'f6');
+    await tapSquare(tester, 'g8');
+
+    // 3. Nf3 Nf6
+    await tapSquare(tester, 'g1');
+    await tapSquare(tester, 'f3');
+    await tapSquare(tester, 'g8');
+    await tapSquare(tester, 'f6');
+
+    // 4. Ng1 Ng8 (repetition 3rd time)
+    await tapSquare(tester, 'f3');
+    await tapSquare(tester, 'g1');
+    await tapSquare(tester, 'f6');
+    await tapSquare(tester, 'g8');
+
+    expect(find.text('Hòa - lặp lại 3 lần'), findsOneWidget);
+  });
 }

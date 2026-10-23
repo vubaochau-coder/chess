@@ -8,8 +8,20 @@ Chữ hoa là quân trắng, chữ thường là quân đen, '' là ô trống.
 */
 
 import 'package:chess/core/engine/fen.dart';
+import 'package:chess/core/engine/square.dart';
 
-enum GameStatus { playing, check, checkmate, stalemate }
+enum GameStatus {
+  playing,
+  check,
+  checkmate,
+  stalemate,
+  drawFiftyMove,
+  drawRepetition,
+  drawInsufficientMaterial;
+
+  bool get isGameOver => this != playing && this != check;
+  bool get isDraw => isGameOver && this != checkmate;
+}
 
 class GamePosition {
   final List<String> board;
@@ -374,5 +386,140 @@ class ChessRules {
       return inCheck ? GameStatus.check : GameStatus.playing;
     }
     return inCheck ? GameStatus.checkmate : GameStatus.stalemate;
+  }
+
+  static GameStatus gameStatus(List<GamePosition> history) {
+    final pos = history.last;
+    final inCheck = isInCheck(pos.board, pos.whiteToMove);
+    final hasMoves = hasAnyLegalMove(pos);
+
+    if (!hasMoves) {
+      return inCheck ? GameStatus.checkmate : GameStatus.stalemate;
+    }
+
+    if (isInsufficientMaterial(pos.board)) {
+      return GameStatus.drawInsufficientMaterial;
+    }
+
+    if (pos.halfmoveClock >= 100) {
+      return GameStatus.drawFiftyMove;
+    }
+
+    final currentKey = positionRepetitionKey(pos);
+    var count = 0;
+    for (final p in history) {
+      if (positionRepetitionKey(p) == currentKey) {
+        count++;
+      }
+    }
+    if (count >= 3) {
+      return GameStatus.drawRepetition;
+    }
+
+    return inCheck ? GameStatus.check : GameStatus.playing;
+  }
+
+  static bool isInsufficientMaterial(List<String> board) {
+    var whiteKnights = 0;
+    var blackKnights = 0;
+    final bishopSquares = <int>[];
+
+    for (var i = 0; i < 64; i++) {
+      final p = board[i];
+      if (p.isEmpty || p == 'K' || p == 'k') continue;
+      if (p == 'P' ||
+          p == 'p' ||
+          p == 'R' ||
+          p == 'r' ||
+          p == 'Q' ||
+          p == 'q') {
+        return false;
+      }
+      if (p == 'N') {
+        whiteKnights++;
+      } else if (p == 'n') {
+        blackKnights++;
+      } else if (p == 'B' || p == 'b') {
+        bishopSquares.add(i);
+      }
+    }
+
+    // K-K
+    if (whiteKnights == 0 && blackKnights == 0 && bishopSquares.isEmpty) {
+      return true;
+    }
+
+    // K+N-K
+    if (bishopSquares.isEmpty) {
+      if ((whiteKnights == 1 && blackKnights == 0) ||
+          (whiteKnights == 0 && blackKnights == 1)) {
+        return true;
+      }
+      return false;
+    }
+
+    // Chỉ còn vua và tượng (bất kỳ số lượng, hai bên) mà mọi tượng cùng màu ô
+    if (whiteKnights == 0 && blackKnights == 0 && bishopSquares.isNotEmpty) {
+      final firstColor =
+          (bishopSquares.first ~/ 8 + bishopSquares.first % 8) % 2;
+      final allSameColor = bishopSquares.every(
+        (sq) => (sq ~/ 8 + sq % 8) % 2 == firstColor,
+      );
+      if (allSameColor) return true;
+    }
+
+    return false;
+  }
+
+  static String positionRepetitionKey(GamePosition pos) {
+    final rowStrings = <String>[];
+    for (var r = 0; r < 8; r++) {
+      final sb = StringBuffer();
+      var emptyCount = 0;
+      for (var c = 0; c < 8; c++) {
+        final piece = pos.board[r * 8 + c];
+        if (piece.isEmpty) {
+          emptyCount++;
+        } else {
+          if (emptyCount > 0) {
+            sb.write(emptyCount);
+            emptyCount = 0;
+          }
+          sb.write(piece);
+        }
+      }
+      if (emptyCount > 0) {
+        sb.write(emptyCount);
+      }
+      rowStrings.add(sb.toString());
+    }
+    final boardStr = rowStrings.join('/');
+    final activeColor = pos.whiteToMove ? 'w' : 'b';
+
+    final castlingBuf = StringBuffer();
+    if (pos.castling.contains('K')) castlingBuf.write('K');
+    if (pos.castling.contains('Q')) castlingBuf.write('Q');
+    if (pos.castling.contains('k')) castlingBuf.write('k');
+    if (pos.castling.contains('q')) castlingBuf.write('q');
+    final castlingStr = castlingBuf.isEmpty ? '-' : castlingBuf.toString();
+
+    var epStr = '-';
+    if (pos.enPassant != null && _canCaptureEnPassant(pos)) {
+      epStr = squareName(pos.enPassant!);
+    }
+
+    return '$boardStr $activeColor $castlingStr $epStr';
+  }
+
+  static bool _canCaptureEnPassant(GamePosition pos) {
+    if (pos.enPassant == null) return false;
+    final pawnChar = pos.whiteToMove ? 'P' : 'p';
+    for (var i = 0; i < 64; i++) {
+      if (pos.board[i] == pawnChar) {
+        final moves = legalMoves(pos, i);
+        if (moves.contains(pos.enPassant)) return true;
+      }
+    }
+    return false;
   }
 }

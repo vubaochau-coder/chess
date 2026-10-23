@@ -138,4 +138,46 @@ void main() {
       },
     );
   });
+
+  group('threefold repetition', () {
+    const g1 = 62, f3 = 45, g8 = 6, f6 = 21;
+
+    void playKnightsBackAndForth(ChessGameBloc bloc) {
+      // 1. Nf3 Nf6
+      bloc.add(const SquareTapped(g1));
+      bloc.add(const SquareTapped(f3));
+      bloc.add(const SquareTapped(g8));
+      bloc.add(const SquareTapped(f6));
+      // 2. Ng1 Ng8 (occurrence 2)
+      bloc.add(const SquareTapped(f3));
+      bloc.add(const SquareTapped(g1));
+      bloc.add(const SquareTapped(f6));
+      bloc.add(const SquareTapped(g8));
+      // 3. Nf3 Nf6
+      bloc.add(const SquareTapped(g1));
+      bloc.add(const SquareTapped(f3));
+      bloc.add(const SquareTapped(g8));
+      bloc.add(const SquareTapped(f6));
+      // 4. Ng1 Ng8 (occurrence 3 -> drawRepetition)
+      bloc.add(const SquareTapped(f3));
+      bloc.add(const SquareTapped(g1));
+      bloc.add(const SquareTapped(f6));
+      bloc.add(const SquareTapped(g8));
+    }
+
+    blocTest<ChessGameBloc, ChessGameState>(
+      'repetition ends game with drawRepetition and ignores further taps',
+      build: buildBloc,
+      act: (bloc) {
+        playKnightsBackAndForth(bloc);
+        bloc.add(const SquareTapped(e2));
+      },
+      verify: (bloc) {
+        expect(bloc.state.status, GameStatus.drawRepetition);
+        expect(bloc.state.isGameOver, isTrue);
+        expect(bloc.state.selected, isNull);
+        verify(() => sound.play(SoundEffect.gameEnd)).called(1);
+      },
+    );
+  });
 }
