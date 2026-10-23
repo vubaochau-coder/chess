@@ -1,60 +1,90 @@
 part of 'chess_game_bloc.dart';
 
-class ChessGameState extends Equatable {
-  final bool isLoading;
-  final int currentState;
-  final Map<int, GamePosition> gameStates;
-  final GameStatus status;
-  final int? selectedChess;
-  final List<int> hintMoves;
-  final List<int> hightLights;
+typedef LastMove = ({int from, int to});
 
+final class ChessGameState extends Equatable {
   const ChessGameState({
-    this.isLoading = true,
-    this.currentState = 0,
-    this.gameStates = const {},
-    this.status = GameStatus.playing,
-    this.selectedChess,
-    this.hintMoves = const [],
-    this.hightLights = const [],
+    required this.history,
+    required this.status,
+    this.selected,
+    this.legalTargets = const [],
+    this.lastMove,
+    this.checkSquare,
   });
 
-  GamePosition get position => gameStates[currentState]!;
+  factory ChessGameState.initial(GamePosition start) {
+    return ChessGameState(
+      history: [start],
+      status: ChessRules.status(start),
+      checkSquare: _checkSquareOf(start),
+    );
+  }
+
+  /// Các thế cờ từ đầu ván; phần tử cuối là thế cờ hiện tại. Không sửa tại
+  /// chỗ — mỗi nước đi tạo list mới.
+  final List<GamePosition> history;
+  final GameStatus status;
+
+  /// Ô của quân đang được chọn.
+  final int? selected;
+
+  /// Các ô quân đang chọn có thể đi tới (đã lọc nước làm vua bị chiếu).
+  final List<int> legalTargets;
+
+  final LastMove? lastMove;
+
+  /// Ô của vua đang bị chiếu (để tô đỏ), null nếu không bị chiếu.
+  final int? checkSquare;
+
+  GamePosition get position => history.last;
 
   bool get isGameOver =>
       status == GameStatus.checkmate || status == GameStatus.stalemate;
 
-  @override
-  List<Object?> get props => [
-    isLoading,
-    currentState,
-    gameStates,
-    status,
-    selectedChess,
-    hintMoves,
-    hightLights,
-  ];
+  static int? _checkSquareOf(GamePosition position) {
+    if (!ChessRules.isInCheck(position.board, position.whiteToMove)) {
+      return null;
+    }
+    return position.board.indexOf(position.whiteToMove ? 'K' : 'k');
+  }
 
-  ChessGameState copyWith({
-    bool? isLoading,
-    int? currentState,
-    Map<int, GamePosition>? gameStates,
-    GameStatus? status,
-    int? selectedChess,
-    bool isClearSelected = false,
-    List<int>? hintMoves,
-    List<int>? hightLights,
-  }) {
+  /// Trạng thái sau khi đi một nước tới thế cờ [next].
+  ChessGameState afterMove(GamePosition next, LastMove move) {
     return ChessGameState(
-      isLoading: isLoading ?? this.isLoading,
-      currentState: currentState ?? this.currentState,
-      gameStates: gameStates ?? this.gameStates,
-      status: status ?? this.status,
-      selectedChess: isClearSelected
-          ? null
-          : selectedChess ?? this.selectedChess,
-      hintMoves: hintMoves ?? this.hintMoves,
-      hightLights: hightLights ?? this.hightLights,
+      history: [...history, next],
+      status: ChessRules.status(next),
+      lastMove: move,
+      checkSquare: _checkSquareOf(next),
     );
   }
+
+  ChessGameState withSelection(int square, List<int> targets) {
+    return ChessGameState(
+      history: history,
+      status: status,
+      selected: square,
+      legalTargets: targets,
+      lastMove: lastMove,
+      checkSquare: checkSquare,
+    );
+  }
+
+  ChessGameState withoutSelection() {
+    return ChessGameState(
+      history: history,
+      status: status,
+      lastMove: lastMove,
+      checkSquare: checkSquare,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+    history,
+    status,
+    selected,
+    legalTargets,
+    lastMove,
+    checkSquare,
+  ];
 }

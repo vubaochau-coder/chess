@@ -7,6 +7,8 @@ Bàn cờ là List<String> 64 ô, index = x * 8 + y:
 Chữ hoa là quân trắng, chữ thường là quân đen, '' là ô trống.
 */
 
+import 'package:chess/core/engine/chess_utils.dart';
+
 enum GameStatus { playing, check, checkmate, stalemate }
 
 class GamePosition {
@@ -25,6 +27,11 @@ class GamePosition {
     this.castling = 'KQkq',
     this.enPassant,
   });
+
+  /// Thế cờ bắt đầu ván.
+  factory GamePosition.initial() {
+    return GamePosition(board: ChessUtils.readGameState(ChessUtils.initGame));
+  }
 }
 
 class MoveResult {
