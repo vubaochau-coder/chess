@@ -207,4 +207,37 @@ void main() {
       expect(find.text('+1'), findsNothing);
     },
   );
+
+  testWidgets(
+    'undo button is disabled at start, enabled after 1 move, and reverts board on tap',
+    (tester) async {
+      await pumpGame(tester);
+
+      final undoButton = find.widgetWithIcon(IconButton, Icons.undo);
+      expect(undoButton, findsOneWidget);
+
+      // Ban đầu bị disable
+      expect(tester.widget<IconButton>(undoButton).onPressed, isNull);
+
+      // Đi 1 nước: e2 -> e4
+      await tapSquare(tester, 'e2');
+      await tapSquare(tester, 'e4');
+      await tester.pump();
+
+      // Nút được enable
+      expect(tester.widget<IconButton>(undoButton).onPressed, isNotNull);
+      expect(pieceAt(tester, 'e2'), isNull);
+      expect(pieceAt(tester, 'e4'), 'P');
+
+      // Bấm nút đi lại
+      await tester.tap(undoButton);
+      await tester.pump();
+
+      // Bàn cờ trở lại thế ban đầu, nút lại bị disable
+      expect(pieceAt(tester, 'e2'), 'P');
+      expect(pieceAt(tester, 'e4'), isNull);
+      expect(tester.widget<IconButton>(undoButton).onPressed, isNull);
+      expect(find.text('Lượt đi: Trắng'), findsOneWidget);
+    },
+  );
 }

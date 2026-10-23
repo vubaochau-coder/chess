@@ -19,6 +19,7 @@ class ChessGameBloc extends Bloc<ChessGameEvent, ChessGameState> {
     on<SquareTapped>(_onSquareTapped);
     on<PromotionPieceSelected>(_onPromotionPieceSelected);
     on<PromotionCancelled>(_onPromotionCancelled);
+    on<UndoRequested>(_onUndoRequested);
   }
 
   // Bloc không sở hữu SoundPlayer nên không dispose nó trong close().
@@ -105,6 +106,11 @@ class ChessGameBloc extends Bloc<ChessGameEvent, ChessGameState> {
   ) {
     if (state.pendingPromotion == null) return;
     emit(state.withoutPendingPromotion());
+  }
+
+  void _onUndoRequested(UndoRequested event, Emitter<ChessGameState> emit) {
+    if (state.history.length <= 1) return;
+    emit(state.undo());
   }
 
   MoveRecord _createRecord(int from, int to, {String? promotion}) {

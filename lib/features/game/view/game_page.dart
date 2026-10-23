@@ -58,11 +58,32 @@ class GameView extends StatelessWidget {
               const SizedBox(height: 8),
               const MoveList(),
               const SizedBox(height: 8),
-              FilledButton.icon(
-                onPressed: () =>
-                    context.read<ChessGameBloc>().add(const NewGameRequested()),
-                icon: const Icon(Icons.refresh),
-                label: const Text('Ván mới'),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  FilledButton.icon(
+                    onPressed: () => context.read<ChessGameBloc>().add(
+                      const NewGameRequested(),
+                    ),
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('Ván mới'),
+                  ),
+                  const SizedBox(width: 8),
+                  BlocSelector<ChessGameBloc, ChessGameState, bool>(
+                    selector: (state) => state.history.length > 1,
+                    builder: (context, canUndo) {
+                      return IconButton(
+                        icon: const Icon(Icons.undo),
+                        tooltip: 'Đi lại',
+                        onPressed: canUndo
+                            ? () => context.read<ChessGameBloc>().add(
+                                const UndoRequested(),
+                              )
+                            : null,
+                      );
+                    },
+                  ),
+                ],
               ),
               const SizedBox(height: 8),
               const CapturedPieces(color: PieceColor.white),

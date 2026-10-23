@@ -82,6 +82,19 @@ final class ChessGameState extends Equatable {
     );
   }
 
+  /// Trạng thái sau khi quay lại 1 nước đi.
+  ChessGameState undo() {
+    if (history.length <= 1) return this;
+    final nextHistory = history.sublist(0, history.length - 1);
+    final nextMoves = moves.sublist(0, moves.length - 1);
+    return ChessGameState(
+      history: nextHistory,
+      moves: nextMoves,
+      status: ChessRules.gameStatus(nextHistory),
+      checkSquare: _checkSquareOf(nextHistory.last),
+    );
+  }
+
   ChessGameState withSelection(int square, List<int> targets) {
     return ChessGameState(
       history: history,
