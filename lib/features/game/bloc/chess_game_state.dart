@@ -2,13 +2,24 @@ part of 'chess_game_bloc.dart';
 
 typedef LastMove = ({int from, int to});
 
+final class MoveRecord extends Equatable {
+  const MoveRecord({required this.move, required this.san, this.captured});
+
+  final Move move;
+  final String san;
+  final String? captured;
+
+  @override
+  List<Object?> get props => [move, san, captured];
+}
+
 final class ChessGameState extends Equatable {
   const ChessGameState({
     required this.history,
     required this.status,
+    this.moves = const [],
     this.selected,
     this.legalTargets = const [],
-    this.lastMove,
     this.checkSquare,
     this.pendingPromotion,
   });
@@ -16,6 +27,7 @@ final class ChessGameState extends Equatable {
   factory ChessGameState.initial(GamePosition start) {
     return ChessGameState(
       history: [start],
+      moves: const [],
       status: ChessRules.gameStatus([start]),
       checkSquare: _checkSquareOf(start),
     );
@@ -24,6 +36,10 @@ final class ChessGameState extends Equatable {
   /// Các thế cờ từ đầu ván; phần tử cuối là thế cờ hiện tại. Không sửa tại
   /// chỗ — mỗi nước đi tạo list mới.
   final List<GamePosition> history;
+
+  /// Lịch sử các nước đi đã thực hiện. Bất biến: moves.length == history.length - 1.
+  final List<MoveRecord> moves;
+
   final GameStatus status;
 
   /// Ô của quân đang được chọn.
@@ -32,7 +48,10 @@ final class ChessGameState extends Equatable {
   /// Các ô quân đang chọn có thể đi tới (đã lọc nước làm vua bị chiếu).
   final List<int> legalTargets;
 
-  final LastMove? lastMove;
+  /// Nước đi mới nhất suy ra từ [moves].
+  LastMove? get lastMove => moves.isEmpty
+      ? null
+      : (from: moves.last.move.from, to: moves.last.move.to);
 
   /// Ô của vua đang bị chiếu (để tô đỏ), null nếu không bị chiếu.
   final int? checkSquare;
@@ -51,13 +70,14 @@ final class ChessGameState extends Equatable {
     return position.board.indexOf(position.whiteToMove ? 'K' : 'k');
   }
 
-  /// Trạng thái sau khi đi một nước tới thế cờ [next].
-  ChessGameState afterMove(GamePosition next, LastMove move) {
+  /// Trạng thái sau khi đi một nước tới thế cờ [next] cùng bản ghi [record].
+  ChessGameState afterMove(GamePosition next, MoveRecord record) {
     final nextHistory = [...history, next];
+    final nextMoves = [...moves, record];
     return ChessGameState(
       history: nextHistory,
+      moves: nextMoves,
       status: ChessRules.gameStatus(nextHistory),
-      lastMove: move,
       checkSquare: _checkSquareOf(next),
     );
   }
@@ -65,10 +85,10 @@ final class ChessGameState extends Equatable {
   ChessGameState withSelection(int square, List<int> targets) {
     return ChessGameState(
       history: history,
+      moves: moves,
       status: status,
       selected: square,
       legalTargets: targets,
-      lastMove: lastMove,
       checkSquare: checkSquare,
     );
   }
@@ -76,8 +96,8 @@ final class ChessGameState extends Equatable {
   ChessGameState withoutSelection() {
     return ChessGameState(
       history: history,
+      moves: moves,
       status: status,
-      lastMove: lastMove,
       checkSquare: checkSquare,
     );
   }
@@ -85,10 +105,10 @@ final class ChessGameState extends Equatable {
   ChessGameState withPendingPromotion(LastMove move) {
     return ChessGameState(
       history: history,
+      moves: moves,
       status: status,
       selected: selected,
       legalTargets: legalTargets,
-      lastMove: lastMove,
       checkSquare: checkSquare,
       pendingPromotion: move,
     );
@@ -97,8 +117,8 @@ final class ChessGameState extends Equatable {
   ChessGameState withoutPendingPromotion() {
     return ChessGameState(
       history: history,
+      moves: moves,
       status: status,
-      lastMove: lastMove,
       checkSquare: checkSquare,
     );
   }
@@ -106,10 +126,10 @@ final class ChessGameState extends Equatable {
   @override
   List<Object?> get props => [
     history,
+    moves,
     status,
     selected,
     legalTargets,
-    lastMove,
     checkSquare,
     pendingPromotion,
   ];

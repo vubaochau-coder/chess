@@ -1,8 +1,10 @@
 import 'package:chess/core/audio/sound_player.dart';
 import 'package:chess/core/engine/chess_rules.dart';
 import 'package:chess/features/game/bloc/chess_game_bloc.dart';
+import 'package:chess/features/game/widgets/captured_pieces.dart';
 import 'package:chess/features/game/widgets/chess_board.dart';
 import 'package:chess/features/game/widgets/game_status_bar.dart';
+import 'package:chess/features/game/widgets/move_list.dart';
 import 'package:chess/features/game/widgets/promotion_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -54,14 +56,20 @@ class GameView extends StatelessWidget {
             children: [
               const GameStatusBar(),
               const SizedBox(height: 8),
+              const MoveList(),
+              const SizedBox(height: 8),
               FilledButton.icon(
                 onPressed: () =>
                     context.read<ChessGameBloc>().add(const NewGameRequested()),
                 icon: const Icon(Icons.refresh),
                 label: const Text('Ván mới'),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 8),
+              const CapturedPieces(color: PieceColor.white),
+              const SizedBox(height: 4),
               const Flexible(child: ChessBoard()),
+              const SizedBox(height: 4),
+              const CapturedPieces(color: PieceColor.black),
             ],
           ),
         ),
