@@ -1,22 +1,6 @@
 import 'package:chess/core/engine/chess_rules.dart';
-import 'package:chess/core/engine/chess_utils.dart';
+import 'package:chess/core/engine/fen.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-GamePosition fromFen(String fen) {
-  final parts = fen.split(' ');
-  int? enPassant;
-  if (parts[3] != '-') {
-    final col = parts[3].codeUnitAt(0) - 'a'.codeUnitAt(0);
-    final row = 8 - int.parse(parts[3][1]);
-    enPassant = row * 8 + col;
-  }
-  return GamePosition(
-    board: ChessUtils.readGameState(parts[0]),
-    whiteToMove: parts[1] == 'w',
-    castling: parts[2] == '-' ? '' : parts[2],
-    enPassant: enPassant,
-  );
-}
 
 // Đếm số thế cờ ở độ sâu [depth], so với giá trị chuẩn để kiểm tra luật đi
 int perft(GamePosition pos, int depth) {
@@ -32,16 +16,14 @@ int perft(GamePosition pos, int depth) {
 
 void main() {
   test('perft from the initial position', () {
-    final pos = GamePosition(
-      board: ChessUtils.readGameState(ChessUtils.initGame),
-    );
+    final pos = GamePosition.initial();
     expect(perft(pos, 1), 20);
     expect(perft(pos, 2), 400);
     expect(perft(pos, 3), 8902);
   });
 
   test('perft kiwipete (castling, en passant, pins)', () {
-    final pos = fromFen(
+    final pos = Fen.parse(
       'r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -',
     );
     expect(perft(pos, 1), 48);
@@ -50,7 +32,7 @@ void main() {
   });
 
   test('perft endgame with en passant discovered checks', () {
-    final pos = fromFen('8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - -');
+    final pos = Fen.parse('8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - -');
     expect(perft(pos, 1), 14);
     expect(perft(pos, 2), 191);
     expect(perft(pos, 3), 2812);
@@ -58,9 +40,7 @@ void main() {
   });
 
   test("fool's mate is checkmate", () {
-    var pos = GamePosition(
-      board: ChessUtils.readGameState(ChessUtils.initGame),
-    );
+    var pos = GamePosition.initial();
     // f3, e5, g4, Qh4#
     for (final move in [
       [53, 45],
@@ -74,13 +54,13 @@ void main() {
   });
 
   test('stalemate is detected', () {
-    final pos = fromFen('7k/5Q2/6K1/8/8/8/8/8 b - -');
+    final pos = Fen.parse('7k/5Q2/6K1/8/8/8/8/8 b - -');
     expect(ChessRules.status(pos), GameStatus.stalemate);
   });
 
   test('castling moves the rook and pawn promotes to queen', () {
     final castle = ChessRules.applyMove(
-      fromFen('r3k2r/8/8/8/8/8/8/R3K2R w KQkq -'),
+      Fen.parse('r3k2r/8/8/8/8/8/8/R3K2R w KQkq -'),
       60,
       62,
     );
@@ -89,7 +69,7 @@ void main() {
     expect(castle.position.castling, 'kq');
 
     final promote = ChessRules.applyMove(
-      fromFen('8/P6k/8/8/8/8/8/K7 w - -'),
+      Fen.parse('8/P6k/8/8/8/8/8/K7 w - -'),
       8,
       0,
     );

@@ -7,7 +7,7 @@ Bàn cờ là List<String> 64 ô, index = x * 8 + y:
 Chữ hoa là quân trắng, chữ thường là quân đen, '' là ô trống.
 */
 
-import 'package:chess/core/engine/chess_utils.dart';
+import 'package:chess/core/engine/fen.dart';
 
 enum GameStatus { playing, check, checkmate, stalemate }
 
@@ -21,16 +21,21 @@ class GamePosition {
   // Ô có thể bắt tốt qua đường (nếu có)
   final int? enPassant;
 
+  final int halfmoveClock;
+  final int fullmoveNumber;
+
   const GamePosition({
     required this.board,
     this.whiteToMove = true,
     this.castling = 'KQkq',
     this.enPassant,
+    this.halfmoveClock = 0,
+    this.fullmoveNumber = 1,
   });
 
   /// Thế cờ bắt đầu ván.
   factory GamePosition.initial() {
-    return GamePosition(board: ChessUtils.readGameState(ChessUtils.initGame));
+    return Fen.parse(Fen.initial);
   }
 }
 
@@ -333,12 +338,20 @@ class ChessRules {
         ? (from + to) ~/ 2
         : null;
 
+    final isPawnMove = type == 'p';
+    final halfmoveClock = (isPawnMove || isCapture) ? 0 : pos.halfmoveClock + 1;
+    final fullmoveNumber = pos.whiteToMove
+        ? pos.fullmoveNumber
+        : pos.fullmoveNumber + 1;
+
     return MoveResult(
       position: GamePosition(
         board: board,
         whiteToMove: !pos.whiteToMove,
         castling: castling,
         enPassant: enPassant,
+        halfmoveClock: halfmoveClock,
+        fullmoveNumber: fullmoveNumber,
       ),
       isCapture: isCapture,
       isCastle: isCastle,
