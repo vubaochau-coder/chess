@@ -11,15 +11,8 @@ class ChessGameInit extends ChessGameEvent {
   ChessGameInit({required this.initGameState});
 }
 
-class ChessSelectedEvent extends ChessGameEvent {
-  final int index;
-  final List<Position> hintMoves;
-
-  ChessSelectedEvent({required this.index, required this.hintMoves});
-}
-
-class MoveChessToEvent extends ChessGameEvent {
+class SquareTappedEvent extends ChessGameEvent {
   final int index;
 
-  MoveChessToEvent({required this.index});
+  SquareTappedEvent({required this.index});
 }

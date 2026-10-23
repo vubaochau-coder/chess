@@ -1,10 +1,9 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:bloc/bloc.dart';
 import 'package:chess/enums/chess_sounds.dart';
+import 'package:chess/utils/chess_rules.dart';
 import 'package:chess/utils/chess_utils.dart';
 import 'package:equatable/equatable.dart';
-
-import '../../../models/position_model.dart';
 
 part 'chess_game_event.dart';
 part 'chess_game_state.dart';
@@ -16,8 +15,7 @@ class ChessGameBloc extends Bloc<ChessGameEvent, ChessGameState> {
     player = AudioPlayer();
 
     on<ChessGameInit>(_onInit);
-    on<ChessSelectedEvent>(_onChessSelected);
-    on<MoveChessToEvent>(_onMoveTo);
+    on<SquareTappedEvent>(_onSquareTapped);
   }
 
   @override
@@ -28,22 +26,40 @@ class ChessGameBloc extends Bloc<ChessGameEvent, ChessGameState> {
   }
 
   _onInit(ChessGameInit event, Emitter emit) {
-    Map<int, List<String>> initState = {};
+    final position = GamePosition(
+      board: ChessUtils.readGameState(event.initGameState),
+    );
 
-    List<String> gameState = ChessUtils.readGameState(event.initGameState);
-    initState[0] = gameState;
-
-    emit(state.copyWith(
+    emit(const ChessGameState().copyWith(
       isLoading: false,
       currentState: 0,
-      gameStates: initState,
+      gameStates: {0: position},
+      status: ChessRules.status(position),
     ));
   }
 
-  _onChessSelected(ChessSelectedEvent event, Emitter emit) async {
+  _onSquareTapped(SquareTappedEvent event, Emitter emit) {
+    if (state.isLoading || state.isGameOver) return;
+
+    final position = state.position;
+    final piece = position.board[event.index];
+    final isOwnPiece =
+        piece.isNotEmpty && ChessRules.isWhite(piece) == position.whiteToMove;
+
+    if (isOwnPiece) {
+      _selectChess(event.index, emit);
+    } else if (state.selectedChess != null &&
+        state.hintMoves.contains(event.index)) {
+      _moveTo(event.index, emit);
+    } else if (state.selectedChess != null) {
+      player.play(AssetSource(ChessSounds.illegal), volume: 1);
+    }
+  }
+
+  void _selectChess(int index, Emitter emit) {
     player.play(AssetSource(ChessSounds.click), volume: 0.5);
 
-    if (state.selectedChess == event.index) {
+    if (state.selectedChess == index) {
       emit(
         state.copyWith(
           isClearSelected: true,
@@ -52,47 +68,50 @@ class ChessGameBloc extends Bloc<ChessGameEvent, ChessGameState> {
         ),
       );
     } else {
-      List<int> hint = [];
-      for (var position in event.hintMoves) {
-        hint.add(position.toIndex());
-      }
-
       emit(
         state.copyWith(
-          selectedChess: event.index,
-          hintMoves: hint,
-          hightLights: [event.index],
+          selectedChess: index,
+          hintMoves: ChessRules.legalMoves(state.position, index),
+          hightLights: [index],
         ),
       );
     }
   }
 
-  _onMoveTo(MoveChessToEvent event, Emitter emit) async {
-    if (state.hintMoves.contains(event.index)) {
-      player.play(AssetSource(ChessSounds.moveSelf), volume: 1);
+  void _moveTo(int index, Emitter emit) {
+    final from = state.selectedChess!;
+    final result = ChessRules.applyMove(state.position, from, index);
+    final status = ChessRules.status(result.position);
 
-      // Get current chess
-      List<String> currentChess = state.gameStates[state.currentState]!;
-      String selectedChess = currentChess[state.selectedChess!];
+    player.play(AssetSource(_moveSound(result, status)), volume: 1);
 
-      List<String> newChess = List.from(currentChess);
-      newChess[state.selectedChess!] = '';
-      newChess[event.index] = selectedChess;
+    Map<int, GamePosition> gameHistory = Map.from(state.gameStates);
+    gameHistory.addAll({state.gameStates.length: result.position});
 
-      Map<int, List<String>> gameHistory = Map.from(state.gameStates);
-      gameHistory.addAll({state.gameStates.length: newChess});
+    emit(
+      state.copyWith(
+        currentState: gameHistory.length - 1,
+        gameStates: gameHistory,
+        status: status,
+        hintMoves: [],
+        hightLights: [index, from],
+        isClearSelected: true,
+      ),
+    );
+  }
 
-      emit(
-        state.copyWith(
-          currentState: gameHistory.length - 1,
-          gameStates: gameHistory,
-          hintMoves: [],
-          hightLights: [event.index, state.selectedChess!],
-          isClearSelected: true,
-        ),
-      );
-    } else {
-      player.play(AssetSource(ChessSounds.illegal), volume: 1);
+  String _moveSound(MoveResult result, GameStatus status) {
+    switch (status) {
+      case GameStatus.checkmate:
+      case GameStatus.stalemate:
+        return ChessSounds.gameEnd;
+      case GameStatus.check:
+        return ChessSounds.moveCheck;
+      case GameStatus.playing:
+        if (result.isPromotion) return ChessSounds.promote;
+        if (result.isCastle) return ChessSounds.castle;
+        if (result.isCapture) return ChessSounds.capture;
+        return ChessSounds.moveSelf;
     }
   }
 }

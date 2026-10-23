@@ -14,13 +14,6 @@ class WhiteQueenModel extends WhiteChess {
   }
 
   @override
-  List<Position> getPossibleMove(Position position, List<String> gameState) {
-    List<Position> possibleMoves = [];
-
-    return possibleMoves;
-  }
-
-  @override
   String toText() {
     return 'Q';
   }

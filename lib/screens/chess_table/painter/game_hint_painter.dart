@@ -5,12 +5,14 @@ class GameHintPainter extends CustomPainter {
   final double cellSize;
   final List<int> hints;
   final List<int> hightLight;
+  final int? check;
 
   GameHintPainter({
     super.repaint,
     required this.cellSize,
     required this.hints,
     required this.hightLight,
+    this.check,
   });
 
   final darkSelectPaint = Paint()
@@ -24,6 +26,10 @@ class GameHintPainter extends CustomPainter {
   final hintPaint = Paint()
     ..style = PaintingStyle.fill
     ..color = ChessColors.squareAvailable;
+
+  final checkPaint = Paint()
+    ..style = PaintingStyle.fill
+    ..color = ChessColors.squareCheck;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -40,6 +46,20 @@ class GameHintPainter extends CustomPainter {
           (row + 1) * cellSize,
         ),
         paint,
+      );
+    }
+
+    if (check != null) {
+      final row = check! ~/ 8;
+      final col = check! % 8;
+      canvas.drawRect(
+        Rect.fromLTRB(
+          col * cellSize,
+          row * cellSize,
+          (col + 1) * cellSize,
+          (row + 1) * cellSize,
+        ),
+        checkPaint,
       );
     }
 

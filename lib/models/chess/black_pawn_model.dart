@@ -13,26 +13,6 @@ class BlackPawnModel extends BlackChess {
   }
 
   @override
-  List<Position> getPossibleMove(Position position, List<String> gameState) {
-    List<Position> possibleMoves = [];
-    if (position.x == 7) return possibleMoves;
-
-    final sqr1 = Position(x: position.x + 1, y: position.y);
-    if (gameState[sqr1.toIndex()].isEmpty) {
-      possibleMoves.add(sqr1);
-
-      if (position.x == 1) {
-        final sqr2 = Position(x: position.x + 2, y: position.y);
-        if (gameState[sqr2.toIndex()].isEmpty) {
-          possibleMoves.add(sqr2);
-        }
-      }
-    }
-
-    return possibleMoves;
-  }
-
-  @override
   String toText() {
     return 'p';
   }

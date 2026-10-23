@@ -49,20 +49,16 @@ class ChessUtils {
     final rows = state.split('/');
     for (var row in rows) {
       final items = row.split('');
-      if (items.length == 8) {
-        chess.addAll(items);
-      } else {
-        for (var item in items) {
-          if (ChessUtils.chessStr.contains(item)) {
-            chess.add(item);
+      for (var item in items) {
+        if (ChessUtils.chessStr.contains(item)) {
+          chess.add(item);
+        } else {
+          int? value = int.tryParse(item);
+          if (value != null) {
+            final empty = List<String>.generate(value, (index) => '');
+            chess.addAll(empty);
           } else {
-            int? value = int.tryParse(item);
-            if (value != null) {
-              final empty = List<String>.generate(value, (index) => '');
-              chess.addAll(empty);
-            } else {
-              throw Exception('Format Chess Not Correct');
-            }
+            throw Exception('Format Chess Not Correct');
           }
         }
       }

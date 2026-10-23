@@ -1,5 +1,6 @@
 import 'package:chess/screens/chess_table/painter/game_board_painter.dart';
 import 'package:chess/screens/chess_table/views/game_state.dart';
+import 'package:chess/utils/chess_rules.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -13,7 +14,6 @@ class BoardGame extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print('VBC re build');
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -29,12 +29,20 @@ class BoardGame extends StatelessWidget {
             ),
             BlocBuilder<ChessGameBloc, ChessGameState>(
               builder: (context, state) {
+                final position = state.isLoading ? null : state.position;
+                final inCheck = state.status == GameStatus.check ||
+                    state.status == GameStatus.checkmate;
+
                 return CustomPaint(
                   size: Size(size * 8, size * 8),
                   painter: GameHintPainter(
                     cellSize: size,
                     hints: state.hintMoves,
                     hightLight: state.hightLights,
+                    check: inCheck
+                        ? position!.board
+                            .indexOf(position.whiteToMove ? 'K' : 'k')
+                        : null,
                   ),
                 );
               },

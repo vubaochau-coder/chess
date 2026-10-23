@@ -11,4 +11,7 @@ class ChessColors {
 
   // Màu các ô có thể đi
   static const Color squareAvailable = Color(0xFF80361B);
+
+  // Màu ô vua đang bị chiếu
+  static const Color squareCheck = Color(0xCCE53935);
 }
