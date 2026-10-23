@@ -1,6 +1,7 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:chess/core/audio/sound_effect.dart';
 import 'package:chess/core/engine/chess_rules.dart';
+import 'package:chess/core/engine/fen.dart';
 import 'package:chess/features/game/bloc/chess_game_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -177,6 +178,138 @@ void main() {
         expect(bloc.state.isGameOver, isTrue);
         expect(bloc.state.selected, isNull);
         verify(() => sound.play(SoundEffect.gameEnd)).called(1);
+      },
+    );
+  });
+
+  group('pawn promotion', () {
+    const a7 = 8, a8 = 0, a2 = 48, a1 = 56, b8 = 1;
+
+    test('invalid promotion piece throws ArgumentError', () {
+      expect(() => PromotionPieceSelected('x'), throwsArgumentError);
+      expect(() => PromotionPieceSelected('Q'), throwsArgumentError);
+    });
+
+    blocTest<ChessGameBloc, ChessGameState>(
+      'stepping pawn to last rank triggers pendingPromotion and keeps board unchanged',
+      build: () => ChessGameBloc(
+        soundPlayer: sound,
+        startPosition: Fen.parse('8/P6k/8/8/8/8/8/K7 w - - 0 1'),
+      ),
+      act: (bloc) => bloc
+        ..add(const SquareTapped(a7))
+        ..add(const SquareTapped(a8)),
+      verify: (bloc) {
+        expect(bloc.state.pendingPromotion, (from: a7, to: a8));
+        expect(bloc.state.position.board[a7], 'P');
+        expect(bloc.state.position.board[a8], '');
+        expect(bloc.state.selected, a7);
+        verifyNever(() => sound.play(SoundEffect.move));
+        verifyNever(() => sound.play(SoundEffect.promote));
+      },
+    );
+
+    blocTest<ChessGameBloc, ChessGameState>(
+      'tapping squares while pendingPromotion is active is ignored',
+      build: () => ChessGameBloc(
+        soundPlayer: sound,
+        startPosition: Fen.parse('8/P6k/8/8/8/8/8/K7 w - - 0 1'),
+      ),
+      act: (bloc) => bloc
+        ..add(const SquareTapped(a7))
+        ..add(const SquareTapped(a8))
+        ..add(const SquareTapped(56)),
+      verify: (bloc) {
+        expect(bloc.state.pendingPromotion, (from: a7, to: a8));
+        expect(bloc.state.position.board[a7], 'P');
+      },
+    );
+
+    blocTest<ChessGameBloc, ChessGameState>(
+      'PromotionCancelled clears pendingPromotion and selected without moving',
+      build: () => ChessGameBloc(
+        soundPlayer: sound,
+        startPosition: Fen.parse('8/P6k/8/8/8/8/8/K7 w - - 0 1'),
+      ),
+      act: (bloc) => bloc
+        ..add(const SquareTapped(a7))
+        ..add(const SquareTapped(a8))
+        ..add(const PromotionCancelled()),
+      verify: (bloc) {
+        expect(bloc.state.pendingPromotion, isNull);
+        expect(bloc.state.selected, isNull);
+        expect(bloc.state.position.board[a7], 'P');
+        expect(bloc.state.position.board[a8], '');
+      },
+    );
+
+    for (final (char, expected) in [
+      ('q', 'Q'),
+      ('r', 'R'),
+      ('b', 'B'),
+      ('n', 'N'),
+    ]) {
+      blocTest<ChessGameBloc, ChessGameState>(
+        'white pawn promotes to $expected',
+        build: () => ChessGameBloc(
+          soundPlayer: sound,
+          startPosition: Fen.parse('8/P6k/8/7p/8/8/8/K7 w - - 0 1'),
+        ),
+        act: (bloc) => bloc
+          ..add(const SquareTapped(a7))
+          ..add(const SquareTapped(a8))
+          ..add(PromotionPieceSelected(char)),
+        verify: (bloc) {
+          expect(bloc.state.pendingPromotion, isNull);
+          expect(bloc.state.position.board[a8], expected);
+          expect(bloc.state.position.board[a7], '');
+          expect(bloc.state.position.whiteToMove, isFalse);
+          verify(() => sound.play(SoundEffect.promote)).called(1);
+        },
+      );
+    }
+
+    for (final (char, expected) in [
+      ('q', 'q'),
+      ('r', 'r'),
+      ('b', 'b'),
+      ('n', 'n'),
+    ]) {
+      blocTest<ChessGameBloc, ChessGameState>(
+        'black pawn promotes to $expected',
+        build: () => ChessGameBloc(
+          soundPlayer: sound,
+          startPosition: Fen.parse('7k/8/8/8/7P/8/p6K/8 b - - 0 1'),
+        ),
+        act: (bloc) => bloc
+          ..add(const SquareTapped(a2))
+          ..add(const SquareTapped(a1))
+          ..add(PromotionPieceSelected(char)),
+        verify: (bloc) {
+          expect(bloc.state.pendingPromotion, isNull);
+          expect(bloc.state.position.board[a1], expected);
+          expect(bloc.state.position.board[a2], '');
+          expect(bloc.state.position.whiteToMove, isTrue);
+          verify(() => sound.play(SoundEffect.promote)).called(1);
+        },
+      );
+    }
+
+    blocTest<ChessGameBloc, ChessGameState>(
+      'promotion with capture and check',
+      build: () => ChessGameBloc(
+        soundPlayer: sound,
+        startPosition: Fen.parse('1r1k4/P7/8/8/8/8/8/K7 w - - 0 1'),
+      ),
+      act: (bloc) => bloc
+        ..add(const SquareTapped(a7))
+        ..add(const SquareTapped(b8))
+        ..add(PromotionPieceSelected('q')),
+      verify: (bloc) {
+        expect(bloc.state.position.board[b8], 'Q');
+        expect(bloc.state.position.board[a7], '');
+        expect(bloc.state.status, GameStatus.check);
+        verify(() => sound.play(SoundEffect.check)).called(1);
       },
     );
   });

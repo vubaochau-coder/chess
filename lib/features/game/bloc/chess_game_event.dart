@@ -21,3 +21,26 @@ final class SquareTapped extends ChessGameEvent {
   @override
   List<Object?> get props => [index];
 }
+
+/// Người chơi chọn quân phong cấp ('q', 'r', 'b', 'n').
+final class PromotionPieceSelected extends ChessGameEvent {
+  PromotionPieceSelected(this.piece) {
+    if (!const {'q', 'r', 'b', 'n'}.contains(piece)) {
+      throw ArgumentError.value(
+        piece,
+        'piece',
+        'Promotion piece must be one of q, r, b, n',
+      );
+    }
+  }
+
+  final String piece;
+
+  @override
+  List<Object?> get props => [piece];
+}
+
+/// Hủy chọn phong cấp (đóng dialog mà không chọn).
+final class PromotionCancelled extends ChessGameEvent {
+  const PromotionCancelled();
+}

@@ -10,6 +10,7 @@ final class ChessGameState extends Equatable {
     this.legalTargets = const [],
     this.lastMove,
     this.checkSquare,
+    this.pendingPromotion,
   });
 
   factory ChessGameState.initial(GamePosition start) {
@@ -35,6 +36,9 @@ final class ChessGameState extends Equatable {
 
   /// Ô của vua đang bị chiếu (để tô đỏ), null nếu không bị chiếu.
   final int? checkSquare;
+
+  /// Nước đi phong cấp đang chờ người chơi chọn quân.
+  final LastMove? pendingPromotion;
 
   GamePosition get position => history.last;
 
@@ -78,6 +82,27 @@ final class ChessGameState extends Equatable {
     );
   }
 
+  ChessGameState withPendingPromotion(LastMove move) {
+    return ChessGameState(
+      history: history,
+      status: status,
+      selected: selected,
+      legalTargets: legalTargets,
+      lastMove: lastMove,
+      checkSquare: checkSquare,
+      pendingPromotion: move,
+    );
+  }
+
+  ChessGameState withoutPendingPromotion() {
+    return ChessGameState(
+      history: history,
+      status: status,
+      lastMove: lastMove,
+      checkSquare: checkSquare,
+    );
+  }
+
   @override
   List<Object?> get props => [
     history,
@@ -86,5 +111,6 @@ final class ChessGameState extends Equatable {
     legalTargets,
     lastMove,
     checkSquare,
+    pendingPromotion,
   ];
 }
