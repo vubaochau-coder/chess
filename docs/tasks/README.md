@@ -53,7 +53,7 @@ Mỗi đặc tả task có các mục:
 | Mã | Task | Phụ thuộc | Đầu vào owner | Trạng thái |
 |---|---|---|---|---|
 | T3.1 | Bàn cờ nội bộ tốc độ cao cho AI | T2.2 | — | review |
-| T3.2 | Thuật toán tìm nước đi | T3.1 | — | todo |
+| T3.2 | Thuật toán tìm nước đi | T3.1 | — | review |
 | T3.3 | Mức độ khó + service `ChessAi` chạy Isolate | T3.2 | — | todo |
 | T3.4 | Tích hợp AI vào game bloc | T3.3, T2.5 | — | todo |
 | T3.5 | Màn hình chính chọn chế độ | T3.4 | — | todo |

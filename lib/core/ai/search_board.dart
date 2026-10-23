@@ -86,6 +86,53 @@ final class SearchBoard {
   int get halfmoveClock => _halfmoveClock;
   Int8List get board => _board;
 
+  bool isInsufficientMaterial() {
+    var whiteKnights = 0;
+    var blackKnights = 0;
+    var bishopCount = 0;
+    var firstBishopColor = -1;
+    var allBishopsSameColor = true;
+
+    for (var i = 0; i < 64; i++) {
+      final p = _board[i];
+      if (p == 0 || p == 6 || p == 14) continue;
+      if (p == 1 || p == 9 || p == 4 || p == 12 || p == 5 || p == 13) {
+        return false;
+      }
+      if (p == 2) {
+        whiteKnights++;
+      } else if (p == 10) {
+        blackKnights++;
+      } else if (p == 3 || p == 11) {
+        bishopCount++;
+        final sqColor = (i ~/ 8 + i % 8) % 2;
+        if (firstBishopColor == -1) {
+          firstBishopColor = sqColor;
+        } else if (sqColor != firstBishopColor) {
+          allBishopsSameColor = false;
+        }
+      }
+    }
+
+    if (whiteKnights == 0 && blackKnights == 0 && bishopCount == 0) {
+      return true;
+    }
+
+    if (bishopCount == 0) {
+      if ((whiteKnights == 1 && blackKnights == 0) ||
+          (whiteKnights == 0 && blackKnights == 1)) {
+        return true;
+      }
+      return false;
+    }
+
+    if (whiteKnights == 0 && blackKnights == 0 && bishopCount > 0) {
+      return allBishopsSameColor;
+    }
+
+    return false;
+  }
+
   void _loadPosition(GamePosition pos) {
     for (var i = 0; i < 64; i++) {
       final code = _charToPiece(pos.board[i]);
