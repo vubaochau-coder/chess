@@ -1,124 +1,158 @@
 # AGENTS.md
 
-Hướng dẫn cho AI agent (Claude Code, Codex, Copilot…) và người mới làm việc trên repo này.
-Đọc hết file này trước khi sửa code. Kế hoạch tổng thể nằm ở [`docs/ROADMAP.md`](docs/ROADMAP.md).
+Quy tắc bắt buộc cho mọi AI agent (Claude Code, Codex, Copilot, Cursor…) và người làm việc trên repo này.
+**Đọc hết file này trước khi làm bất cứ việc gì.** Khi file này mâu thuẫn với thói quen hoặc "best practice"
+chung của bạn, file này thắng.
 
-## Tổng quan
+Thứ tự đọc khi nhận việc:
 
-- Game cờ vua viết bằng **Flutter**, nền tảng chính là **Android** (các nền tảng khác chưa được bảo trì).
-- App id: **`com.chauvb.chess`** — **không bao giờ đổi** (đã chốt cho Google Play).
-- State management: **bloc / flutter_bloc**.
-- Hiện có: chơi 2 người trên cùng máy, đầy đủ luật (nhập thành, bắt tốt qua đường, phong cấp Hậu,
-  chiếu, chiếu hết, hết nước đi).
+1. `AGENTS.md` (file này) — luật chung.
+2. [`docs/architecture.md`](docs/architecture.md) — kiến trúc, chuẩn bloc, quy tắc hiệu năng.
+3. [`docs/tasks/README.md`](docs/tasks/README.md) — quy trình làm task và danh sách task.
+4. File đặc tả của **đúng task** bạn được giao (`docs/tasks/phase-N.md`, mục `TN.M`).
 
-## Môi trường
+---
+
+## 1. Luật vàng (đọc kỹ)
+
+1. **Chỉ làm đúng một task được giao**, theo đặc tả trong `docs/tasks/`. Không có task → không code.
+2. **Không làm gì nằm ngoài mục "Phạm vi"** của task, kể cả khi thấy "tiện tay": không refactor code khác,
+   không đổi tên, không "cải thiện" UI, không nâng package, không sửa lint rule.
+   Thấy vấn đề ngoài phạm vi → ghi vào mục *Ghi chú cho owner* trong mô tả PR, không sửa.
+3. **Không tự suy luận quyết định sản phẩm.** Đặc tả thiếu, mơ hồ hoặc mâu thuẫn với code hiện tại →
+   dừng phần đó và hỏi owner (hoặc ghi câu hỏi trong PR, đánh dấu task `blocked`). Không đoán.
+4. **Các quyết định ở mục 2 là cố định.** Không đề xuất thay thế trong code, không "thử phương án khác".
+5. **Task có mục "Đầu vào cần owner"** (ảnh icon, file âm thanh, secrets…) mà chưa có → không tự tạo
+   asset giả để thay thế, đánh dấu `blocked`.
+6. Một task = một nhánh = một PR. Không gộp nhiều task.
+7. Chỉ coi là xong khi đạt toàn bộ *Definition of done* (mục 9) **và** toàn bộ *Tiêu chí nghiệm thu* của task.
+
+## 2. Quyết định đã chốt (không được thay đổi)
+
+| Chủ đề | Quyết định |
+|---|---|
+| App id | `com.chauvb.chess` — không bao giờ đổi `applicationId` / `namespace` |
+| Nền tảng | Chỉ **Android**. Không sửa thư mục `ios/ web/ linux/ macos/ windows/` |
+| Flutter | Phiên bản ghi trong `.fvmrc` (hiện 3.47.7), luôn chạy qua **FVM** |
+| Version package | Ghim **chính xác** (không `^`, không range) — xem mục 6 |
+| State management | `bloc` / `flutter_bloc` (Bloc cho màn hình, Cubit cho cài đặt đơn giản). Không Provider/Riverpod/GetX |
+| Điều hướng | `Navigator` + `MaterialPageRoute`. Không go_router hay thư viện routing khác |
+| Lưu trữ cục bộ | `shared_preferences` (khi task cho phép). Không Hive/Isar/sqflite |
+| AI (PvE) | **Tự viết bằng Dart**, chạy trong Isolate. **Không** dùng Stockfish hay engine native/GPL |
+| Biểu diễn bàn cờ công khai | `List<String>` 64 ô, index `x * 8 + y` (xem `docs/architecture.md`) |
+| Ngôn ngữ UI | Tiếng Việt, hard-code trong widget (chưa làm đa ngôn ngữ) |
+| Luật hòa | Lặp lại 3 lần và luật 50 nước **tự động** xử hòa (không cần "claim") |
+| Phong cấp | Người chơi chọn Hậu/Xe/Tượng/Mã qua hộp thoại |
+
+## 3. Môi trường
 
 | Công cụ | Phiên bản |
 |---|---|
-| Flutter | 3.47.7 stable (Dart 3.13) |
+| FVM | 3.x |
+| Flutter | theo `.fvmrc` (3.47.7 stable, Dart 3.13) |
 | Java | 17+ |
 | Android Gradle Plugin / Gradle | 9.1 / 9.3 (Kotlin DSL) |
 
-## Lệnh thường dùng
+```bash
+fvm install          # cài đúng Flutter theo .fvmrc
+fvm use              # tạo .fvm/ (đã gitignore), IDE tự trỏ SDK vào .fvm/
+```
+
+**Luôn gọi lệnh qua `fvm`** (`fvm flutter …`, `fvm dart …`). Không dùng Flutter global.
+Không sửa `.fvmrc` (nâng Flutter là một task riêng, chỉ owner tạo).
+
+## 4. Lệnh thường dùng
 
 ```bash
-flutter pub get
-dart format lib test            # format (CI kiểm tra bằng --set-exit-if-changed)
-flutter analyze                 # phải "No issues found!" — kể cả info
-flutter test                    # toàn bộ test
-flutter run                     # chạy trên thiết bị / emulator
-flutter build apk --release     # APK
-flutter build appbundle         # AAB để upload Google Play
+fvm flutter pub get --enforce-lockfile   # cài package đúng như pubspec.lock
+fvm dart format lib test                 # format
+fvm flutter analyze                      # phải "No issues found!" (kể cả info)
+fvm flutter test                         # toàn bộ test
+fvm flutter run                          # chạy trên thiết bị / emulator Android
+fvm flutter build apk --release
+fvm flutter build appbundle              # AAB để upload Google Play
 ```
 
-## Cấu trúc thư mục
+## 5. Quy tắc code
 
-```
-lib/
-  main.dart, app.dart           # entry point, MaterialApp
-  core/
-    engine/                     # LUẬT CỜ — thuần Dart, KHÔNG import Flutter
-      chess_rules.dart          #   sinh nước đi hợp lệ, applyMove, trạng thái ván
-      chess_utils.dart          #   đọc/ghi phần bố trí quân của FEN
-      position_model.dart       #   Position(x, y)
-    audio/chess_sounds.dart     # đường dẫn file âm thanh
-  features/
-    game/                       # màn chơi
-      bloc/                     #   ChessGameBloc + event + state
-      models/                   #   model quân cờ (vẽ quân), ChessType, factory Chess()
-      painter/                  #   CustomPainter: bàn cờ, ô chọn, gợi ý, ô bị chiếu
-      view/                     #   màn hình (ChessTable)
-      widgets/                  #   widget con (BoardGame, lớp quân cờ GameState)
-  theme/colors.dart             # màu sắc
-test/                           # cấu trúc song song với lib/
-docs/ROADMAP.md                 # lộ trình
-```
+Lint được ép bởi `analysis_options.yaml` (strict-casts, strict-inference, strict-raw-types…).
+**Không được sửa `analysis_options.yaml`**, không dùng `// ignore:` / `// ignore_for_file:` trừ khi task cho phép.
 
-Tính năng mới đặt trong `lib/features/<tên>/` với cùng bố cục (`bloc/`, `view/`, `widgets/`, `models/`).
-Logic không phụ thuộc UI (AI, lưu trữ…) đặt trong `lib/core/`.
+1. Import tuyệt đối `package:chess/...` (trừ `part` / `part of`). Test được import helper tương đối trong `test/`.
+2. `lib/core/` **thuần Dart**: không import `package:flutter/...` (ngoại lệ duy nhất: `lib/core/audio/`
+   và `lib/core/storage/` được dùng plugin). Engine/AI phải chạy được trong Isolate và test bằng `test()` thường.
+3. Khai báo kiểu trả về cho mọi hàm; ưu tiên `final`, `const`; class dữ liệu bất biến.
+4. Không `print`; debug tạm bằng `debugPrint` và xóa trước khi commit.
+5. Đặt tên: file `snake_case.dart`, class `PascalCase`, biến/hàm `camelCase`, private bắt đầu bằng `_`.
+6. Text cho người dùng: tiếng Việt. Tên biến/hàm: tiếng Anh. Comment: chỉ giải thích *tại sao*.
+7. Bloc/state/widget theo đúng chuẩn trong [`docs/architecture.md`](docs/architecture.md) — đặc biệt
+   mục "Quy tắc hiệu năng". Vi phạm = PR không đạt.
+8. Không để code chết, TODO không có task, file không dùng.
 
-## Mô hình dữ liệu bàn cờ (quan trọng)
+## 6. Package & phiên bản
 
-- Bàn cờ là `List<String>` 64 phần tử, **index = x * 8 + y**.
-  - `x` là hàng: **0 = hàng 8** (phía quân đen), **7 = hàng 1** (phía quân trắng).
-  - `y` là cột: 0 = cột a … 7 = cột h.
-  - Ví dụ: e1 = 60, e8 = 4, a8 = 0, h1 = 63.
-- Ký hiệu quân theo FEN: chữ hoa = trắng (`K Q R B N P`), chữ thường = đen, `''` = ô trống.
-- `GamePosition` (bất biến) = bàn cờ + lượt đi + quyền nhập thành (`'KQkq'`) + ô en passant.
-- Luồng một nước đi: UI gửi `SquareTappedEvent(index)` → bloc gọi `ChessRules.legalMoves` /
-  `ChessRules.applyMove` / `ChessRules.status` → emit state mới. **UI không tự tính luật.**
+- Mọi package trong `pubspec.yaml` ghi **version chính xác** (`flutter_bloc: 9.1.1`), không `^`.
+- Chỉ được thêm package **có tên trong mục "Package được phép" của task**, đúng version ghi ở đó.
+  Task không ghi → không được thêm package nào.
+- Không nâng / hạ version package có sẵn (nâng package là task riêng).
+- Luôn commit `pubspec.yaml` và `pubspec.lock` cùng nhau. CI chạy `pub get --enforce-lockfile`.
+- Asset (âm thanh, ảnh, font, SVG quân cờ) phải có giấy phép cho phép phát hành thương mại; ghi nguồn
+  và giấy phép vào `assets/LICENSES.md` khi thêm.
 
-## Quy tắc code
+## 7. Test
 
-Lint được ép bởi `analysis_options.yaml` (strict-casts, strict-inference, strict-raw-types).
-Ngoài những gì lint bắt, cần tuân theo:
+- Test đặt trong `test/` theo cấu trúc song song với `lib/`.
+- `lib/core/engine/`: mọi thay đổi phải giữ **toàn bộ perft test** xanh. **Không được sửa giá trị kỳ vọng
+  của perft** — sai perft nghĩa là code sai.
+- Bloc: test bằng `bloc_test` + `mocktail` (xem `test/features/game/bloc/chess_game_bloc_test.dart`).
+- Widget mới có tương tác: có widget test.
+- Bug fix: thêm test tái hiện bug trước khi sửa.
+- Mock dùng chung đặt ở `test/helpers/`.
 
-1. **Import tuyệt đối** `package:chess/...`, không dùng import tương đối (trừ `part`/`part of`).
-2. **`lib/core/engine/` thuần Dart** — không import `package:flutter`, để test nhanh và chạy được trong `Isolate`.
-3. Khai báo kiểu trả về cho mọi hàm/method; ưu tiên `final`, `const`.
-4. Không dùng `print` — dùng `debugPrint` khi cần debug tạm, và xóa trước khi commit.
-5. Đặt tên: file `snake_case.dart`, class `PascalCase`, biến/hàm `camelCase`.
-6. Text hiển thị cho người dùng: **tiếng Việt**. Tên biến/hàm: tiếng Anh. Comment: tiếng Việt hoặc tiếng Anh,
-   chỉ viết khi giải thích *tại sao*, không mô tả lại code.
-7. State của bloc bất biến, có `copyWith`, kế thừa `Equatable`.
-8. Không thêm package mới khi chưa cần thiết; nếu thêm, ghi lý do trong mô tả PR.
-9. Asset (âm thanh, hình quân cờ, font) phải có **giấy phép cho phép phát hành thương mại**; ghi nguồn khi thêm.
+## 8. Git & PR
 
-## Test
+- Nhánh: `task/<mã-task>-<mô-tả-ngắn>`, ví dụ `task/T2.1-fen`.
+- Commit message tiếng Anh, dạng mệnh lệnh: `Add FEN parser and formatter`.
+- Tiêu đề PR: `[T2.1] <tên task>`.
+- Mô tả PR theo mẫu:
 
-- Mọi thay đổi trong `lib/core/engine/` phải giữ **toàn bộ test perft** (`test/core/engine/chess_rules_test.dart`) xanh.
-  Perft so số nước đi với giá trị chuẩn nên bắt được gần như mọi lỗi luật.
-- Bug fix trong engine: thêm test tái hiện bug trước.
-- Logic bloc mới: viết test cho bloc (có thể dùng `bloc_test`).
+  ```markdown
+  ## Task
+  T2.1 — <tên task> (link tới mục trong docs/tasks/phase-N.md)
 
-## Android & phát hành
+  ## Đã làm
+  - ...
 
-- Cấu hình Gradle ở `android/` dùng Kotlin DSL (`*.gradle.kts`).
-- Ký bản release: tạo `android/key.properties` (đã gitignore):
-  ```properties
-  storePassword=...
-  keyPassword=...
-  keyAlias=upload
-  storeFile=/đường/dẫn/upload-keystore.jks
+  ## Tiêu chí nghiệm thu
+  - [x] <copy từng tiêu chí trong task, đánh dấu>
+
+  ## Cách kiểm tra
+  - ...
+
+  ## Ghi chú cho owner
+  - Câu hỏi / vấn đề ngoài phạm vi phát hiện được (không sửa)
   ```
-  Không có file này thì bản release được ký bằng debug key (chỉ dùng để chạy thử, **không upload được**).
-- **Không bao giờ commit** keystore (`*.jks`, `*.keystore`), `key.properties`, mật khẩu hay API key.
-- Version trong `pubspec.yaml` dạng `X.Y.Z+N`; `N` (versionCode) phải tăng mỗi lần upload lên Play.
 
-## Definition of done
+- Không push trực tiếp lên `main`. Không force-push nhánh người khác.
+- Cập nhật trạng thái task trong `docs/tasks/README.md` ngay trong PR.
 
-Một thay đổi chỉ coi là xong khi:
+## 9. Definition of done
 
-- [ ] `dart format --set-exit-if-changed lib test` không đổi gì
-- [ ] `flutter analyze` → No issues found
-- [ ] `flutter test` pass
-- [ ] Đã chạy thử trên Android (emulator hoặc máy thật) nếu thay đổi UI / native
-- [ ] Cập nhật `docs/ROADMAP.md` (đánh dấu mục đã xong) và file này nếu đổi kiến trúc / quy ước
+- [ ] `fvm dart format --output=none --set-exit-if-changed lib test` không đổi gì
+- [ ] `fvm flutter analyze` → No issues found
+- [ ] `fvm flutter test` pass toàn bộ
+- [ ] `fvm flutter build apk --release` build được
+- [ ] Đạt toàn bộ *Tiêu chí nghiệm thu* của task
+- [ ] Đã chạy thử trên Android (emulator/máy thật) nếu task có thay đổi UI hoặc native
+- [ ] Cập nhật trạng thái task trong `docs/tasks/README.md`; cập nhật `docs/architecture.md`
+      nếu task thêm thành phần kiến trúc mới (layer, repository, bloc mới)
 
-## Không được làm
+## 10. Tuyệt đối không
 
-- Đổi `applicationId` / `namespace` (`com.chauvb.chess`).
-- Sửa luật cờ mà không chạy perft test.
-- Đặt logic luật cờ trong widget.
-- Commit file build, keystore, `local.properties`.
-- Dùng asset không rõ giấy phép.
+- Đổi `applicationId` / `namespace`, sửa `.fvmrc`, sửa `analysis_options.yaml`, sửa `.github/workflows/`
+  (trừ task yêu cầu).
+- Sửa giá trị kỳ vọng của perft test, hoặc xóa/skip test để CI xanh.
+- Đặt logic luật cờ / AI trong widget hoặc bloc (thuộc về `lib/core/`).
+- Commit keystore (`*.jks`, `*.keystore`), `key.properties`, mật khẩu, API key, `local.properties`, file build.
+- Dùng asset không rõ giấy phép, hoặc tạo asset giả thay cho asset owner phải cung cấp.
+- Thêm tính năng không có trong task (analytics, quảng cáo, đăng nhập, mạng…).

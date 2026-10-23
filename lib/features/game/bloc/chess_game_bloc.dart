@@ -1,115 +1,79 @@
-import 'package:audioplayers/audioplayers.dart';
 import 'package:bloc/bloc.dart';
-import 'package:chess/core/audio/chess_sounds.dart';
+import 'package:chess/core/audio/sound_effect.dart';
+import 'package:chess/core/audio/sound_player.dart';
 import 'package:chess/core/engine/chess_rules.dart';
-import 'package:chess/core/engine/chess_utils.dart';
 import 'package:equatable/equatable.dart';
 
 part 'chess_game_event.dart';
 part 'chess_game_state.dart';
 
 class ChessGameBloc extends Bloc<ChessGameEvent, ChessGameState> {
-  late final AudioPlayer player;
+  ChessGameBloc({required SoundPlayer soundPlayer, GamePosition? startPosition})
+    : this._(soundPlayer, startPosition ?? GamePosition.initial());
 
-  ChessGameBloc() : super(const ChessGameState()) {
-    player = AudioPlayer();
-
-    on<ChessGameInit>(_onInit);
-    on<SquareTappedEvent>(_onSquareTapped);
+  ChessGameBloc._(this._sound, this._start)
+    : super(ChessGameState.initial(_start)) {
+    on<NewGameRequested>(_onNewGameRequested);
+    on<SquareTapped>(_onSquareTapped);
   }
 
-  @override
-  Future<void> close() {
-    player.dispose();
+  // Bloc không sở hữu SoundPlayer nên không dispose nó trong close().
+  final SoundPlayer _sound;
+  final GamePosition _start;
 
-    return super.close();
+  void _onNewGameRequested(
+    NewGameRequested event,
+    Emitter<ChessGameState> emit,
+  ) {
+    emit(ChessGameState.initial(_start));
   }
 
-  void _onInit(ChessGameInit event, Emitter<ChessGameState> emit) {
-    final position = GamePosition(
-      board: ChessUtils.readGameState(event.initGameState),
-    );
+  void _onSquareTapped(SquareTapped event, Emitter<ChessGameState> emit) {
+    if (state.isGameOver) return;
 
-    emit(
-      const ChessGameState().copyWith(
-        isLoading: false,
-        currentState: 0,
-        gameStates: {0: position},
-        status: ChessRules.status(position),
-      ),
-    );
-  }
-
-  void _onSquareTapped(SquareTappedEvent event, Emitter<ChessGameState> emit) {
-    if (state.isLoading || state.isGameOver) return;
-
-    final position = state.position;
-    final piece = position.board[event.index];
+    final square = event.index;
+    final piece = state.position.board[square];
     final isOwnPiece =
-        piece.isNotEmpty && ChessRules.isWhite(piece) == position.whiteToMove;
+        piece.isNotEmpty &&
+        ChessRules.isWhite(piece) == state.position.whiteToMove;
 
     if (isOwnPiece) {
-      _selectChess(event.index, emit);
-    } else if (state.selectedChess != null &&
-        state.hintMoves.contains(event.index)) {
-      _moveTo(event.index, emit);
-    } else if (state.selectedChess != null) {
-      player.play(AssetSource(ChessSounds.illegal), volume: 1);
+      _sound.play(SoundEffect.select);
+      if (state.selected == square) {
+        emit(state.withoutSelection());
+      } else {
+        emit(
+          state.withSelection(
+            square,
+            ChessRules.legalMoves(state.position, square),
+          ),
+        );
+      }
+      return;
     }
+
+    final from = state.selected;
+    if (from == null) return;
+
+    if (!state.legalTargets.contains(square)) {
+      _sound.play(SoundEffect.illegal);
+      return;
+    }
+
+    final result = ChessRules.applyMove(state.position, from, square);
+    final next = state.afterMove(result.position, (from: from, to: square));
+    _sound.play(_moveSound(result, next.status));
+    emit(next);
   }
 
-  void _selectChess(int index, Emitter<ChessGameState> emit) {
-    player.play(AssetSource(ChessSounds.click), volume: 0.5);
-
-    if (state.selectedChess == index) {
-      emit(
-        state.copyWith(isClearSelected: true, hintMoves: [], hightLights: []),
-      );
-    } else {
-      emit(
-        state.copyWith(
-          selectedChess: index,
-          hintMoves: ChessRules.legalMoves(state.position, index),
-          hightLights: [index],
-        ),
-      );
-    }
-  }
-
-  void _moveTo(int index, Emitter<ChessGameState> emit) {
-    final from = state.selectedChess!;
-    final result = ChessRules.applyMove(state.position, from, index);
-    final status = ChessRules.status(result.position);
-
-    player.play(AssetSource(_moveSound(result, status)), volume: 1);
-
-    final Map<int, GamePosition> gameHistory = Map.from(state.gameStates);
-    gameHistory.addAll({state.gameStates.length: result.position});
-
-    emit(
-      state.copyWith(
-        currentState: gameHistory.length - 1,
-        gameStates: gameHistory,
-        status: status,
-        hintMoves: [],
-        hightLights: [index, from],
-        isClearSelected: true,
-      ),
-    );
-  }
-
-  String _moveSound(MoveResult result, GameStatus status) {
-    switch (status) {
-      case GameStatus.checkmate:
-      case GameStatus.stalemate:
-        return ChessSounds.gameEnd;
-      case GameStatus.check:
-        return ChessSounds.moveCheck;
-      case GameStatus.playing:
-        if (result.isPromotion) return ChessSounds.promote;
-        if (result.isCastle) return ChessSounds.castle;
-        if (result.isCapture) return ChessSounds.capture;
-        return ChessSounds.moveSelf;
-    }
+  SoundEffect _moveSound(MoveResult result, GameStatus status) {
+    return switch (status) {
+      GameStatus.checkmate || GameStatus.stalemate => SoundEffect.gameEnd,
+      GameStatus.check => SoundEffect.check,
+      GameStatus.playing when result.isPromotion => SoundEffect.promote,
+      GameStatus.playing when result.isCastle => SoundEffect.castle,
+      GameStatus.playing when result.isCapture => SoundEffect.capture,
+      GameStatus.playing => SoundEffect.move,
+    };
   }
 }

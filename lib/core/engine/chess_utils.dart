@@ -1,5 +1,3 @@
-import 'package:chess/core/engine/position_model.dart';
-
 /*
 White
 K: King
@@ -35,14 +33,6 @@ class ChessUtils {
     'n',
     'p',
   ];
-
-  static bool isWhitePawnInit(Position p) {
-    return p.x == 6;
-  }
-
-  static bool isBlackPawnInit(Position p) {
-    return p.x == 1;
-  }
 
   static List<String> readGameState(String state) {
     final List<String> chess = [];
