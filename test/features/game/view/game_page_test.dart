@@ -175,4 +175,36 @@ void main() {
     expect(pieceAt(tester, 'a7'), 'P');
     expect(pieceAt(tester, 'a8'), isNull);
   });
+
+  testWidgets(
+    'displays move list and captured pieces with material advantage',
+    (tester) async {
+      await pumpGame(tester);
+
+      // 1. e4 d5
+      await tapSquare(tester, 'e2');
+      await tapSquare(tester, 'e4');
+      await tapSquare(tester, 'd7');
+      await tapSquare(tester, 'd5');
+
+      expect(find.text('1. e4'), findsOneWidget);
+      expect(find.text('d5'), findsOneWidget);
+
+      // 2. exd5 (White captures black pawn)
+      await tapSquare(tester, 'e4');
+      await tapSquare(tester, 'd5');
+
+      expect(find.text('2. exd5'), findsOneWidget);
+      // White has captured 1 pawn (+1 material advantage for White)
+      expect(find.text('+1'), findsOneWidget);
+
+      // 2... Qxd5 (Black captures white pawn)
+      await tapSquare(tester, 'd8');
+      await tapSquare(tester, 'd5');
+
+      expect(find.text('Qxd5'), findsOneWidget);
+      // Material is now equal (each captured 1 pawn), so +N should not be shown
+      expect(find.text('+1'), findsNothing);
+    },
+  );
 }

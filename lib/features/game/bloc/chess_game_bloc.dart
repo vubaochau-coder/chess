@@ -2,6 +2,8 @@ import 'package:bloc/bloc.dart';
 import 'package:chess/core/audio/sound_effect.dart';
 import 'package:chess/core/audio/sound_player.dart';
 import 'package:chess/core/engine/chess_rules.dart';
+import 'package:chess/core/engine/move.dart';
+import 'package:chess/core/engine/san.dart';
 import 'package:equatable/equatable.dart';
 
 part 'chess_game_event.dart';
@@ -67,8 +69,9 @@ class ChessGameBloc extends Bloc<ChessGameEvent, ChessGameState> {
       return;
     }
 
+    final record = _createRecord(from, square);
     final result = ChessRules.applyMove(state.position, from, square);
-    final next = state.afterMove(result.position, (from: from, to: square));
+    final next = state.afterMove(result.position, record);
     _sound.play(_moveSound(result, next.status));
     emit(next);
   }
@@ -80,13 +83,18 @@ class ChessGameBloc extends Bloc<ChessGameEvent, ChessGameState> {
     final pending = state.pendingPromotion;
     if (pending == null) return;
 
+    final record = _createRecord(
+      pending.from,
+      pending.to,
+      promotion: event.piece,
+    );
     final result = ChessRules.applyMove(
       state.position,
       pending.from,
       pending.to,
       promotion: event.piece,
     );
-    final next = state.afterMove(result.position, pending);
+    final next = state.afterMove(result.position, record);
     _sound.play(_moveSound(result, next.status));
     emit(next);
   }
@@ -97,6 +105,18 @@ class ChessGameBloc extends Bloc<ChessGameEvent, ChessGameState> {
   ) {
     if (state.pendingPromotion == null) return;
     emit(state.withoutPendingPromotion());
+  }
+
+  MoveRecord _createRecord(int from, int to, {String? promotion}) {
+    final before = state.position;
+    final move = Move(from, to, promotion: promotion);
+    final san = San.format(before, move);
+    final type = before.board[from].toLowerCase();
+    final isEnPassant = type == 'p' && to == before.enPassant;
+    final captured = isEnPassant
+        ? before.board[(from ~/ 8) * 8 + (to % 8)]
+        : (before.board[to].isNotEmpty ? before.board[to] : null);
+    return MoveRecord(move: move, san: san, captured: captured);
   }
 
   SoundEffect _moveSound(MoveResult result, GameStatus status) {

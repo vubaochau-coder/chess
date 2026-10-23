@@ -120,6 +120,13 @@ void main() {
         expect(bloc.state.isGameOver, isTrue);
         expect(bloc.state.checkSquare, 60);
         expect(bloc.state.selected, isNull);
+        expect(bloc.state.moves.map((m) => m.san).toList(), [
+          'f3',
+          'e5',
+          'g4',
+          'Qh4#',
+        ]);
+        expect(bloc.state.moves.length, bloc.state.history.length - 1);
         verify(() => sound.play(SoundEffect.gameEnd)).called(1);
       },
     );
