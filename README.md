@@ -1,16 +1,16 @@
-# chess
+# Chess
 
-A new Flutter project.
+Game cờ vua cho Android viết bằng Flutter.
 
-## Getting Started
+- App id: `com.chauvb.chess`
+- Lộ trình: [docs/ROADMAP.md](docs/ROADMAP.md)
+- Hướng dẫn phát triển, quy ước code: [AGENTS.md](AGENTS.md)
 
-This project is a starting point for a Flutter application.
+## Chạy nhanh
 
-A few resources to get you started if this is your first Flutter project:
+```bash
+flutter pub get
+flutter run
+```
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Yêu cầu Flutter 3.47.7 stable và Java 17+.
