@@ -34,7 +34,7 @@ lib/
   main.dart                 # chỉ khởi tạo (ensureInitialized, load repository) rồi runApp
   app.dart                  # ChessApp: RepositoryProvider cho service dùng chung + MaterialApp
   core/
-    engine/                 # chess_rules.dart, chess_utils.dart (FEN bố trí quân)
+    engine/                 # chess_rules.dart, fen.dart, square.dart
     audio/                  # sound_effect.dart, sound_player.dart
     ai/                     # (Giai đoạn 3) SearchBoard, search, ChessAi
     game/                   # (Giai đoạn 3) GameConfig, (Giai đoạn 6) ChessClock

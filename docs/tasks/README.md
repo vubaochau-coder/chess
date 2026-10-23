@@ -42,7 +42,7 @@ Mỗi đặc tả task có các mục:
 
 | Mã | Task | Phụ thuộc | Đầu vào owner | Trạng thái |
 |---|---|---|---|---|
-| T2.1 | FEN đầy đủ (parse/format) | — | — | todo |
+| T2.1 | FEN đầy đủ (parse/format) | — | — | review |
 | T2.2 | Luật hòa: 50 nước, lặp 3 lần, thiếu quân | T2.1 | — | todo |
 | T2.3 | Chọn quân khi phong cấp | — | — | todo |
 | T2.4 | Ký hiệu SAN, danh sách nước đi, quân bị ăn | T2.2, T2.3 | — | todo |
