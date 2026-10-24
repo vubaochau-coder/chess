@@ -218,4 +218,20 @@ void main() {
       expect(resKk.scoreCp, equals(0));
     });
   });
+
+  group('Search: randomMarginCp', () {
+    // Hồi quy: điểm nút gốc từng là cận trên của các nước bị cắt tỉa, khiến
+    // cấu hình có randomMarginCp chọn cả nước rất tệ (Medium bỏ qua hậu treo).
+    test('never picks a move outside the margin (takes a hanging queen)', () {
+      final pos = Fen.parse(
+        'rnb1kbnr/ppp1pppp/8/3q4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 3',
+      );
+      for (var seed = 0; seed < 20; seed++) {
+        final result = search([
+          pos,
+        ], SearchConfig(maxDepth: 4, randomMarginCp: 30, seed: seed));
+        expect(result.bestMove.toUci(), 'e4d5', reason: 'seed $seed');
+      }
+    });
+  });
 }

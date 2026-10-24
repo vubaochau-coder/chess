@@ -13,13 +13,30 @@ khi xử lý nên gói vào một task/phần việc phù hợp (thường là t
 - Trạng thái T2.1–T3.2 trong `docs/tasks/README.md` đã đổi thành `done`.
 - **Chấp nhận:** tham số `startPosition` của `GamePage` (T2.3); `Fen.format` chuẩn hóa thứ tự quyền nhập thành (T2.1);
   `San.format` ném `ArgumentError` khi ô xuất phát trống (T2.4).
-- **Đưa vào task T3.0** (`docs/tasks/phase-3.md`, làm trước T3.3): khóa lặp lại dùng lại `Fen.format`; `Fen.parse`
+- **Đưa vào task T3.0** (`docs/tasks/phase-3.md`, làm trước T3.4): khóa lặp lại dùng lại `Fen.format`; `Fen.parse`
   từ chối chữ số liền nhau + bỏ số magic; Zobrist chỉ tính en passant khi bắt được; `ChessRules.isLegalMove`
   (kiểm tra phong cấp thiếu quân, dùng cho T3.7); `SearchBoard.board` chỉ đọc; bổ sung test dialog phong cấp và undo.
 - **Bỏ qua:** các nit phong cách/hiệu năng biên còn lại (đánh dấu từng mục bên dưới).
 - **Quy trình:** chỉ merge sau khi review xong; agent không tạo nhánh chồng lên task chưa merge
   (đã bổ sung vào `docs/tasks/README.md`).
 - **Còn mở cho owner:** chạy thử trên Android các UI mới của T2.3, T2.4, T2.5.
+
+---
+
+## T3.3 — Mức độ khó + service `ChessAi` chạy Isolate (review 2026-10-24)
+
+**Kết luận:** Code T3.3 đúng đặc tả. PR làm lộ **lỗi của T3.2**: kết quả `ai_match` ban đầu Medium thua Easy 0–1–9.
+Đã sửa trong chính PR #10 trước khi merge.
+
+### Cần quyết định / xử lý
+
+- [x] **[Lỗi T3.2, sửa trong PR #10]** Nút gốc search dùng cửa sổ alpha-beta đã nâng `alpha`: các nước bị cắt tỉa chỉ
+      trả cận trên (quiescence trả đúng bằng biên) → `_selectFinalMove` coi các nước tệ là "trong biên `randomMarginCp`".
+      Xác thực: thế có hậu đen treo, cấu hình Medium (tắt blunder) chỉ ăn hậu 1/30 seed.
+      Sửa: nút gốc gọi search con với cận dưới `alpha - randomMarginCp - 1`. Sau sửa: 30/30; test hồi quy
+      `Search: randomMarginCp` fail khi bỏ bản sửa.
+- [x] PR đổi `_quiescence` sang fail-soft — ngoài phạm vi T3.3 nhưng đúng và đã ghi trong mô tả PR.
+      *(Chấp nhận — quyết định owner 2026-10-24)*
 
 ---
 

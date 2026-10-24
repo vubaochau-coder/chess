@@ -256,7 +256,11 @@ SearchResult search(List<GamePosition> history, SearchConfig config) {
       board.makeMove(m);
       ctx.nodes++;
 
-      final score = -_negamax(ctx, depth - 1, -beta, -alpha, 1);
+      // Các nước bị cắt tỉa chỉ trả về cận trên (quiescence trả đúng bằng biên),
+      // nên hạ cận dưới thêm randomMarginCp + 1 để mọi nước trong biên chọn
+      // ngẫu nhiên của _selectFinalMove có điểm chính xác.
+      final windowAlpha = alpha - config.randomMarginCp - 1;
+      final score = -_negamax(ctx, depth - 1, -beta, -windowAlpha, 1);
       board.unmakeMove();
 
       if (ctx.stopSearch && depth > 1) {
