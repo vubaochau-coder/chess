@@ -256,7 +256,11 @@ SearchResult search(List<GamePosition> history, SearchConfig config) {
       board.makeMove(m);
       ctx.nodes++;
 
-      final score = -_negamax(ctx, depth - 1, -beta, -alpha, 1);
+      // Các nước bị cắt tỉa chỉ trả về cận trên (quiescence trả đúng bằng biên),
+      // nên hạ cận dưới thêm randomMarginCp + 1 để mọi nước trong biên chọn
+      // ngẫu nhiên của _selectFinalMove có điểm chính xác.
+      final windowAlpha = alpha - config.randomMarginCp - 1;
+      final score = -_negamax(ctx, depth - 1, -beta, -windowAlpha, 1);
       board.unmakeMove();
 
       if (ctx.stopSearch && depth > 1) {
@@ -445,13 +449,13 @@ int _quiescence(_SearchContext ctx, int alpha, int beta, int ply) {
   }
   if (ctx.stopSearch) return 0;
 
-  final standPat = Evaluation.evaluate(ctx.board);
-  if (standPat >= beta) return beta;
-  if (standPat > alpha) alpha = standPat;
+  var bestValue = Evaluation.evaluate(ctx.board);
+  if (bestValue >= beta) return beta;
+  if (bestValue > alpha) alpha = bestValue;
 
   final captures = <int>[];
   ctx.board.generateCaptures(captures);
-  if (captures.isEmpty) return alpha;
+  if (captures.isEmpty) return bestValue;
 
   ctx.sortMoves(captures, 0, ply);
 
@@ -465,9 +469,12 @@ int _quiescence(_SearchContext ctx, int alpha, int beta, int ply) {
 
     if (ctx.stopSearch) return 0;
 
-    if (score >= beta) return beta;
-    if (score > alpha) alpha = score;
+    if (score > bestValue) {
+      bestValue = score;
+    }
+    if (bestValue >= beta) return beta;
+    if (bestValue > alpha) alpha = bestValue;
   }
 
-  return alpha;
+  return bestValue;
 }

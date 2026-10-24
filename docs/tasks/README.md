@@ -58,8 +58,8 @@ Mỗi đặc tả task có các mục:
 | T3.0 | Dọn dẹp sau review (engine, SearchBoard, test) | T3.2 | — | todo |
 | T3.1 | Bàn cờ nội bộ tốc độ cao cho AI | T2.2 | — | done |
 | T3.2 | Thuật toán tìm nước đi | T3.1 | — | done |
-| T3.3 | Mức độ khó + service `ChessAi` chạy Isolate | T3.0, T3.2 | — | todo |
-| T3.4 | Tích hợp AI vào game bloc | T3.3, T2.5 | — | todo |
+| T3.3 | Mức độ khó + service `ChessAi` chạy Isolate | T3.2 | — | review |
+| T3.4 | Tích hợp AI vào game bloc | T3.0, T3.3, T2.5 | — | todo |
 | T3.5 | Màn hình chính chọn chế độ | T3.4 | — | todo |
 | T3.6 | Đầu hàng | T3.4 | — | todo |
 | T3.7 | Lưu và tiếp tục ván đang chơi | T3.5, T3.6 | — | todo |
