@@ -9,12 +9,14 @@ class HighlightPainter extends CustomPainter {
     required this.highlighted,
     required this.targets,
     required this.checkSquare,
+    this.flipped = false,
   });
 
   /// Ô được tô vàng (quân đang chọn, ô đi và ô đến của nước vừa đi).
   final List<int> highlighted;
   final List<int> targets;
   final int? checkSquare;
+  final bool flipped;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -22,8 +24,12 @@ class HighlightPainter extends CustomPainter {
     final lightSelected = Paint()..color = ChessColors.lightSquareSelected;
     final darkSelected = Paint()..color = ChessColors.darkSquareSelected;
 
-    Rect rectOf(int square) =>
-        Rect.fromLTWH(square % 8 * cell, square ~/ 8 * cell, cell, cell);
+    int displaySquare(int sq) => flipped ? (63 - sq) : sq;
+
+    Rect rectOf(int square) {
+      final ds = displaySquare(square);
+      return Rect.fromLTWH(ds % 8 * cell, ds ~/ 8 * cell, cell, cell);
+    }
 
     for (final square in highlighted) {
       final isDark = (square ~/ 8 + square % 8).isOdd;
@@ -44,6 +50,7 @@ class HighlightPainter extends CustomPainter {
   bool shouldRepaint(HighlightPainter oldDelegate) {
     return !listEquals(highlighted, oldDelegate.highlighted) ||
         !listEquals(targets, oldDelegate.targets) ||
-        checkSquare != oldDelegate.checkSquare;
+        checkSquare != oldDelegate.checkSquare ||
+        flipped != oldDelegate.flipped;
   }
 }

@@ -49,3 +49,14 @@ final class PromotionCancelled extends ChessGameEvent {
 final class UndoRequested extends ChessGameEvent {
   const UndoRequested();
 }
+
+/// Yêu cầu AI tính nước đi cho ván [gameId] ở độ sâu [ply].
+final class _AiMoveRequested extends ChessGameEvent {
+  const _AiMoveRequested({required this.gameId, required this.ply});
+
+  final int gameId;
+  final int ply;
+
+  @override
+  List<Object?> get props => [gameId, ply];
+}

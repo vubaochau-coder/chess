@@ -15,6 +15,9 @@ final class MoveRecord extends Equatable {
 
 final class ChessGameState extends Equatable {
   const ChessGameState({
+    required this.config,
+    required this.gameId,
+    required this.isAiThinking,
     required this.history,
     required this.status,
     this.moves = const [],
@@ -24,14 +27,27 @@ final class ChessGameState extends Equatable {
     this.pendingPromotion,
   });
 
-  factory ChessGameState.initial(GamePosition start) {
+  factory ChessGameState.initial(
+    GamePosition start, {
+    required GameConfig config,
+    int gameId = 0,
+  }) {
     return ChessGameState(
+      config: config,
+      gameId: gameId,
+      isAiThinking: false,
       history: [start],
       moves: const [],
       status: ChessRules.gameStatus([start]),
       checkSquare: _checkSquareOf(start),
     );
   }
+
+  final GameConfig config;
+
+  final int gameId;
+
+  final bool isAiThinking;
 
   /// Các thế cờ từ đầu ván; phần tử cuối là thế cờ hiện tại. Không sửa tại
   /// chỗ — mỗi nước đi tạo list mới.
@@ -63,6 +79,26 @@ final class ChessGameState extends Equatable {
 
   bool get isGameOver => status.isGameOver;
 
+  /// Kiểm tra có phải lượt của người chơi hay không.
+  bool get isHumanTurn {
+    if (config.mode == GameMode.pvp) return true;
+    final isWhiteTurn = position.whiteToMove;
+    return config.humanColor == PieceColor.white ? isWhiteTurn : !isWhiteTurn;
+  }
+
+  /// Kiểm tra nút Undo có được bật hay không.
+  bool get canUndo {
+    if (config.mode == GameMode.pvp) {
+      return history.length > 1;
+    }
+    // pve: phải có ít nhất 1 nước của người trong lịch sử nước đi.
+    final isWhiteHuman = config.humanColor == PieceColor.white;
+    for (var i = 0; i < moves.length; i++) {
+      if (i.isEven == isWhiteHuman) return true;
+    }
+    return false;
+  }
+
   static int? _checkSquareOf(GamePosition position) {
     if (!ChessRules.isInCheck(position.board, position.whiteToMove)) {
       return null;
@@ -75,6 +111,9 @@ final class ChessGameState extends Equatable {
     final nextHistory = [...history, next];
     final nextMoves = [...moves, record];
     return ChessGameState(
+      config: config,
+      gameId: gameId,
+      isAiThinking: false,
       history: nextHistory,
       moves: nextMoves,
       status: ChessRules.gameStatus(nextHistory),
@@ -82,12 +121,39 @@ final class ChessGameState extends Equatable {
     );
   }
 
-  /// Trạng thái sau khi quay lại 1 nước đi.
+  /// Trạng thái sau khi quay lại nước đi.
   ChessGameState undo() {
-    if (history.length <= 1) return this;
-    final nextHistory = history.sublist(0, history.length - 1);
-    final nextMoves = moves.sublist(0, moves.length - 1);
+    if (!canUndo) return this;
+    if (config.mode == GameMode.pvp) {
+      final nextHistory = history.sublist(0, history.length - 1);
+      final nextMoves = moves.sublist(0, moves.length - 1);
+      return ChessGameState(
+        config: config,
+        gameId: gameId,
+        isAiThinking: false,
+        history: nextHistory,
+        moves: nextMoves,
+        status: ChessRules.gameStatus(nextHistory),
+        checkSquare: _checkSquareOf(nextHistory.last),
+      );
+    }
+
+    // pve: quay lại tới lượt người gần nhất có nước người đã đi
+    var lastHumanMoveIndex = -1;
+    final isWhiteHuman = config.humanColor == PieceColor.white;
+    for (var i = moves.length - 1; i >= 0; i--) {
+      if (i.isEven == isWhiteHuman) {
+        lastHumanMoveIndex = i;
+        break;
+      }
+    }
+    if (lastHumanMoveIndex == -1) return this;
+    final nextHistory = history.sublist(0, lastHumanMoveIndex + 1);
+    final nextMoves = moves.sublist(0, lastHumanMoveIndex);
     return ChessGameState(
+      config: config,
+      gameId: gameId,
+      isAiThinking: false,
       history: nextHistory,
       moves: nextMoves,
       status: ChessRules.gameStatus(nextHistory),
@@ -97,6 +163,9 @@ final class ChessGameState extends Equatable {
 
   ChessGameState withSelection(int square, List<int> targets) {
     return ChessGameState(
+      config: config,
+      gameId: gameId,
+      isAiThinking: isAiThinking,
       history: history,
       moves: moves,
       status: status,
@@ -108,6 +177,9 @@ final class ChessGameState extends Equatable {
 
   ChessGameState withoutSelection() {
     return ChessGameState(
+      config: config,
+      gameId: gameId,
+      isAiThinking: isAiThinking,
       history: history,
       moves: moves,
       status: status,
@@ -117,6 +189,9 @@ final class ChessGameState extends Equatable {
 
   ChessGameState withPendingPromotion(LastMove move) {
     return ChessGameState(
+      config: config,
+      gameId: gameId,
+      isAiThinking: isAiThinking,
       history: history,
       moves: moves,
       status: status,
@@ -129,6 +204,9 @@ final class ChessGameState extends Equatable {
 
   ChessGameState withoutPendingPromotion() {
     return ChessGameState(
+      config: config,
+      gameId: gameId,
+      isAiThinking: isAiThinking,
       history: history,
       moves: moves,
       status: status,
@@ -136,8 +214,37 @@ final class ChessGameState extends Equatable {
     );
   }
 
+  ChessGameState copyWith({
+    GameConfig? config,
+    int? gameId,
+    bool? isAiThinking,
+    List<GamePosition>? history,
+    List<MoveRecord>? moves,
+    GameStatus? status,
+    int? selected,
+    List<int>? legalTargets,
+    int? checkSquare,
+    LastMove? pendingPromotion,
+  }) {
+    return ChessGameState(
+      config: config ?? this.config,
+      gameId: gameId ?? this.gameId,
+      isAiThinking: isAiThinking ?? this.isAiThinking,
+      history: history ?? this.history,
+      moves: moves ?? this.moves,
+      status: status ?? this.status,
+      selected: selected ?? this.selected,
+      legalTargets: legalTargets ?? this.legalTargets,
+      checkSquare: checkSquare ?? this.checkSquare,
+      pendingPromotion: pendingPromotion ?? this.pendingPromotion,
+    );
+  }
+
   @override
   List<Object?> get props => [
+    config,
+    gameId,
+    isAiThinking,
     history,
     moves,
     status,

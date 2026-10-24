@@ -2,6 +2,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:chess/core/audio/sound_effect.dart';
 import 'package:chess/core/engine/chess_rules.dart';
 import 'package:chess/core/engine/fen.dart';
+import 'package:chess/core/game/game_config.dart';
 import 'package:chess/features/game/bloc/chess_game_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -14,14 +15,24 @@ const d8 = 3, h4 = 39;
 
 void main() {
   late MockSoundPlayer sound;
+  late MockChessAi ai;
 
   setUpAll(registerFallbacks);
 
   setUp(() {
     sound = MockSoundPlayer();
+    ai = MockChessAi();
   });
 
-  ChessGameBloc buildBloc() => ChessGameBloc(soundPlayer: sound);
+  ChessGameBloc buildBloc({
+    GameConfig config = const GameConfig.pvp(),
+    GamePosition? startPosition,
+  }) => ChessGameBloc(
+    soundPlayer: sound,
+    ai: ai,
+    config: config,
+    startPosition: startPosition,
+  );
 
   test('starts at the initial position with white to move', () {
     final bloc = buildBloc();
@@ -199,10 +210,8 @@ void main() {
 
     blocTest<ChessGameBloc, ChessGameState>(
       'stepping pawn to last rank triggers pendingPromotion and keeps board unchanged',
-      build: () => ChessGameBloc(
-        soundPlayer: sound,
-        startPosition: Fen.parse('8/P6k/8/8/8/8/8/K7 w - - 0 1'),
-      ),
+      build: () =>
+          buildBloc(startPosition: Fen.parse('8/P6k/8/8/8/8/8/K7 w - - 0 1')),
       act: (bloc) => bloc
         ..add(const SquareTapped(a7))
         ..add(const SquareTapped(a8)),
@@ -218,10 +227,8 @@ void main() {
 
     blocTest<ChessGameBloc, ChessGameState>(
       'tapping squares while pendingPromotion is active is ignored',
-      build: () => ChessGameBloc(
-        soundPlayer: sound,
-        startPosition: Fen.parse('8/P6k/8/8/8/8/8/K7 w - - 0 1'),
-      ),
+      build: () =>
+          buildBloc(startPosition: Fen.parse('8/P6k/8/8/8/8/8/K7 w - - 0 1')),
       act: (bloc) => bloc
         ..add(const SquareTapped(a7))
         ..add(const SquareTapped(a8))
@@ -234,10 +241,8 @@ void main() {
 
     blocTest<ChessGameBloc, ChessGameState>(
       'PromotionCancelled clears pendingPromotion and selected without moving',
-      build: () => ChessGameBloc(
-        soundPlayer: sound,
-        startPosition: Fen.parse('8/P6k/8/8/8/8/8/K7 w - - 0 1'),
-      ),
+      build: () =>
+          buildBloc(startPosition: Fen.parse('8/P6k/8/8/8/8/8/K7 w - - 0 1')),
       act: (bloc) => bloc
         ..add(const SquareTapped(a7))
         ..add(const SquareTapped(a8))
@@ -258,8 +263,7 @@ void main() {
     ]) {
       blocTest<ChessGameBloc, ChessGameState>(
         'white pawn promotes to $expected',
-        build: () => ChessGameBloc(
-          soundPlayer: sound,
+        build: () => buildBloc(
           startPosition: Fen.parse('8/P6k/8/7p/8/8/8/K7 w - - 0 1'),
         ),
         act: (bloc) => bloc
@@ -284,8 +288,7 @@ void main() {
     ]) {
       blocTest<ChessGameBloc, ChessGameState>(
         'black pawn promotes to $expected',
-        build: () => ChessGameBloc(
-          soundPlayer: sound,
+        build: () => buildBloc(
           startPosition: Fen.parse('7k/8/8/8/7P/8/p6K/8 b - - 0 1'),
         ),
         act: (bloc) => bloc
@@ -304,8 +307,7 @@ void main() {
 
     blocTest<ChessGameBloc, ChessGameState>(
       'promotion with capture and check',
-      build: () => ChessGameBloc(
-        soundPlayer: sound,
+      build: () => buildBloc(
         startPosition: Fen.parse('1r1k4/P7/8/8/8/8/8/K7 w - - 0 1'),
       ),
       act: (bloc) => bloc
@@ -357,8 +359,7 @@ void main() {
 
     blocTest<ChessGameBloc, ChessGameState>(
       'undo after castling restores king, rook and castling rights',
-      build: () => ChessGameBloc(
-        soundPlayer: sound,
+      build: () => buildBloc(
         startPosition: Fen.parse(
           'r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/2NP1N2/PPP2PPP/R1BQK2R w KQkq - 1 6',
         ),
@@ -381,10 +382,8 @@ void main() {
 
     blocTest<ChessGameBloc, ChessGameState>(
       'undo after promotion restores pawn on 7th rank and clears pendingPromotion',
-      build: () => ChessGameBloc(
-        soundPlayer: sound,
-        startPosition: Fen.parse('8/P6k/8/7p/8/8/8/K7 w - - 0 1'),
-      ),
+      build: () =>
+          buildBloc(startPosition: Fen.parse('8/P6k/8/7p/8/8/8/K7 w - - 0 1')),
       act: (bloc) => bloc
         ..add(const SquareTapped(a7))
         ..add(const SquareTapped(a8))
@@ -446,10 +445,8 @@ void main() {
 
     blocTest<ChessGameBloc, ChessGameState>(
       'undo while pending promotion clears pendingPromotion, selected, and legalTargets',
-      build: () => ChessGameBloc(
-        soundPlayer: sound,
-        startPosition: Fen.parse('8/P6k/8/7p/8/8/8/K7 w - - 0 1'),
-      ),
+      build: () =>
+          buildBloc(startPosition: Fen.parse('8/P6k/8/7p/8/8/8/K7 w - - 0 1')),
       act: (bloc) => bloc
         ..add(const SquareTapped(56)) // a1
         ..add(const SquareTapped(48)) // a2

@@ -1,5 +1,7 @@
+import 'package:chess/core/ai/chess_ai.dart';
 import 'package:chess/core/audio/sound_player.dart';
 import 'package:chess/core/engine/chess_rules.dart';
+import 'package:chess/core/game/game_config.dart';
 import 'package:chess/features/game/bloc/chess_game_bloc.dart';
 import 'package:chess/features/game/widgets/captured_pieces.dart';
 import 'package:chess/features/game/widgets/chess_board.dart';
@@ -12,8 +14,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 /// Tạo [ChessGameBloc] cho màn chơi. Phần giao diện nằm ở [GameView] để test
 /// widget có thể cấp bloc giả.
 class GamePage extends StatelessWidget {
-  const GamePage({super.key, this.startPosition});
+  const GamePage({super.key, required this.config, this.startPosition});
 
+  final GameConfig config;
   final GamePosition? startPosition;
 
   @override
@@ -21,6 +24,8 @@ class GamePage extends StatelessWidget {
     return BlocProvider(
       create: (context) => ChessGameBloc(
         soundPlayer: context.read<SoundPlayer>(),
+        ai: context.read<ChessAi>(),
+        config: config,
         startPosition: startPosition,
       ),
       child: const GameView(),
@@ -70,7 +75,7 @@ class GameView extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   BlocSelector<ChessGameBloc, ChessGameState, bool>(
-                    selector: (state) => state.history.length > 1,
+                    selector: (state) => state.canUndo,
                     builder: (context, canUndo) {
                       return IconButton(
                         icon: const Icon(Icons.undo),
@@ -88,7 +93,14 @@ class GameView extends StatelessWidget {
               const SizedBox(height: 8),
               const CapturedPieces(color: PieceColor.white),
               const SizedBox(height: 4),
-              const Flexible(child: ChessBoard()),
+              Flexible(
+                child: BlocSelector<ChessGameBloc, ChessGameState, bool>(
+                  selector: (state) =>
+                      state.config.mode == GameMode.pve &&
+                      state.config.humanColor == PieceColor.black,
+                  builder: (context, flipped) => ChessBoard(flipped: flipped),
+                ),
+              ),
               const SizedBox(height: 4),
               const CapturedPieces(color: PieceColor.black),
             ],

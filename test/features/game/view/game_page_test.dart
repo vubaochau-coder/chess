@@ -1,6 +1,11 @@
+import 'dart:async';
+
+import 'package:chess/core/ai/chess_ai.dart';
 import 'package:chess/core/audio/sound_player.dart';
 import 'package:chess/core/engine/chess_rules.dart';
 import 'package:chess/core/engine/fen.dart';
+import 'package:chess/core/engine/move.dart';
+import 'package:chess/core/game/game_config.dart';
 import 'package:chess/features/game/view/game_page.dart';
 import 'package:chess/features/game/widgets/chess_board.dart';
 import 'package:chess/features/game/widgets/piece_view.dart';
@@ -8,6 +13,7 @@ import 'package:chess/features/game/widgets/promotion_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
 import '../../../helpers/mocks.dart';
 
@@ -17,15 +23,25 @@ void main() {
   Future<void> pumpGame(
     WidgetTester tester, {
     GamePosition? startPosition,
+    GameConfig? config,
+    ChessAi? ai,
   }) async {
     tester.view.physicalSize = const Size(800, 1200);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
     await tester.pumpWidget(
-      RepositoryProvider<SoundPlayer>.value(
-        value: MockSoundPlayer(),
-        child: MaterialApp(home: GamePage(startPosition: startPosition)),
+      MultiRepositoryProvider(
+        providers: [
+          RepositoryProvider<SoundPlayer>.value(value: MockSoundPlayer()),
+          RepositoryProvider<ChessAi>.value(value: ai ?? MockChessAi()),
+        ],
+        child: MaterialApp(
+          home: GamePage(
+            config: config ?? const GameConfig.pvp(),
+            startPosition: startPosition,
+          ),
+        ),
       ),
     );
   }
@@ -245,6 +261,52 @@ void main() {
       expect(pieceAt(tester, 'e4'), isNull);
       expect(tester.widget<IconButton>(undoButton).onPressed, isNull);
       expect(find.text('Lượt đi: Trắng'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'PvE when human plays Black flips board (white pieces at top) and shows AI thinking indicator',
+    (tester) async {
+      final aiCompleter = Completer<Move>();
+      final mockAi = MockChessAi();
+      when(() => mockAi.chooseMove(any(), any()))
+          .thenAnswer((_) => aiCompleter.future);
+
+      await pumpGame(
+        tester,
+        config: const GameConfig(
+          mode: GameMode.pve,
+          humanColor: PieceColor.black,
+        ),
+        ai: mockAi,
+      );
+      await tester.pump();
+
+      // Máy đi trước -> hiển thị Máy đang nghĩ... kèm spinner 16
+      expect(find.text('Máy đang nghĩ…'), findsOneWidget);
+      final spinner = find.byType(CircularProgressIndicator);
+      expect(spinner, findsOneWidget);
+      final spinnerBox = tester.widget<SizedBox>(
+        find.ancestor(of: spinner, matching: find.byType(SizedBox)).first,
+      );
+      expect(spinnerBox.width, 16);
+      expect(spinnerBox.height, 16);
+
+      // Bàn cờ lật: quân trắng nằm ở phía trên (y nhỏ hơn quân đen)
+      final whiteKingPos = tester.getCenter(
+        find.byWidgetPredicate((w) => w is PieceView && w.piece == 'K'),
+      );
+      final blackKingPos = tester.getCenter(
+        find.byWidgetPredicate((w) => w is PieceView && w.piece == 'k'),
+      );
+      expect(whiteKingPos.dy, lessThan(blackKingPos.dy));
+
+      // Máy hoàn thành nước đi
+      aiCompleter.complete(const Move(52, 36)); // e2e4
+      await tester.pump();
+
+      expect(find.text('Máy đang nghĩ…'), findsNothing);
+      expect(find.text('Lượt đi: Đen'), findsOneWidget);
     },
   );
 }

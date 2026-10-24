@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:chess/core/ai/chess_ai.dart';
 import 'package:chess/core/audio/sound_player.dart';
+import 'package:chess/core/game/game_config.dart';
 import 'package:chess/features/game/view/game_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -26,7 +27,7 @@ class ChessApp extends StatelessWidget {
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         ),
-        home: const GamePage(),
+        home: const GamePage(config: GameConfig.pvp()),
       ),
     );
   }
