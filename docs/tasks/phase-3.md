@@ -10,6 +10,51 @@ Quy ước chung:
 
 ---
 
+## T3.0 — Dọn dẹp sau review (engine, SearchBoard, test)
+
+**Mục tiêu:** xử lý các ghi chú review đã được owner chọn trong `docs/review-notes.md` (quyết định 2026-10-24),
+trước khi AI được nối vào game. Không thêm tính năng.
+
+**Thiết kế bắt buộc**
+1. **Khóa lặp lại dùng lại `Fen.format`** — `ChessRules.positionRepetitionKey(GamePosition)` giữ nguyên chữ ký và
+   hành vi, nhưng tạo khóa từ 4 trường đầu của `Fen.format(pos)`, trong đó trường en passant thay bằng `-` khi bên
+   đang đi không có nước bắt tốt qua đường hợp lệ. Xóa phần code serialize bàn cờ/nhập thành bị chép lại.
+2. **`Fen.parse` chặt hơn** — hai chữ số liền nhau trong phần bố trí quân (vd. `44`, `17`) → `FormatException`.
+   Thay số magic `49`/`56` bằng hằng có tên (vd. `'1'.codeUnitAt(0)`).
+3. **Khóa Zobrist của `SearchBoard` chỉ tính en passant khi có thể bắt** — chỉ XOR khóa en passant khi bên đang đi
+   có tốt đứng ở ô kề (cùng hàng, cột ±1) với tốt vừa đi 2 ô. Áp dụng nhất quán ở `computeZobristKey`,
+   `fromPosition`, `makeMove`, `unmakeMove`. Không đổi `_enPassantCol` và sinh nước đi (chỉ đổi khóa).
+   Mục đích: phát hiện lặp lại trong search khớp ngữ nghĩa với engine.
+4. **`ChessRules.isLegalMove(GamePosition position, Move move)`** — `true` khi và chỉ khi `move.to` thuộc
+   `legalMoves(position, move.from)` **và** `move.promotion != null` đúng khi `isPromotionMove(...)`
+   (nước phong cấp thiếu quân hoặc nước thường có quân phong cấp → `false`). Dùng cho T3.7.
+   `Move.fromUci` giữ nguyên (không có thế cờ nên không kiểm tra được).
+5. **`SearchBoard.board`** trả `_board.asUnmodifiableView()` thay vì mảng nội bộ.
+6. **Bổ sung test còn thiếu**: dialog phong cấp hiển thị đúng 4 `PieceView`; undo khi đang chọn quân; undo khi
+   đang chờ phong cấp (đều xóa `selected`, `legalTargets`, `pendingPromotion`).
+
+**Ngoài phạm vi:** các ghi chú được đánh dấu "bỏ qua" trong `docs/review-notes.md`; `MoveList` cuộn mượt
+(Giai đoạn 5); đổi thuật toán search, bảng tham số, đánh giá thế cờ; mọi thay đổi UI.
+
+**File được sửa:** `lib/core/engine/chess_rules.dart`, `lib/core/engine/fen.dart`, `lib/core/ai/search_board.dart`,
+`test/**`, `docs/review-notes.md` (chỉ đánh dấu các mục T3.0 đã xử lý).
+
+**Package được phép:** không.
+
+**Tiêu chí nghiệm thu**
+- [ ] Toàn bộ test hiện có (perft engine, perft `SearchBoard`, draw rules, search) vẫn xanh, không sửa giá trị kỳ vọng.
+- [ ] `positionRepetitionKey` không còn code serialize riêng; test: 2 thế chỉ khác ô en passant không bắt được
+      có cùng khóa, khác ô en passant bắt được thì khác khóa.
+- [ ] Test `Fen.parse` ném `FormatException` với `44`, `17`, `116` trong một hàng.
+- [ ] Test Zobrist: thế sau `1.e4` (không có tốt đen ở d4/f4) có cùng `zobristKey` với cùng bố trí nhưng en passant
+      `-`; thế có tốt đen ở d4 sau `1.e4` thì khác. Kiểm tra khóa tăng dần == khóa tính lại tại mọi node perft
+      kiwipete độ sâu 3 vẫn đạt.
+- [ ] Test `isLegalMove`: nước hợp lệ, nước không hợp lệ, phong cấp thiếu quân, nước thường kèm quân phong cấp.
+- [ ] Test ghi vào `SearchBoard.board` ném `UnsupportedError`.
+- [ ] 3 test bổ sung ở mục 6.
+
+---
+
 ## T3.1 — Bàn cờ nội bộ tốc độ cao cho AI
 
 **Mục tiêu:** biểu diễn bàn cờ có thể đi/hoàn tác nước tại chỗ, đủ nhanh cho tìm kiếm.
@@ -249,7 +294,8 @@ Engine công khai (`ChessRules`, `GamePosition`) **giữ nguyên**, UI vẫn dù
   }
   final class SharedPrefsGameRepository implements GameRepository { // dùng SharedPreferencesWithCache, key 'saved_game_v1'
   ```
-  `load` phải **chơi lại toàn bộ nước đi** qua engine từ `startFen`; gặp nước không hợp lệ → coi như không có ván lưu.
+  `load` phải **chơi lại toàn bộ nước đi** qua engine từ `startFen`, kiểm tra từng nước bằng
+  `ChessRules.isLegalMove` (T3.0); gặp nước không hợp lệ → coi như không có ván lưu.
 - `main()`: `WidgetsFlutterBinding.ensureInitialized()`, tạo `SharedPreferencesWithCache` (allowList chỉ gồm key trên),
   truyền `SharedPrefsGameRepository` vào `ChessApp(gameRepository: ...)`, đăng ký bằng `RepositoryProvider<GameRepository>`.
 - Bloc nhận `GameRepository` (inject) và `SavedGame? restore`. Sau mỗi nước đi (người hoặc máy), undo, ván mới:
