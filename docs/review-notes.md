@@ -1,223 +1,90 @@
 # Ghi chú review
 
-Tổng hợp các ghi chú, nit và việc cần chỉnh (không chặn merge) từ các lần review task.
-Mỗi task có một mục; các ghi chú đã xử lý được đánh dấu `[x]`.
+Nơi tổng hợp ghi chú review **không chặn merge**. Agent không tự xử lý các ghi chú ở đây trừ khi chúng
+đã được đưa vào một task. Quy tắc review: [`docs/tasks/README.md`](tasks/README.md#quy-tắc-review).
 
-Ghi chú không nằm trong phạm vi của task — owner quyết định xử lý hoặc bỏ qua,
-khi xử lý nên gói vào một task/phần việc phù hợp (thường là task tiếp theo hoặc task dọn dẹp riêng).
+Cách dùng file này:
 
----
+- **Còn mở** — mỗi mục một dòng: việc gì, task liên quan, ai xử lý. Đây là phần duy nhất cần đọc thường xuyên.
+- **Kiểm tra trên thiết bị** — các UI cần owner chạy thử trên Android, gộp làm một lần trước mỗi mốc phát hành.
+- **Lịch sử** — mỗi task đã review còn 1–3 dòng kết luận và quyết định. Chi tiết nằm trong PR tương ứng.
 
-## Quyết định owner (2026-10-24)
+Mẫu ghi một lần review mới (thêm lên đầu phần *Lịch sử*, ghi chú chưa xử lý thì đưa lên *Còn mở*):
 
-- Trạng thái T2.1–T3.2 trong `docs/tasks/README.md` đã đổi thành `done`.
-- **Chấp nhận:** tham số `startPosition` của `GamePage` (T2.3); `Fen.format` chuẩn hóa thứ tự quyền nhập thành (T2.1);
-  `San.format` ném `ArgumentError` khi ô xuất phát trống (T2.4).
-- **Đưa vào task T3.0** (`docs/tasks/phase-3.md`, làm trước T3.4): khóa lặp lại dùng lại `Fen.format`; `Fen.parse`
-  từ chối chữ số liền nhau + bỏ số magic; Zobrist chỉ tính en passant khi bắt được; `ChessRules.isLegalMove`
-  (kiểm tra phong cấp thiếu quân, dùng cho T3.7); `SearchBoard.board` chỉ đọc; bổ sung test dialog phong cấp và undo.
-- **Bỏ qua:** các nit phong cách/hiệu năng biên còn lại (đánh dấu từng mục bên dưới).
-- **Quy trình:** chỉ merge sau khi review xong; agent không tạo nhánh chồng lên task chưa merge
-  (đã bổ sung vào `docs/tasks/README.md`).
-- **Còn mở cho owner:** chạy thử trên Android các UI mới của T2.3, T2.4, T2.5.
+```markdown
+### T<x.y> — <tên task> (PR #<n>, review YYYY-MM-DD)
+Kết luận: Đạt / Cần sửa trước khi merge. Xác thực: <đã chạy gì, kết quả chính>.
+Quyết định: <chấp nhận / đưa vào task / bỏ qua> — <mục>.
+```
 
 ---
 
-## T3.3 — Mức độ khó + service `ChessAi` chạy Isolate (review 2026-10-24)
+## Còn mở
 
-**Kết luận:** Code T3.3 đúng đặc tả. PR làm lộ **lỗi của T3.2**: kết quả `ai_match` ban đầu Medium thua Easy 0–1–9.
-Đã sửa trong chính PR #10 trước khi merge.
+| Việc | Liên quan | Ai |
+|---|---|---|
+| Khi cân chỉnh độ khó AI: `tool/ai_match.dart` nên nhận `seed` để so sánh có kiểm soát (Medium/Easy hiện không seed nên ván không tái hiện được) | T3.3 · chưa gắn task | owner tạo task khi cần |
+| Các mục đã đưa vào T3.0 (khóa lặp lại dùng `Fen.format`, `Fen.parse` chặt, Zobrist en passant, `isLegalMove`, `SearchBoard.board` chỉ đọc, test phong cấp/undo) | T3.0 | agent |
 
-### Cần quyết định / xử lý
+## Kiểm tra trên thiết bị (owner, trước mốc v0.5)
 
-- [x] **[Lỗi T3.2, sửa trong PR #10]** Nút gốc search dùng cửa sổ alpha-beta đã nâng `alpha`: các nước bị cắt tỉa chỉ
-      trả cận trên (quiescence trả đúng bằng biên) → `_selectFinalMove` coi các nước tệ là "trong biên `randomMarginCp`".
-      Xác thực: thế có hậu đen treo, cấu hình Medium (tắt blunder) chỉ ăn hậu 1/30 seed.
-      Sửa: nút gốc gọi search con với cận dưới `alpha - randomMarginCp - 1`. Sau sửa: 30/30; test hồi quy
-      `Search: randomMarginCp` fail khi bỏ bản sửa.
-- [x] PR đổi `_quiescence` sang fail-soft — ngoài phạm vi T3.3 nhưng đúng và đã ghi trong mô tả PR.
-      *(Chấp nhận — quyết định owner 2026-10-24)*
+- [ ] Dialog phong cấp: hiện đủ 4 quân, chọn đúng, chạm ngoài để hủy (T2.3)
+- [ ] Danh sách nước đi cuộn theo nước mới; quân bị ăn và chênh lệch `+N` (T2.4)
+- [ ] Nút Đi lại: disable đầu ván, đi lại đúng (T2.5)
 
 ---
 
-## T3.2 — Thuật toán tìm nước đi (review 2026-10-23)
+## Lịch sử
 
-**Kết luận:** Đạt về tổng thể; có **1 lệch thiết kế bắt buộc cần sửa** (mục 1) — khuyến nghị sửa
-trong PR trước khi merge vì là văn bản "Thiết kế bắt buộc", tuy ảnh hưởng thực tiễn nhỏ.
+### Quyết định owner (2026-10-24)
+- Chấp nhận: `GamePage.startPosition` (T2.3); `Fen.format` chuẩn hóa thứ tự quyền nhập thành (T2.1);
+  `San.format` ném `ArgumentError` khi ô xuất phát trống (T2.4); quiescence chuyển fail-soft trong PR T3.3.
+- Đưa vào T3.0: các mục ở bảng *Còn mở*.
+- Bỏ qua: các nit phong cách / hiệu năng biên (liệt kê theo task bên dưới).
+- Quy trình: chỉ merge sau review; không tạo nhánh chồng; PR của task tự đổi trạng thái thành `done`.
 
-**Xác thực độc lập:** halfmove=100 → score 0 vs halfmove=0 → 505 (luật 50 nước trong search hoạt động);
-deterministic không seed (no rng config) ✅; mate in 1 back-rank → d1d8 score 99999 ✅.
-117/117 test pass, analyze/format sạch, APK build OK.
+### Quy ước owner (2026-10-23)
+- Review **đạt, có thể merge** → reviewer kèm câu lệnh giao task tiếp theo cho agent ở cuối phần review.
 
-### Cần quyết định / xử lý
+### T3.3 — Mức độ khó + service `ChessAi` chạy Isolate (PR #10, review 2026-10-23/24)
+Kết luận: code đạt đặc tả; số liệu `ai_match` ban đầu Medium thua Easy **0–1–9** → tìm ra **lỗi của T3.2**:
+điểm nút gốc của các nước bị cắt tỉa chỉ là cận trên (quiescence trả đúng bằng biên) nên `randomMarginCp`
+chọn cả nước rất tệ (Medium đi `Qd3` mất hậu; thế có hậu treo chỉ ăn 1/30 seed).
+Sửa trong PR #10: nút gốc tìm với cận dưới `alpha - randomMarginCp - 1` + test hồi quy. Sau sửa:
+Medium–Easy 10–0, Hard–Medium 10–0; 125/125 test.
+Bỏ qua: `IsolateChessAi` không có timeout — `search` đã tự dừng theo `timeLimit`, và isolate của `Isolate.run`
+không hủy được từ ngoài; kết quả cũ do T3.4 bỏ qua theo `gameId`/`ply`.
 
-- [x] **[Nên sửa trong PR]** Thiếu quân **không** được tính hòa 0 trong search. Đặc tả: "Hòa (lặp lại
-      tính cả history của ván, luật 50 nước, **thiếu quân**) = 0" — `isDraw` chỉ check 50 nước + lặp.
-      Xác thực: K+N vs K trả score **330** thay vì 0. Đề xuất: thêm check thiếu quân vào `isDraw`
-      (tái dùng logic 4 trường hợp của `ChessRules.isInsufficientMaterial`) + test.
-- [x] Tiêu chí "chiếu hết 2 nước ở ≥ 3 thế": test #2 (`k7/8/1K6/8/8/8/1Q6/8 w`) chỉ assert
-      "tìm thấy mate" trong khi thế đó có **mate in 1** — không chứng minh mate in 2. Nên thay bằng
-      thế mate in 2 thuần (không có mate in 1).
+### T3.2 — Thuật toán tìm nước đi (PR #9, review 2026-10-23, re-review sau `074d9a8`)
+Kết luận: đạt sau khi sửa trong PR: thiếu quân = hòa 0 trong search (K+N–K, K+B–K, 2 tượng cùng màu ô = 0;
+K+B–K+B khác màu ô = 20; K+R–K = 505), test mate-in-2 thuần, thứ tự sắp xếp nước, `rootScores` theo độ sâu
+hoàn thành, bỏ dead code `isRoot`. 118/118 test.
+Đưa vào T3.0: khóa lặp lại trong search khác ngữ nghĩa en passant của engine.
+*(Lỗi chấm điểm nút gốc với `randomMarginCp` không được phát hiện ở review này — xem T3.3.)*
 
-### Không bắt buộc
+### T3.1 — Bàn cờ nội bộ tốc độ cao cho AI (PR #8, review 2026-10-23)
+Kết luận: đạt. `perft_bench` 4,865,609 node / ~570 ms (mục tiêu < 10 s); 103/103 test.
+Đưa vào T3.0: getter `board` trả mảng nội bộ sửa được.
+Bỏ qua: bảng `_Zobrist` static lazy init; khóa en passant chỉ theo cột; `_moveBuffers` 64 ply rồi cấp phát mới;
+ghi `undo.capturedPiece` 2 lần khi bắt tốt qua đường.
 
-- [x] Thứ tự sắp xếp nước: code xếp **phong cấp (800k) trên ăn quân (100k+)**, đặc tả ghi
-      "ăn quân theo MVV-LVA → phong cấp". Chỉ ảnh hưởng hiệu quả sắp xếp, không ảnh hưởng đúng sai.
-- [x] `rootScores` không xóa giữa các vòng iterative deepening — khi timeout giữa một depth,
-      map chứa điểm trộn hai depth (ảnh hưởng biên cho `randomMarginCp`). bestMove/bestScore vẫn
-      lấy từ depth hoàn thành nên đúng đặc tả.
-- [x] Khóa lặp lại trong search dùng zobrist thô (ô ep luôn tính khi có), hơi khác ngữ nghĩa khóa
-      engine (chỉ tính ep khi bắt được) — chấp nhận được, T3.2 không bắt buộc chuẩn hóa.
-      *(→ đưa vào T3.0)*
-- [x] `_negamax` có check `isRoot = ply == 0` nhưng hàm không bao giờ được gọi với ply 0 — dead code.
+### T2.5 — Đi lại (PR #7, review 2026-10-23)
+Kết luận: đạt (PR bị merge trước khi review — đã thêm luật "chỉ merge sau review").
+Đưa vào T3.0: test undo khi đang chọn quân / chờ phong cấp. Bỏ qua: guard `history.length <= 1` lặp ở 2 chỗ.
 
----
+### T2.4 — SAN, danh sách nước đi, quân bị ăn (PR #6, review 2026-10-23)
+Kết luận: đạt. Đưa vào T3.0: nước phong cấp thiếu quân (`e7e8`) — kiểm tra bằng `ChessRules.isLegalMove`
+thay vì `Move.fromUci` (không có thế cờ). Để Giai đoạn 5: `MoveList` cuộn bằng `jumpTo`.
+Chấp nhận: `San.format` ném `ArgumentError`.
 
-## T3.1 — Bàn cờ nội bộ tốc độ cao cho AI (review 2026-10-23)
+### T2.3 — Chọn quân khi phong cấp (PR #5, review 2026-10-23)
+Kết luận: đạt. Chấp nhận: tham số `GamePage.startPosition`. Đưa vào T3.0: test dialog hiện đủ 4 lựa chọn.
+Quy trình: nhánh T2.1 → T2.3 từng xếp chồng — đã merge theo thứ tự, đã thêm luật không tạo nhánh chồng.
 
-**Kết luận:** Đạt, có thể merge. PR #8 mở đúng mẫu, có benchmark. Review trước merge lần này ✅.
+### T2.2 — Luật hòa (PR #4, review 2026-10-23)
+Kết luận: đạt. Đưa vào T3.0: `positionRepetitionKey` chép ~30 dòng của `Fen.format`.
+Bỏ qua: `_ => SoundEffect.move` thay cho `GameStatus.playing =>`; chưa test thiếu quân hỗn hợp (K+B–K+N).
 
-**Xác thực độc lập:** chạy lại `fvm dart run tool/perft_bench.dart` → 4,865,609 nodes / 576ms
-(~8.4M nps), khớp PR (564ms), xa dưới mục tiêu 10s. 103/103 test pass, analyze/format sạch, APK build OK.
-
-### Không bắt buộc
-
-- [x] Getter `board` trả trực tiếp `Int8List` nội bộ (mutable) — chỉ dùng trong test; nếu dùng ngoài
-      AI nên trả bản copy/unmodifiable để tránh sửa ngoài ý muốn.
-      *(→ đưa vào T3.0)*
-- [x] `_Zobrist` là static mutable state với lazy init — thực chất là bảng hằng, chấp nhận được cho
-      hiệu năng; chỉ ghi nhận để nhất quán về phong cách.
-      *(Bỏ qua — quyết định owner 2026-10-24)*
-- [x] Zobrist en passant chỉ dùng cột (không full-square) — đủ đúng cho TT nhờ `sideToMove`; nếu T3.2
-      tái dùng khóa này cho phát hiện lặp lại trong search sẽ hơi khác ngữ nghĩa khóa engine
-      (engine chỉ tính ô ep khi bắt được) — T3.2 tính hòa qua engine history nên không vấn đề.
-      *(Bỏ qua — quyết định owner 2026-10-24; ngữ nghĩa lặp lại xử lý ở T3.0)*
-- [x] `_moveBuffers` 64 ply, ply ≥ 64 thì fallback cấp phát list mới (đúng, chỉ chậm hơn) — depth 64 +
-      quiescence có thể vượt; an toàn, chỉ ghi nhận.
-      *(Bỏ qua — quyết định owner 2026-10-24)*
-- [x] `makeMove` với en passant ghi `undo.capturedPiece` 2 lần (lưu `_board[to]` rồi ghi đè bằng
-      tốt bị ăn) — vô hại, hơi khó đọc.
-      *(Bỏ qua — quyết định owner 2026-10-24)*
-
----
-
-## T2.5 — Đi lại (undo) (review 2026-10-23)
-
-**Kết luận:** Đạt. *Lưu ý: PR #7 đã được merge trước khi review — không phát hiện vấn đề cần sửa,
-nhưng về quy trình nên để review xong mới merge.*
-
-### Cần quyết định / xử lý
-
-- [x] **[Owner]** Bảng trạng thái trong `docs/tasks/README.md` trên main vẫn ghi T2.1…T2.5 = `review`
-      (T2.5 được nhánh này đổi thành `review` trong lúc nó đã merge). Cần owner cập nhật tất cả thành
-      `done` — Giai đoạn 2 đã đủ 5/5 task merge.
-      *(Đã cập nhật: T2.1–T3.2 = `done`)*
-
-### Không bắt buộc
-
-- [x] Guard `history.length <= 1` xuất hiện ở cả bloc handler và `state.undo()` (return `this`) —
-      nhân đôi vô hại, có thể bỏ một chỗ.
-      *(Bỏ qua — quyết định owner 2026-10-24)*
-- [x] Chưa có test cho undo khi đang có ô đang chọn / đang chờ phong cấp giữa ván — ngoài tiêu chí
-      nghiệm thu; hành vi theo code là xóa selection + pendingPromotion (đúng ý đặc tả).
-      *(→ đưa vào T3.0)*
-
----
-
-## T2.4 — Ký hiệu SAN, danh sách nước đi, quân bị ăn (review 2026-10-23)
-
-**Kết luận:** Đạt, có thể merge. PR #6 đã mở đúng mẫu, base `main` đúng (T2.1–T2.3 đã merge qua #3/#4/#5).
-
-### Cần quyết định / xử lý
-
-- [x] **[Owner]** Bảng trạng thái trong `docs/tasks/README.md` trên main vẫn ghi T2.1/T2.2/T2.3 =
-      `review` — việc đổi thành `done` là việc của owner sau khi merge (theo quy trình), cần cập nhật.
-      *(Đã cập nhật: T2.1–T3.2 = `done`)*
-- [ ] DoD yêu cầu chạy thử trên Android khi task đổi UI — có UI mới (MoveList, CapturedPieces);
-      reviewer không xác thực được, owner cần chạy thử.
-
-### Không bắt buộc
-
-- [x] `Move.fromUci('e7e8')` (nước phong cấp thiếu ký tự quân) được chấp nhận — đặc tả không yêu cầu
-      từ chối, chỉ ghi nhận độ lỏng.
-      *(Giữ nguyên `fromUci`; kiểm tra phong cấp thiếu quân bằng `ChessRules.isLegalMove` ở T3.0, dùng trong T3.7)*
-- [x] `MoveList` cuộn tới cuối bằng `jumpTo` (giật) — có thể đổi `animateTo` để mượt hơn nếu muốn.
-      *(Để Giai đoạn 5 (T5.3))*
-- [x] `San.format` ném `ArgumentError` khi ô xuất phát trống — đặc tả không nói gì; hành vi hợp lý,
-      chỉ ghi nhận để nhất quán với `Fen.parse` (ném `FormatException`).
-      *(Chấp nhận — quyết định owner 2026-10-24)*
-
----
-
-## T2.3 — Chọn quân khi phong cấp (review 2026-10-23)
-
-**Kết luận:** Đạt, có thể merge.
-
-### Cần quyết định / xử lý
-
-- [x] **[Quy trình]** Nhánh xếp chồng 3 tầng: main ← T2.1 ← T2.2 ← T2.3 (T2.1, T2.2 vẫn `review`,
-      chưa vào main). Nên merge theo thứ tự T2.1 → T2.2 → T2.3 sớm để chồng không tiếp tục cao lên.
-      *(Đã xử lý: cả ba đã merge qua #3/#4/#5.)*
-- [x] `GamePage` thêm tham số `startPosition` (dùng cho widget test) — không có trong đặc tả nhưng
-      nằm trong các file được phép sửa, vô hại khi không truyền. Cần owner xác nhận chấp nhận.
-      *(Chấp nhận — quyết định owner 2026-10-24)*
-- [ ] DoD yêu cầu chạy thử trên Android khi task đổi UI (dialog mới là UI) — reviewer không xác thực
-      được phần này; owner cần chạy thử dialog phong cấp trên thiết bị/emulator.
-
-### Không bắt buộc
-
-- [x] Widget test chỉ kiểm tra 1 trong 4 lựa chọn (Mã), chưa assert dialog render đúng 4 nút
-      (tiêu chí ghi "dialog hiện 4 lựa chọn"). Có thể thêm `find.byType(PieceView, findsNWidgets(4))`.
-      *(→ đưa vào T3.0)*
-
----
-
-## T2.2 — Luật hòa: 50 nước, lặp 3 lần, thiếu quân (review 2026-10-23)
-
-**Kết luận:** Đạt, có thể merge (sau T2.1).
-
-### Cần quyết định / xử lý
-
-- [x] **[Quy trình]** T2.1 vẫn đang `review` chưa merge vào `origin/main`, nhánh `task/T2.2-draw-rules`
-      xếp chồng lên commit T2.1. Quy định yêu cầu phụ thuộc `done` mới được làm. Việc cần làm:
-      merge T2.1 trước, sau đó merge T2.2 (PR T2.2 để base = nhánh T2.1, hoặc đợi T2.1 vào main rồi
-      rebase). Nếu owner duyệt làm chồng thì bỏ qua.
-      *(Đã xử lý: merge theo thứ tự qua #3/#4; quy trình đã bổ sung luật không tạo nhánh chồng)*
-- [x] `positionRepetitionKey` trong `lib/core/engine/chess_rules.dart` copy phần serialize bàn cờ +
-      nhập thành của `Fen.format` (~30 dòng trùng). Có thể tái dùng `Fen.format` rồi chỉ ghi đè
-      trường en passant. Nit bảo trì.
-      *(→ đưa vào T3.0)*
-- [x] `_ => SoundEffect.move` trong `chess_game_bloc.dart` bớt tường minh so với
-      `GameStatus.playing =>` trước đây. An toàn vì đã early-return khi `isGameOver`, nit thôi.
-      *(Bỏ qua — quyết định owner 2026-10-24)*
-
-### Không bắt buộc
-
-- [x] Chưa có test cho thế thiếu quân hỗn hợp (K+B–K+N, K+N–K+N) — rơi vào nhánh `false` mặc định,
-      không bắt buộc theo đặc tả.
-      *(Bỏ qua — quyết định owner 2026-10-24)*
-
----
-
-## T2.1 — FEN đầy đủ (parse/format) (review 2026-10-23)
-
-**Kết luận:** Đạt, có thể merge.
-
-### Cần quyết định / xử lý
-
-- [x] `Fen.parse` lỏng với số ô trống nhiều chữ số có tổng đúng 8: `44`, `17`, `22`… được chấp nhận
-      (chuẩn FEN chỉ cho 1 chữ số). Không thuộc các case lỗi đặc tả liệt kê nên không sai, nhưng
-      T2.2 dựa vào FEN — nếu muốn chặt thì xử lý luôn trong `lib/core/engine/fen.dart`.
-      *(→ đưa vào T3.0)*
-- [x] Castling không theo thứ tự (vd `QKkq`) được parse OK, nhưng `format` chuẩn hóa thành `KQkq`
-      → round-trip đổi chuỗi với FEN không chuẩn. Đặc tả chỉ yêu cầu round-trip 6 FEN liệt kê
-      nên chấp nhận được — cần owner xác nhận không vấn đề.
-      *(Chấp nhận — quyết định owner 2026-10-24)*
-
-### Không bắt buộc
-
-- [x] Nit: `fen.dart` dùng số magic `49/56` kèm comment `// '1'..'8'` — có thể ghi hằng
-      `'1'.codeUnitAt(0)` cho dễ đọc.
-      *(→ đưa vào T3.0)*
-- [x] Nhánh chỉ tồn tại local lúc review — đã push, nhớ mở PR theo mẫu AGENTS.md mục 8.
-      *(Đã xử lý: merge qua #3.)*
+### T2.1 — FEN đầy đủ (PR #3, review 2026-10-23)
+Kết luận: đạt. Đưa vào T3.0: `Fen.parse` chấp nhận chữ số liền nhau (`44`, `17`); số magic `49/56`.
+Chấp nhận: quyền nhập thành không theo thứ tự được chuẩn hóa khi `format`.

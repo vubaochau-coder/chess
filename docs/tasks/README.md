@@ -12,12 +12,13 @@ giai đoạn tương ứng. Agent chỉ làm task được owner giao, theo đú
    merge — task phụ thuộc phải đã nằm trên `main`.
 5. Làm **đúng phạm vi**. Gặp điểm đặc tả không nói tới → hỏi, không đoán (xem AGENTS.md mục 1).
 6. Đạt Definition of done (AGENTS.md mục 9) + mọi tiêu chí nghiệm thu của task.
-7. Sửa cột **Trạng thái** của task trong bảng dưới thành `review`, mở PR theo mẫu trong AGENTS.md mục 8.
-   Owner merge xong sẽ đổi thành `done`.
+7. Trong chính PR của task, sửa cột **Trạng thái** của task thành `done`, rồi mở PR theo mẫu trong AGENTS.md mục 8.
+   PR được merge thì task tự thành `done` trên `main`; PR bị đóng không merge thì bảng không đổi.
+   (Muốn báo đang làm thì đổi thành `in-progress` trong commit đầu của nhánh — không bắt buộc.)
 8. Ghi chú review không chặn merge được tổng hợp trong [`docs/review-notes.md`](../review-notes.md);
    agent **không** tự xử lý các ghi chú đó trừ khi chúng được đưa vào một task.
 
-Trạng thái: `todo` · `in-progress` · `blocked` · `review` · `done`
+Trạng thái: `todo` · `in-progress` · `blocked` · `done` (task đang chờ review = có PR đang mở)
 
 Mỗi đặc tả task có các mục:
 
@@ -58,7 +59,7 @@ Mỗi đặc tả task có các mục:
 | T3.0 | Dọn dẹp sau review (engine, SearchBoard, test) | T3.2 | — | todo |
 | T3.1 | Bàn cờ nội bộ tốc độ cao cho AI | T2.2 | — | done |
 | T3.2 | Thuật toán tìm nước đi | T3.1 | — | done |
-| T3.3 | Mức độ khó + service `ChessAi` chạy Isolate | T3.2 | — | review |
+| T3.3 | Mức độ khó + service `ChessAi` chạy Isolate | T3.2 | — | done |
 | T3.4 | Tích hợp AI vào game bloc | T3.0, T3.3, T2.5 | — | todo |
 | T3.5 | Màn hình chính chọn chế độ | T3.4 | — | todo |
 | T3.6 | Đầu hàng | T3.4 | — | todo |
@@ -90,6 +91,21 @@ Mỗi đặc tả task có các mục:
 | T6.1 | Đồng hồ đánh cờ (chơi 2 người cùng máy) | T3.5 | — | todo |
 | T6.x | PvP online | — | — | **chưa lên kế hoạch — không được làm** |
 
+## Quy tắc review
+
+Áp dụng cho người/agent review PR của task:
+
+1. **Tự xác thực**, không chỉ đọc mô tả PR: chạy test, chạy lại các lệnh/benchmark trong mục *Cách kiểm tra*,
+   kiểm tra từng *Tiêu chí nghiệm thu*.
+2. **Số liệu bất thường là lỗi cho tới khi chứng minh ngược lại.** Ví dụ: bên mạnh thua bên yếu trong
+   `tool/ai_match.dart`, benchmark chậm bất thường, tỉ lệ ngẫu nhiên lệch. Phải tìm nguyên nhân trước khi
+   merge — không ghi "báo owner" rồi merge. (Bài học T3.3: Medium thua Easy 0–1–9 do lỗi chấm điểm nút gốc
+   của T3.2; CI và test đều xanh.)
+3. Với code có yếu tố ngẫu nhiên: kiểm tra **chất lượng** với nhiều seed cố định, không chỉ tính tất định.
+4. Kết quả review ghi vào `docs/review-notes.md` theo mẫu ở đầu file đó.
+5. Review **đạt, có thể merge** → cuối phần review kèm sẵn câu lệnh giao task tiếp theo cho agent
+   (quy ước owner 2026-10-23).
+
 ## Việc chỉ owner làm (agent không làm)
 
 - Đăng ký tài khoản Google Play Console, điền Data safety, content rating, privacy policy, ảnh store.
@@ -97,5 +113,6 @@ Mỗi đặc tả task có các mục:
 - Chọn và kiểm tra giấy phép asset (icon, âm thanh, bộ quân cờ).
 - Tìm 12 tester và chạy closed testing 14 ngày.
 - Tạo task mới, sửa đặc tả task, nâng Flutter/package.
-- **Chỉ merge PR sau khi review xong** và các mục "nên sửa trong PR" đã được xử lý; sau khi merge, đổi trạng thái
-  task thành `done` ngay (cùng commit với việc cập nhật `docs/review-notes.md` nếu có).
+- **Chỉ merge PR sau khi review xong** và các mục "nên sửa trong PR" đã được xử lý.
+- Chạy thử trên Android trước mỗi mốc phát hành theo mục **Kiểm tra trên thiết bị** trong
+  [`docs/review-notes.md`](../review-notes.md) (agent/reviewer không làm được bước này).

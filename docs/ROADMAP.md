@@ -53,3 +53,6 @@ backend, tài khoản, Data safety, xóa tài khoản).
 | v0.5 | + Giai đoạn 2, PvE (T3.1–T3.5) | Closed testing (bắt đầu đếm 14 ngày) |
 | v1.0 | + phần còn lại Giai đoạn 3, Giai đoạn 4–5 | Production |
 | v1.x | Giai đoạn 6 | Cập nhật |
+
+Trước mỗi mốc, owner chạy thử trên Android theo mục *Kiểm tra trên thiết bị* trong
+[`docs/review-notes.md`](review-notes.md).
