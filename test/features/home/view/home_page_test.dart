@@ -3,8 +3,11 @@ import 'dart:math' as math;
 import 'package:chess/core/ai/ai_level.dart';
 import 'package:chess/core/ai/chess_ai.dart';
 import 'package:chess/core/audio/sound_player.dart';
+import 'package:chess/core/engine/fen.dart';
 import 'package:chess/core/engine/move.dart';
 import 'package:chess/core/game/game_config.dart';
+import 'package:chess/core/storage/game_repository.dart';
+import 'package:chess/core/storage/saved_game.dart';
 import 'package:chess/features/game/view/game_page.dart';
 import 'package:chess/features/home/view/home_page.dart';
 import 'package:flutter/material.dart';
@@ -32,17 +35,27 @@ class _FixedRandom implements math.Random {
 void main() {
   late MockSoundPlayer sound;
   late MockChessAi ai;
+  late MockGameRepository repo;
 
   setUpAll(registerFallbacks);
 
   setUp(() {
     sound = MockSoundPlayer();
     ai = MockChessAi();
+    repo = MockGameRepository();
     when(() => ai.chooseMove(any(), any()))
         .thenAnswer((_) async => const Move(52, 36));
+    when(repo.load).thenReturn(null);
+    when(() => repo.save(any())).thenAnswer((_) async {});
+    when(repo.clear).thenAnswer((_) async {});
   });
 
-  Future<void> pumpHome(WidgetTester tester, {math.Random? random}) async {
+  Future<void> pumpHome(
+    WidgetTester tester, {
+    math.Random? random,
+    GameRepository? gameRepository,
+    Key? key,
+  }) async {
     tester.view.physicalSize = const Size(800, 1200);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -52,8 +65,13 @@ void main() {
         providers: [
           RepositoryProvider<SoundPlayer>.value(value: sound),
           RepositoryProvider<ChessAi>.value(value: ai),
+          RepositoryProvider<GameRepository>.value(
+            value: gameRepository ?? repo,
+          ),
         ],
-        child: MaterialApp(home: HomePage(random: random)),
+        child: MaterialApp(
+          home: HomePage(key: key, random: random),
+        ),
       ),
     );
   }
@@ -201,5 +219,46 @@ void main() {
       expect(find.byType(GamePage), findsNothing);
       expect(find.byType(HomePage), findsOneWidget);
     });
+
+    testWidgets(
+      'saved game: hidden when no saved game, visible when saved game exists and opens GamePage with restore',
+      (tester) async {
+        // 1. Khi chưa có ván lưu -> nút Tiếp tục bị ẩn
+        when(repo.load).thenReturn(null);
+        await pumpHome(tester);
+        expect(find.text('Tiếp tục ván đang chơi'), findsNothing);
+
+        // 2. Khi có ván lưu -> nút Tiếp tục hiển thị
+        const saved = SavedGame(
+          startFen: Fen.initial,
+          moves: ['e2e4', 'e7e5'],
+          config: GameConfig(
+            mode: GameMode.pve,
+            humanColor: PieceColor.white,
+            level: AiLevel.hard,
+          ),
+        );
+        when(repo.load).thenReturn(saved);
+
+        await pumpHome(tester, key: const Key('has-saved'));
+        expect(find.text('Tiếp tục ván đang chơi'), findsOneWidget);
+
+        // 3. Bấm "Tiếp tục ván đang chơi" -> mở GamePage với restore
+        await tester.tap(find.text('Tiếp tục ván đang chơi'));
+        await tester.pumpAndSettle();
+
+        final gamePage = tester.widget<GamePage>(find.byType(GamePage));
+        expect(gamePage.restore, saved);
+        expect(gamePage.config, saved.config);
+
+        // 4. Quay về màn chính -> refresh được gọi
+        when(repo.load).thenReturn(null); // Giả lập ván đã kết thúc/xóa
+        await tester.tap(find.byType(BackButton));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(HomePage), findsOneWidget);
+        expect(find.text('Tiếp tục ván đang chơi'), findsNothing);
+      },
+    );
   });
 }

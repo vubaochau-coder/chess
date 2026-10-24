@@ -1,12 +1,17 @@
+import 'dart:async';
+
 import 'package:bloc/bloc.dart';
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:chess/core/ai/chess_ai.dart';
 import 'package:chess/core/audio/sound_effect.dart';
 import 'package:chess/core/audio/sound_player.dart';
 import 'package:chess/core/engine/chess_rules.dart';
+import 'package:chess/core/engine/fen.dart';
 import 'package:chess/core/engine/move.dart';
 import 'package:chess/core/engine/san.dart';
 import 'package:chess/core/game/game_config.dart';
+import 'package:chess/core/storage/game_repository.dart';
+import 'package:chess/core/storage/saved_game.dart';
 import 'package:equatable/equatable.dart';
 
 part 'chess_game_event.dart';
@@ -16,12 +21,33 @@ class ChessGameBloc extends Bloc<ChessGameEvent, ChessGameState> {
   ChessGameBloc({
     required SoundPlayer soundPlayer,
     required ChessAi ai,
+    GameRepository? gameRepository,
     required GameConfig config,
     GamePosition? startPosition,
-  }) : this._(soundPlayer, ai, config, startPosition ?? GamePosition.initial());
+    SavedGame? restore,
+  }) : this._(
+         soundPlayer,
+         ai,
+         gameRepository ?? const NoopGameRepository(),
+         restore?.config ?? config,
+         restore != null
+             ? Fen.parse(restore.startFen)
+             : (startPosition ?? GamePosition.initial()),
+         restore,
+       );
 
-  ChessGameBloc._(this._sound, this._ai, this._config, this._start)
-    : super(ChessGameState.initial(_start, config: _config)) {
+  ChessGameBloc._(
+    this._sound,
+    this._ai,
+    this._repository,
+    this._config,
+    this._start,
+    SavedGame? restore,
+  ) : super(
+        restore != null
+            ? ChessGameState.restore(restore)
+            : ChessGameState.initial(_start, config: _config),
+      ) {
     on<NewGameRequested>(_onNewGameRequested);
     on<SquareTapped>(_onSquareTapped);
     on<PromotionPieceSelected>(_onPromotionPieceSelected);
@@ -30,11 +56,15 @@ class ChessGameBloc extends Bloc<ChessGameEvent, ChessGameState> {
     on<ResignRequested>(_onResignRequested);
     on<_AiMoveRequested>(_onAiMoveRequested, transformer: restartable());
 
+    if (restore == null) {
+      _saveGame();
+    }
     _checkRequestAiMove();
   }
 
   final SoundPlayer _sound;
   final ChessAi _ai;
+  final GameRepository _repository;
   final GameConfig _config;
   final GamePosition _start;
   int _gameId = 0;
@@ -45,6 +75,7 @@ class ChessGameBloc extends Bloc<ChessGameEvent, ChessGameState> {
   ) {
     _gameId++;
     emit(ChessGameState.initial(_start, config: _config, gameId: _gameId));
+    _saveGame();
     _checkRequestAiMove();
   }
 
@@ -95,6 +126,11 @@ class ChessGameBloc extends Bloc<ChessGameEvent, ChessGameState> {
     final next = state.afterMove(result.position, record);
     _sound.play(_moveSound(result, next.status));
     emit(next);
+    if (next.isGameOver) {
+      _clearGame();
+    } else {
+      _saveGame();
+    }
     _checkRequestAiMove();
   }
 
@@ -119,6 +155,11 @@ class ChessGameBloc extends Bloc<ChessGameEvent, ChessGameState> {
     final next = state.afterMove(result.position, record);
     _sound.play(_moveSound(result, next.status));
     emit(next);
+    if (next.isGameOver) {
+      _clearGame();
+    } else {
+      _saveGame();
+    }
     _checkRequestAiMove();
   }
 
@@ -133,6 +174,11 @@ class ChessGameBloc extends Bloc<ChessGameEvent, ChessGameState> {
   void _onUndoRequested(UndoRequested event, Emitter<ChessGameState> emit) {
     if (!state.canUndo) return;
     emit(state.undo());
+    if (state.isGameOver) {
+      _clearGame();
+    } else {
+      _saveGame();
+    }
     _checkRequestAiMove();
   }
 
@@ -152,6 +198,7 @@ class ChessGameBloc extends Bloc<ChessGameEvent, ChessGameState> {
 
     _sound.play(SoundEffect.gameEnd);
     emit(state.resigned(resignStatus));
+    _clearGame();
   }
 
   Future<void> _onAiMoveRequested(
@@ -180,6 +227,27 @@ class ChessGameBloc extends Bloc<ChessGameEvent, ChessGameState> {
     final next = state.afterMove(result.position, record);
     _sound.play(_moveSound(result, next.status));
     emit(next);
+    if (next.isGameOver) {
+      _clearGame();
+    } else {
+      _saveGame();
+    }
+  }
+
+  void _clearGame() => unawaited(_repository.clear());
+
+  void _saveGame() {
+    if (state.isGameOver) {
+      _clearGame();
+      return;
+    }
+    final uciMoves = state.moves.map((r) => r.move.toUci()).toList();
+    final saved = SavedGame(
+      startFen: Fen.format(_start),
+      moves: uciMoves,
+      config: state.config,
+    );
+    unawaited(_repository.save(saved));
   }
 
   void _checkRequestAiMove() {

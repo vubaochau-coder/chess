@@ -2,12 +2,15 @@ import 'dart:async';
 
 import 'package:chess/core/ai/chess_ai.dart';
 import 'package:chess/core/audio/sound_player.dart';
+import 'package:chess/core/storage/game_repository.dart';
 import 'package:chess/features/home/view/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ChessApp extends StatelessWidget {
-  const ChessApp({super.key});
+  const ChessApp({super.key, required this.gameRepository});
+
+  final GameRepository gameRepository;
 
   @override
   Widget build(BuildContext context) {
@@ -19,6 +22,7 @@ class ChessApp extends StatelessWidget {
           dispose: (player) => unawaited(player.dispose()),
         ),
         RepositoryProvider<ChessAi>(create: (_) => const IsolateChessAi()),
+        RepositoryProvider<GameRepository>.value(value: gameRepository),
       ],
       child: MaterialApp(
         title: 'Chess',

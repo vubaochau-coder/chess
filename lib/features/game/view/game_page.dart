@@ -3,6 +3,8 @@ import 'package:chess/core/ai/chess_ai.dart';
 import 'package:chess/core/audio/sound_player.dart';
 import 'package:chess/core/engine/chess_rules.dart';
 import 'package:chess/core/game/game_config.dart';
+import 'package:chess/core/storage/game_repository.dart';
+import 'package:chess/core/storage/saved_game.dart';
 import 'package:chess/features/game/bloc/chess_game_bloc.dart';
 import 'package:chess/features/game/widgets/captured_pieces.dart';
 import 'package:chess/features/game/widgets/chess_board.dart';
@@ -15,19 +17,34 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 /// Tạo [ChessGameBloc] cho màn chơi. Phần giao diện nằm ở [GameView] để test
 /// widget có thể cấp bloc giả.
 class GamePage extends StatelessWidget {
-  const GamePage({super.key, required this.config, this.startPosition});
+  const GamePage({
+    super.key,
+    required this.config,
+    this.startPosition,
+    this.restore,
+  });
 
   final GameConfig config;
   final GamePosition? startPosition;
+  final SavedGame? restore;
 
   @override
   Widget build(BuildContext context) {
+    GameRepository? repo;
+    try {
+      repo = context.read<GameRepository>();
+    } catch (_) {
+      repo = null;
+    }
+
     return BlocProvider(
       create: (context) => ChessGameBloc(
         soundPlayer: context.read<SoundPlayer>(),
         ai: context.read<ChessAi>(),
+        gameRepository: repo,
         config: config,
         startPosition: startPosition,
+        restore: restore,
       ),
       child: const GameView(),
     );
