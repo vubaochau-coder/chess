@@ -1,4 +1,4 @@
-import 'package:chess/theme/colors.dart';
+import 'package:chess/theme/board_theme.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 
@@ -6,11 +6,14 @@ import 'package:flutter/rendering.dart';
 /// và chấm gợi ý nước đi.
 class HighlightPainter extends CustomPainter {
   const HighlightPainter({
+    required this.colors,
     required this.highlighted,
     required this.targets,
     required this.checkSquare,
     this.flipped = false,
   });
+
+  final BoardColors colors;
 
   /// Ô được tô vàng (quân đang chọn, ô đi và ô đến của nước vừa đi).
   final List<int> highlighted;
@@ -21,8 +24,8 @@ class HighlightPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final cell = size.width / 8;
-    final lightSelected = Paint()..color = ChessColors.lightSquareSelected;
-    final darkSelected = Paint()..color = ChessColors.darkSquareSelected;
+    final lightSelected = Paint()..color = colors.lightSelected;
+    final darkSelected = Paint()..color = colors.darkSelected;
 
     int displaySquare(int sq) => flipped ? (63 - sq) : sq;
 
@@ -37,10 +40,10 @@ class HighlightPainter extends CustomPainter {
     }
 
     if (checkSquare case final square?) {
-      canvas.drawRect(rectOf(square), Paint()..color = ChessColors.squareCheck);
+      canvas.drawRect(rectOf(square), Paint()..color = colors.check);
     }
 
-    final hint = Paint()..color = ChessColors.squareAvailable;
+    final hint = Paint()..color = colors.hint;
     for (final square in targets) {
       canvas.drawCircle(rectOf(square).center, cell * 0.1, hint);
     }
@@ -48,7 +51,8 @@ class HighlightPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(HighlightPainter oldDelegate) {
-    return !listEquals(highlighted, oldDelegate.highlighted) ||
+    return colors != oldDelegate.colors ||
+        !listEquals(highlighted, oldDelegate.highlighted) ||
         !listEquals(targets, oldDelegate.targets) ||
         checkSquare != oldDelegate.checkSquare ||
         flipped != oldDelegate.flipped;

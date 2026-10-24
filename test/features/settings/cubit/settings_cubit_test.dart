@@ -2,6 +2,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:chess/core/settings/app_settings.dart';
 import 'package:chess/core/storage/settings_repository.dart';
 import 'package:chess/features/settings/cubit/settings_cubit.dart';
+import 'package:chess/theme/board_theme.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -51,6 +52,37 @@ void main() {
       },
       build: () => SettingsCubit(repository: repository),
       act: (cubit) => cubit.setThemeMode(AppThemeMode.dark),
+      expect: () => <AppSettings>[],
+      verify: (_) {
+        verifyNever(() => repository.save(any()));
+      },
+    );
+
+    blocTest<SettingsCubit, AppSettings>(
+      'setBoardTheme emits updated state and calls repository.save',
+      setUp: () {
+        when(repository.load).thenReturn(const AppSettings());
+        when(() => repository.save(any())).thenAnswer((_) async {});
+      },
+      build: () => SettingsCubit(repository: repository),
+      act: (cubit) => cubit.setBoardTheme(BoardTheme.green),
+      expect: () => [const AppSettings(boardTheme: BoardTheme.green)],
+      verify: (_) {
+        verify(
+          () =>
+              repository.save(const AppSettings(boardTheme: BoardTheme.green)),
+        ).called(1);
+      },
+    );
+
+    blocTest<SettingsCubit, AppSettings>(
+      'setBoardTheme does nothing when setting same boardTheme',
+      setUp: () {
+        when(repository.load)
+            .thenReturn(const AppSettings(boardTheme: BoardTheme.green));
+      },
+      build: () => SettingsCubit(repository: repository),
+      act: (cubit) => cubit.setBoardTheme(BoardTheme.green),
       expect: () => <AppSettings>[],
       verify: (_) {
         verifyNever(() => repository.save(any()));

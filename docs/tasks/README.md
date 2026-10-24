@@ -70,7 +70,7 @@ Mỗi đặc tả task có các mục:
 | Mã | Task | Phụ thuộc | Đầu vào owner | Trạng thái |
 |---|---|---|---|---|
 | T4.1 | Hạ tầng cài đặt + màn Cài đặt + chế độ sáng/tối | T3.5 | — | review |
-| T4.2 | Theme màu bàn cờ | T4.1 | — | todo |
+| T4.2 | Theme màu bàn cờ | T4.1 | — | review |
 | T4.3 | Tùy chọn hiển thị bàn cờ | T4.1 | — | todo |
 | T4.4 | Bộ quân cờ | T4.1 | File SVG + giấy phép | todo |
 
