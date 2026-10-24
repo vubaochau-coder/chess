@@ -462,4 +462,73 @@ void main() {
       },
     );
   });
+
+  group('ResignRequested in PvP', () {
+    blocTest<ChessGameBloc, ChessGameState>(
+      'White resigns on White turn sets whiteResigned, plays gameEnd sound, disables undo',
+      build: buildBloc,
+      act: (bloc) => bloc.add(const ResignRequested()),
+      expect: () => [
+        isA<ChessGameState>()
+            .having((s) => s.status, 'status', GameStatus.whiteResigned)
+            .having((s) => s.isGameOver, 'isGameOver', isTrue)
+            .having((s) => s.canUndo, 'canUndo', isFalse),
+      ],
+      verify: (_) {
+        verify(() => sound.play(SoundEffect.gameEnd)).called(1);
+      },
+    );
+
+    blocTest<ChessGameBloc, ChessGameState>(
+      'Black resigns on Black turn sets blackResigned, plays gameEnd sound, disables undo',
+      build: buildBloc,
+      act: (bloc) => bloc
+        ..add(const SquareTapped(e2))
+        ..add(const SquareTapped(e4))
+        ..add(const ResignRequested()),
+      skip: 2, // Skip SquareTapped events
+      expect: () => [
+        isA<ChessGameState>()
+            .having((s) => s.status, 'status', GameStatus.blackResigned)
+            .having((s) => s.isGameOver, 'isGameOver', isTrue)
+            .having((s) => s.canUndo, 'canUndo', isFalse),
+      ],
+      verify: (_) {
+        verify(() => sound.play(SoundEffect.gameEnd)).called(1);
+      },
+    );
+
+    blocTest<ChessGameBloc, ChessGameState>(
+      'ResignRequested when game is already over does nothing',
+      build: buildBloc,
+      act: (bloc) => bloc
+        ..add(const ResignRequested())
+        ..add(const ResignRequested()),
+      expect: () => [
+        isA<ChessGameState>().having(
+          (s) => s.status,
+          'status',
+          GameStatus.whiteResigned,
+        ),
+      ],
+      verify: (_) {
+        verify(() => sound.play(SoundEffect.gameEnd)).called(1);
+      },
+    );
+
+    blocTest<ChessGameBloc, ChessGameState>(
+      'ResignRequested while piece is selected clears selection and targets',
+      build: buildBloc,
+      act: (bloc) => bloc
+        ..add(const SquareTapped(e2))
+        ..add(const ResignRequested()),
+      skip: 1,
+      expect: () => [
+        isA<ChessGameState>()
+            .having((s) => s.status, 'status', GameStatus.whiteResigned)
+            .having((s) => s.selected, 'selected', isNull)
+            .having((s) => s.legalTargets, 'legalTargets', isEmpty),
+      ],
+    );
+  });
 }

@@ -88,6 +88,10 @@ final class ChessGameState extends Equatable {
 
   /// Kiểm tra nút Undo có được bật hay không.
   bool get canUndo {
+    if (status == GameStatus.whiteResigned ||
+        status == GameStatus.blackResigned) {
+      return false;
+    }
     if (config.mode == GameMode.pvp) {
       return history.length > 1;
     }
@@ -97,6 +101,19 @@ final class ChessGameState extends Equatable {
       if (i.isEven == isWhiteHuman) return true;
     }
     return false;
+  }
+
+  /// Trạng thái sau khi người chơi hoặc bên tới lượt đầu hàng.
+  ChessGameState resigned(GameStatus resignStatus) {
+    return ChessGameState(
+      config: config,
+      gameId: gameId,
+      isAiThinking: false,
+      history: history,
+      moves: moves,
+      status: resignStatus,
+      checkSquare: checkSquare,
+    );
   }
 
   static int? _checkSquareOf(GamePosition position) {

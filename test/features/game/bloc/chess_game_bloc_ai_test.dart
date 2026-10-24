@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:chess/core/ai/ai_level.dart';
 import 'package:chess/core/ai/chess_ai.dart';
 import 'package:chess/core/ai/search.dart';
+import 'package:chess/core/audio/sound_effect.dart';
 import 'package:chess/core/engine/chess_rules.dart';
 import 'package:chess/core/engine/fen.dart';
 import 'package:chess/core/engine/move.dart';
@@ -379,5 +380,113 @@ void main() {
         await bloc.close();
       }
     });
+  });
+
+  group('PvE ResignRequested', () {
+    test('human White resigns in PvE', () async {
+      final bloc = ChessGameBloc(
+        soundPlayer: sound,
+        ai: mockAi,
+        config: const GameConfig(
+          mode: GameMode.pve,
+          humanColor: PieceColor.white,
+          level: AiLevel.easy,
+        ),
+      );
+
+      bloc.add(const ResignRequested());
+      await pumpEventQueue();
+
+      expect(bloc.state.status, GameStatus.whiteResigned);
+      expect(bloc.state.isGameOver, isTrue);
+      expect(bloc.state.canUndo, isFalse);
+      verify(() => sound.play(SoundEffect.gameEnd)).called(1);
+
+      await bloc.close();
+    });
+
+    test('human Black resigns in PvE', () async {
+      final aiCompleter = Completer<Move>();
+      when(() => mockAi.chooseMove(any(), any()))
+          .thenAnswer((_) => aiCompleter.future);
+
+      final bloc = ChessGameBloc(
+        soundPlayer: sound,
+        ai: mockAi,
+        config: const GameConfig(
+          mode: GameMode.pve,
+          humanColor: PieceColor.black,
+          level: AiLevel.easy,
+        ),
+      );
+
+      // AI is thinking first move
+      await pumpEventQueue();
+      expect(bloc.state.isAiThinking, isTrue);
+
+      bloc.add(const ResignRequested());
+      await pumpEventQueue();
+
+      expect(bloc.state.status, GameStatus.blackResigned);
+      expect(bloc.state.isGameOver, isTrue);
+      expect(bloc.state.isAiThinking, isFalse);
+      expect(bloc.state.canUndo, isFalse);
+      verify(() => sound.play(SoundEffect.gameEnd)).called(1);
+
+      // AI finishes late -> result is discarded
+      aiCompleter.complete(const Move(52, 36));
+      await pumpEventQueue();
+
+      expect(bloc.state.status, GameStatus.blackResigned);
+      expect(bloc.state.moves, isEmpty);
+
+      await bloc.close();
+    });
+
+    test(
+      'human resigns while AI is thinking -> AI move is discarded',
+      () async {
+        final aiCompleter = Completer<Move>();
+        when(() => mockAi.chooseMove(any(), any()))
+            .thenAnswer((_) => aiCompleter.future);
+
+        final bloc = ChessGameBloc(
+          soundPlayer: sound,
+          ai: mockAi,
+          config: const GameConfig(
+            mode: GameMode.pve,
+            humanColor: PieceColor.white,
+            level: AiLevel.easy,
+          ),
+        );
+
+        // Human plays e2-e4
+        bloc.add(const SquareTapped(52)); // e2
+        bloc.add(const SquareTapped(36)); // e4
+        await pumpEventQueue();
+
+        expect(bloc.state.moves.length, 1);
+        expect(bloc.state.isAiThinking, isTrue);
+
+        // Human resigns while AI is thinking
+        bloc.add(const ResignRequested());
+        await pumpEventQueue();
+
+        expect(bloc.state.status, GameStatus.whiteResigned);
+        expect(bloc.state.isAiThinking, isFalse);
+        expect(bloc.state.canUndo, isFalse);
+        verify(() => sound.play(SoundEffect.gameEnd)).called(1);
+
+        // AI finishes its computation
+        aiCompleter.complete(const Move(12, 28)); // e7e5
+        await pumpEventQueue();
+
+        // State remains resigned, AI move is discarded, moves list unchanged
+        expect(bloc.state.status, GameStatus.whiteResigned);
+        expect(bloc.state.moves.length, 1);
+
+        await bloc.close();
+      },
+    );
   });
 }

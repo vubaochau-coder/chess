@@ -27,6 +27,7 @@ class ChessGameBloc extends Bloc<ChessGameEvent, ChessGameState> {
     on<PromotionPieceSelected>(_onPromotionPieceSelected);
     on<PromotionCancelled>(_onPromotionCancelled);
     on<UndoRequested>(_onUndoRequested);
+    on<ResignRequested>(_onResignRequested);
     on<_AiMoveRequested>(_onAiMoveRequested, transformer: restartable());
 
     _checkRequestAiMove();
@@ -135,16 +136,38 @@ class ChessGameBloc extends Bloc<ChessGameEvent, ChessGameState> {
     _checkRequestAiMove();
   }
 
+  void _onResignRequested(ResignRequested event, Emitter<ChessGameState> emit) {
+    if (state.isGameOver) return;
+
+    final GameStatus resignStatus;
+    if (state.config.mode == GameMode.pvp) {
+      resignStatus = state.position.whiteToMove
+          ? GameStatus.whiteResigned
+          : GameStatus.blackResigned;
+    } else {
+      resignStatus = state.config.humanColor == PieceColor.white
+          ? GameStatus.whiteResigned
+          : GameStatus.blackResigned;
+    }
+
+    _sound.play(SoundEffect.gameEnd);
+    emit(state.resigned(resignStatus));
+  }
+
   Future<void> _onAiMoveRequested(
     _AiMoveRequested event,
     Emitter<ChessGameState> emit,
   ) async {
-    if (state.gameId != event.gameId || state.moves.length != event.ply) {
+    if (state.gameId != event.gameId ||
+        state.moves.length != event.ply ||
+        state.isGameOver) {
       return;
     }
     emit(state.copyWith(isAiThinking: true));
     final move = await _ai.chooseMove(state.history, state.config.level);
-    if (state.gameId != event.gameId || state.moves.length != event.ply) {
+    if (state.gameId != event.gameId ||
+        state.moves.length != event.ply ||
+        state.isGameOver) {
       return;
     }
     final record = _createRecord(move.from, move.to, promotion: move.promotion);

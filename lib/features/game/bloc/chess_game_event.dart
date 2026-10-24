@@ -50,6 +50,11 @@ final class UndoRequested extends ChessGameEvent {
   const UndoRequested();
 }
 
+/// Người chơi yêu cầu đầu hàng.
+final class ResignRequested extends ChessGameEvent {
+  const ResignRequested();
+}
+
 /// Yêu cầu AI tính nước đi cho ván [gameId] ở độ sâu [ply].
 final class _AiMoveRequested extends ChessGameEvent {
   const _AiMoveRequested({required this.gameId, required this.ply});
