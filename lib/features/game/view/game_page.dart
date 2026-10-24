@@ -11,6 +11,7 @@ import 'package:chess/features/game/widgets/chess_board.dart';
 import 'package:chess/features/game/widgets/game_status_bar.dart';
 import 'package:chess/features/game/widgets/move_list.dart';
 import 'package:chess/features/game/widgets/promotion_dialog.dart';
+import 'package:chess/features/settings/view/settings_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -83,7 +84,21 @@ class GameView extends StatelessWidget {
         }
       },
       child: Scaffold(
-        appBar: AppBar(title: Text(title)),
+        appBar: AppBar(
+          title: Text(title),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.settings),
+              tooltip: 'Cài đặt',
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute<void>(builder: (_) => const SettingsPage()),
+                );
+              },
+            ),
+          ],
+        ),
         body: SafeArea(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

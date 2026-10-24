@@ -6,10 +6,13 @@ import 'package:chess/core/engine/chess_rules.dart';
 import 'package:chess/core/engine/fen.dart';
 import 'package:chess/core/engine/move.dart';
 import 'package:chess/core/game/game_config.dart';
+import 'package:chess/core/storage/settings_repository.dart';
 import 'package:chess/features/game/view/game_page.dart';
 import 'package:chess/features/game/widgets/chess_board.dart';
 import 'package:chess/features/game/widgets/piece_view.dart';
 import 'package:chess/features/game/widgets/promotion_dialog.dart';
+import 'package:chess/features/settings/cubit/settings_cubit.dart';
+import 'package:chess/features/settings/view/settings_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -30,16 +33,21 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
+    final settingsRepo = InMemorySettingsRepository();
     await tester.pumpWidget(
       MultiRepositoryProvider(
         providers: [
           RepositoryProvider<SoundPlayer>.value(value: MockSoundPlayer()),
           RepositoryProvider<ChessAi>.value(value: ai ?? MockChessAi()),
+          RepositoryProvider<SettingsRepository>.value(value: settingsRepo),
         ],
-        child: MaterialApp(
-          home: GamePage(
-            config: config ?? const GameConfig.pvp(),
-            startPosition: startPosition,
+        child: BlocProvider<SettingsCubit>(
+          create: (_) => SettingsCubit(repository: settingsRepo),
+          child: MaterialApp(
+            home: GamePage(
+              config: config ?? const GameConfig.pvp(),
+              startPosition: startPosition,
+            ),
           ),
         ),
       ),
@@ -385,4 +393,19 @@ void main() {
       expect(tester.widget<IconButton>(undoButton).onPressed, isNull);
     },
   );
+
+  testWidgets('tapping settings button on GamePage navigates to SettingsPage', (
+    tester,
+  ) async {
+    await pumpGame(tester);
+
+    final settingsButton = find.byTooltip('Cài đặt');
+    expect(settingsButton, findsOneWidget);
+
+    await tester.tap(settingsButton);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(SettingsPage), findsOneWidget);
+    expect(find.text('Cài đặt'), findsOneWidget);
+  });
 }

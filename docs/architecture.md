@@ -38,8 +38,8 @@ lib/
     audio/                  # sound_effect.dart, sound_player.dart
     ai/                     # (Giai đoạn 3) SearchBoard, search, ChessAi
     game/                   # (Giai đoạn 3) GameConfig, (Giai đoạn 6) ChessClock
-    settings/               # (Giai đoạn 4) AppSettings
-    storage/                # saved_game.dart, game_repository.dart, (Giai đoạn 4) SettingsRepository
+    settings/               # app_settings.dart
+    storage/                # saved_game.dart, game_repository.dart, settings_repository.dart
   features/
     game/
       bloc/                 # chess_game_bloc.dart (+ part event/state)
@@ -49,7 +49,7 @@ lib/
     home/
       cubit/                # home_cubit.dart (+ part home_state.dart)
       view/                 # home_page.dart: HomePage (tạo cubit) + HomeView (UI thuần)
-    settings/               # (Giai đoạn 4) cài đặt
+    settings/               # cubit/settings_cubit.dart, view/settings_page.dart
   theme/
 test/                       # song song với lib/, helper dùng chung ở test/helpers/
 ```
