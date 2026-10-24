@@ -2,15 +2,23 @@ import 'dart:async';
 
 import 'package:chess/core/ai/chess_ai.dart';
 import 'package:chess/core/audio/sound_player.dart';
+import 'package:chess/core/settings/app_settings.dart';
 import 'package:chess/core/storage/game_repository.dart';
+import 'package:chess/core/storage/settings_repository.dart';
 import 'package:chess/features/home/view/home_page.dart';
+import 'package:chess/features/settings/cubit/settings_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ChessApp extends StatelessWidget {
-  const ChessApp({super.key, required this.gameRepository});
+  const ChessApp({
+    super.key,
+    required this.gameRepository,
+    required this.settingsRepository,
+  });
 
   final GameRepository gameRepository;
+  final SettingsRepository settingsRepository;
 
   @override
   Widget build(BuildContext context) {
@@ -23,14 +31,40 @@ class ChessApp extends StatelessWidget {
         ),
         RepositoryProvider<ChessAi>(create: (_) => const IsolateChessAi()),
         RepositoryProvider<GameRepository>.value(value: gameRepository),
+        RepositoryProvider<SettingsRepository>.value(value: settingsRepository),
       ],
-      child: MaterialApp(
-        title: 'Chess',
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+      child: BlocProvider<SettingsCubit>(
+        create: (context) =>
+            SettingsCubit(repository: context.read<SettingsRepository>()),
+        child: BlocSelector<SettingsCubit, AppSettings, ThemeMode>(
+          selector: (settings) => switch (settings.themeMode) {
+            AppThemeMode.system => ThemeMode.system,
+            AppThemeMode.light => ThemeMode.light,
+            AppThemeMode.dark => ThemeMode.dark,
+          },
+          builder: (context, themeMode) {
+            return MaterialApp(
+              title: 'Chess',
+              debugShowCheckedModeBanner: false,
+              theme: ThemeData(
+                colorScheme: ColorScheme.fromSeed(
+                  seedColor: Colors.deepPurple,
+                  brightness: Brightness.light,
+                ),
+                useMaterial3: true,
+              ),
+              darkTheme: ThemeData(
+                colorScheme: ColorScheme.fromSeed(
+                  seedColor: Colors.deepPurple,
+                  brightness: Brightness.dark,
+                ),
+                useMaterial3: true,
+              ),
+              themeMode: themeMode,
+              home: const HomePage(),
+            );
+          },
         ),
-        home: const HomePage(),
       ),
     );
   }

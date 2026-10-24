@@ -8,8 +8,11 @@ import 'package:chess/core/engine/move.dart';
 import 'package:chess/core/game/game_config.dart';
 import 'package:chess/core/storage/game_repository.dart';
 import 'package:chess/core/storage/saved_game.dart';
+import 'package:chess/core/storage/settings_repository.dart';
 import 'package:chess/features/game/view/game_page.dart';
 import 'package:chess/features/home/view/home_page.dart';
+import 'package:chess/features/settings/cubit/settings_cubit.dart';
+import 'package:chess/features/settings/view/settings_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -58,8 +61,7 @@ void main() {
   }) async {
     tester.view.physicalSize = const Size(800, 1200);
     tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.reset);
-
+    final settingsRepo = InMemorySettingsRepository();
     await tester.pumpWidget(
       MultiRepositoryProvider(
         providers: [
@@ -68,9 +70,13 @@ void main() {
           RepositoryProvider<GameRepository>.value(
             value: gameRepository ?? repo,
           ),
+          RepositoryProvider<SettingsRepository>.value(value: settingsRepo),
         ],
-        child: MaterialApp(
-          home: HomePage(key: key, random: random),
+        child: BlocProvider<SettingsCubit>(
+          create: (_) => SettingsCubit(repository: settingsRepo),
+          child: MaterialApp(
+            home: HomePage(key: key, random: random),
+          ),
         ),
       ),
     );
@@ -258,6 +264,22 @@ void main() {
 
         expect(find.byType(HomePage), findsOneWidget);
         expect(find.text('Tiếp tục ván đang chơi'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'tapping settings button on HomePage navigates to SettingsPage',
+      (tester) async {
+        await pumpHome(tester);
+
+        final settingsButton = find.byTooltip('Cài đặt');
+        expect(settingsButton, findsOneWidget);
+
+        await tester.tap(settingsButton);
+        await tester.pumpAndSettle();
+
+        expect(find.byType(SettingsPage), findsOneWidget);
+        expect(find.text('Cài đặt'), findsOneWidget);
       },
     );
   });

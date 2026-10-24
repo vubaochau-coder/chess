@@ -1,0 +1,60 @@
+import 'package:bloc_test/bloc_test.dart';
+import 'package:chess/core/settings/app_settings.dart';
+import 'package:chess/core/storage/settings_repository.dart';
+import 'package:chess/features/settings/cubit/settings_cubit.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+
+import '../../../helpers/mocks.dart';
+
+void main() {
+  setUpAll(registerFallbacks);
+
+  late SettingsRepository repository;
+
+  setUp(() {
+    repository = MockSettingsRepository();
+  });
+
+  group('SettingsCubit', () {
+    test('initial state is loaded from repository', () {
+      when(repository.load)
+          .thenReturn(const AppSettings(themeMode: AppThemeMode.dark));
+
+      final cubit = SettingsCubit(repository: repository);
+      expect(cubit.state, const AppSettings(themeMode: AppThemeMode.dark));
+      verify(repository.load).called(1);
+    });
+
+    blocTest<SettingsCubit, AppSettings>(
+      'setThemeMode emits updated state and calls repository.save',
+      setUp: () {
+        when(repository.load).thenReturn(const AppSettings());
+        when(() => repository.save(any())).thenAnswer((_) async {});
+      },
+      build: () => SettingsCubit(repository: repository),
+      act: (cubit) => cubit.setThemeMode(AppThemeMode.dark),
+      expect: () => [const AppSettings(themeMode: AppThemeMode.dark)],
+      verify: (_) {
+        verify(
+          () =>
+              repository.save(const AppSettings(themeMode: AppThemeMode.dark)),
+        ).called(1);
+      },
+    );
+
+    blocTest<SettingsCubit, AppSettings>(
+      'setThemeMode does nothing when setting same themeMode',
+      setUp: () {
+        when(repository.load)
+            .thenReturn(const AppSettings(themeMode: AppThemeMode.dark));
+      },
+      build: () => SettingsCubit(repository: repository),
+      act: (cubit) => cubit.setThemeMode(AppThemeMode.dark),
+      expect: () => <AppSettings>[],
+      verify: (_) {
+        verifyNever(() => repository.save(any()));
+      },
+    );
+  });
+}

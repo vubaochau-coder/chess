@@ -5,6 +5,7 @@ import 'package:chess/core/game/game_config.dart';
 import 'package:chess/core/storage/game_repository.dart';
 import 'package:chess/features/game/view/game_page.dart';
 import 'package:chess/features/home/cubit/home_cubit.dart';
+import 'package:chess/features/settings/view/settings_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -93,6 +94,20 @@ class HomeView extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
+      appBar: AppBar(
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            tooltip: 'Cài đặt',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute<void>(builder: (_) => const SettingsPage()),
+              );
+            },
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
