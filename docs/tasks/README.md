@@ -56,7 +56,7 @@ Mỗi đặc tả task có các mục:
 
 | Mã | Task | Phụ thuộc | Đầu vào owner | Trạng thái |
 |---|---|---|---|---|
-| T3.0 | Dọn dẹp sau review (engine, SearchBoard, test) | T3.2 | — | todo |
+| T3.0 | Dọn dẹp sau review (engine, SearchBoard, test) | T3.2 | — | done |
 | T3.1 | Bàn cờ nội bộ tốc độ cao cho AI | T2.2 | — | done |
 | T3.2 | Thuật toán tìm nước đi | T3.1 | — | done |
 | T3.3 | Mức độ khó + service `ChessAi` chạy Isolate | T3.2 | — | done |

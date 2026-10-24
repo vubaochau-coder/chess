@@ -427,5 +427,42 @@ void main() {
         expect(legalMoves, isNotEmpty);
       },
     );
+
+    blocTest<ChessGameBloc, ChessGameState>(
+      'undo while piece is selected clears selected and legalTargets',
+      build: buildBloc,
+      act: (bloc) => bloc
+        ..add(const SquareTapped(e2))
+        ..add(const SquareTapped(e4))
+        ..add(const SquareTapped(e7))
+        ..add(const UndoRequested()),
+      verify: (bloc) {
+        expect(bloc.state.selected, isNull);
+        expect(bloc.state.legalTargets, isEmpty);
+        expect(bloc.state.history, hasLength(1));
+        expect(bloc.state.moves, isEmpty);
+      },
+    );
+
+    blocTest<ChessGameBloc, ChessGameState>(
+      'undo while pending promotion clears pendingPromotion, selected, and legalTargets',
+      build: () => ChessGameBloc(
+        soundPlayer: sound,
+        startPosition: Fen.parse('8/P6k/8/7p/8/8/8/K7 w - - 0 1'),
+      ),
+      act: (bloc) => bloc
+        ..add(const SquareTapped(56)) // a1
+        ..add(const SquareTapped(48)) // a2
+        ..add(const SquareTapped(31)) // h5
+        ..add(const SquareTapped(39)) // h4
+        ..add(const SquareTapped(a7))
+        ..add(const SquareTapped(a8))
+        ..add(const UndoRequested()),
+      verify: (bloc) {
+        expect(bloc.state.pendingPromotion, isNull);
+        expect(bloc.state.selected, isNull);
+        expect(bloc.state.legalTargets, isEmpty);
+      },
+    );
   });
 }

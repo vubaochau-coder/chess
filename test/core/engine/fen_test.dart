@@ -73,6 +73,27 @@ void main() {
       );
     });
 
+    test('consecutive digits throw FormatException', () {
+      expect(
+        () => Fen.parse(
+          'rnbqkbnr/pppppppp/44/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+        ),
+        throwsFormatException,
+      );
+      expect(
+        () => Fen.parse(
+          'rnbqkbnr/pppppppp/17/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+        ),
+        throwsFormatException,
+      );
+      expect(
+        () => Fen.parse(
+          'rnbqkbnr/pppppppp/116/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+        ),
+        throwsFormatException,
+      );
+    });
+
     test('unknown character in board', () {
       expect(
         () => Fen.parse(

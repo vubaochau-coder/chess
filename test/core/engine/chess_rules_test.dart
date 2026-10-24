@@ -1,5 +1,6 @@
 import 'package:chess/core/engine/chess_rules.dart';
 import 'package:chess/core/engine/fen.dart';
+import 'package:chess/core/engine/move.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 // Đếm số thế cờ ở độ sâu [depth], so với giá trị chuẩn để kiểm tra luật đi
@@ -75,5 +76,80 @@ void main() {
     );
     expect(promote.isPromotion, isTrue);
     expect(promote.position.board[0], 'Q');
+  });
+
+  group('positionRepetitionKey', () {
+    test('same key when en passant cannot be captured vs no en passant', () {
+      final posWithEp = Fen.parse(
+        'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1',
+      );
+      final posWithoutEp = Fen.parse(
+        'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1',
+      );
+
+      final keyWithEp = ChessRules.positionRepetitionKey(posWithEp);
+      final keyWithoutEp = ChessRules.positionRepetitionKey(posWithoutEp);
+
+      expect(keyWithEp, equals(keyWithoutEp));
+    });
+
+    test('different keys when en passant can be captured vs no en passant', () {
+      // Black pawn at d4 can capture white pawn at e4 via e3
+      final posCanCapture = Fen.parse(
+        'rnbqkbnr/ppp1pppp/8/8/3pP3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1',
+      );
+      final posNoEp = Fen.parse(
+        'rnbqkbnr/ppp1pppp/8/8/3pP3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1',
+      );
+
+      final keyCanCapture = ChessRules.positionRepetitionKey(posCanCapture);
+      final keyNoEp = ChessRules.positionRepetitionKey(posNoEp);
+
+      expect(keyCanCapture, isNot(equals(keyNoEp)));
+    });
+  });
+
+  group('isLegalMove', () {
+    test('validates legal and illegal moves correctly', () {
+      final initial = GamePosition.initial();
+
+      // Nước hợp lệ
+      expect(ChessRules.isLegalMove(initial, Move.fromUci('e2e4')), isTrue);
+      expect(ChessRules.isLegalMove(initial, Move.fromUci('g1f3')), isTrue);
+
+      // Nước không hợp lệ: sai vị trí đích (tốt nhảy 3 ô)
+      expect(ChessRules.isLegalMove(initial, Move.fromUci('e2e5')), isFalse);
+
+      // Nước không hợp lệ: đi xuyên quân (xe a1 đi qua a2)
+      expect(ChessRules.isLegalMove(initial, Move.fromUci('a1a3')), isFalse);
+
+      // Nước không hợp lệ: tự đưa vào thế chiếu
+      final pinPos = Fen.parse('4k3/8/8/4r3/8/8/4K3/8 w - - 0 1');
+      // Vua trắng bị chiếu bởi xe e5, đi tốt hay nước không đỡ chiếu là sai
+      expect(
+        ChessRules.isLegalMove(
+          pinPos,
+          Move.fromUci('e2e3'),
+        ), // Vua vẫn trên cột e
+        isFalse,
+      );
+
+      // Nước phong cấp thiếu quân phong cấp (e7e8 nhưng không có promotion)
+      final promoPos = Fen.parse('8/P6k/8/8/8/8/8/K7 w - - 0 1');
+      // sq 8 là a7, sq 0 là a8
+      expect(ChessRules.isLegalMove(promoPos, const Move(8, 0)), isFalse);
+
+      // Nước thường kèm quân phong cấp (e2e4 kèm 'q')
+      expect(
+        ChessRules.isLegalMove(initial, const Move(52, 36, promotion: 'q')),
+        isFalse,
+      );
+
+      // Nước phong cấp hợp lệ (a7a8q)
+      expect(
+        ChessRules.isLegalMove(promoPos, const Move(8, 0, promotion: 'q')),
+        isTrue,
+      );
+    });
   });
 }

@@ -20,19 +20,28 @@ abstract final class Fen {
     var whiteKings = 0;
     var blackKings = 0;
 
+    final digit1 = '1'.codeUnitAt(0);
+    final digit8 = '8'.codeUnitAt(0);
+
     for (var r = 0; r < 8; r++) {
       final rowStr = rows[r];
       var col = 0;
+      var lastWasDigit = false;
       for (var i = 0; i < rowStr.length; i++) {
         final c = rowStr[i];
-        if (c.codeUnitAt(0) >= 49 && c.codeUnitAt(0) <= 56) {
-          // '1'..'8'
+        final code = c.codeUnitAt(0);
+        if (code >= digit1 && code <= digit8) {
+          if (lastWasDigit) {
+            throw FormatException('Rank $r has consecutive digits: $rowStr');
+          }
+          lastWasDigit = true;
           final emptyCount = int.parse(c);
           col += emptyCount;
           if (col > 8) {
             throw FormatException('Rank $r has more than 8 squares');
           }
         } else if (_isPieceChar(c)) {
+          lastWasDigit = false;
           if (col >= 8) {
             throw FormatException('Rank $r has more than 8 squares');
           }
