@@ -24,7 +24,6 @@ Quyết định: <chấp nhận / đưa vào task / bỏ qua> — <mục>.
 | Việc | Liên quan | Ai |
 |---|---|---|
 | Khi cân chỉnh độ khó AI: `tool/ai_match.dart` nên nhận `seed` để so sánh có kiểm soát (Medium/Easy hiện không seed nên ván không tái hiện được) | T3.3 · chưa gắn task | owner tạo task khi cần |
-| Các mục đã đưa vào T3.0 (khóa lặp lại dùng `Fen.format`, `Fen.parse` chặt, Zobrist en passant, `isLegalMove`, `SearchBoard.board` chỉ đọc, test phong cấp/undo) | T3.0 | agent |
 
 ## Kiểm tra trên thiết bị (owner, trước mốc v0.5)
 

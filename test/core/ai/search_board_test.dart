@@ -106,4 +106,39 @@ void main() {
       );
     });
   });
+
+  group('SearchBoard Zobrist en passant & immutability', () {
+    test('same zobristKey after 1.e4 without adjacent pawns vs ep -', () {
+      final posWithEp = Fen.parse(
+        'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1',
+      );
+      final posWithoutEp = Fen.parse(
+        'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1',
+      );
+
+      final boardWithEp = SearchBoard.fromPosition(posWithEp);
+      final boardWithoutEp = SearchBoard.fromPosition(posWithoutEp);
+
+      expect(boardWithEp.zobristKey, equals(boardWithoutEp.zobristKey));
+    });
+
+    test('different zobristKey after 1.e4 with black pawn at d4 vs ep -', () {
+      final posWithEp = Fen.parse(
+        'rnbqkbnr/ppp1pppp/8/8/3pP3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1',
+      );
+      final posWithoutEp = Fen.parse(
+        'rnbqkbnr/ppp1pppp/8/8/3pP3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1',
+      );
+
+      final boardWithEp = SearchBoard.fromPosition(posWithEp);
+      final boardWithoutEp = SearchBoard.fromPosition(posWithoutEp);
+
+      expect(boardWithEp.zobristKey, isNot(equals(boardWithoutEp.zobristKey)));
+    });
+
+    test('writing to board view throws UnsupportedError', () {
+      final board = SearchBoard.fromPosition(GamePosition.initial());
+      expect(() => board.board[0] = 0, throwsUnsupportedError);
+    });
+  });
 }

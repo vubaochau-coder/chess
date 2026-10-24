@@ -134,6 +134,13 @@ void main() {
 
       expect(find.byType(PromotionDialog), findsOneWidget);
       expect(find.text('Phong cấp'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(PromotionDialog),
+          matching: find.byType(PieceView),
+        ),
+        findsNWidgets(4),
+      );
 
       // 4 choices: Q, R, B, N
       final knightButton = find.descendant(

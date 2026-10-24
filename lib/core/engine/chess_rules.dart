@@ -8,7 +8,7 @@ Chữ hoa là quân trắng, chữ thường là quân đen, '' là ô trống.
 */
 
 import 'package:chess/core/engine/fen.dart';
-import 'package:chess/core/engine/square.dart';
+import 'package:chess/core/engine/move.dart';
 
 enum GameStatus {
   playing,
@@ -480,44 +480,14 @@ class ChessRules {
     return false;
   }
 
+  /// Khóa nhận diện lặp lại trạng thái theo 4 trường đầu của FEN (bàn cờ, bên đi,
+  /// quyền nhập thành, ô en passant nếu có thể bắt).
   static String positionRepetitionKey(GamePosition pos) {
-    final rowStrings = <String>[];
-    for (var r = 0; r < 8; r++) {
-      final sb = StringBuffer();
-      var emptyCount = 0;
-      for (var c = 0; c < 8; c++) {
-        final piece = pos.board[r * 8 + c];
-        if (piece.isEmpty) {
-          emptyCount++;
-        } else {
-          if (emptyCount > 0) {
-            sb.write(emptyCount);
-            emptyCount = 0;
-          }
-          sb.write(piece);
-        }
-      }
-      if (emptyCount > 0) {
-        sb.write(emptyCount);
-      }
-      rowStrings.add(sb.toString());
-    }
-    final boardStr = rowStrings.join('/');
-    final activeColor = pos.whiteToMove ? 'w' : 'b';
-
-    final castlingBuf = StringBuffer();
-    if (pos.castling.contains('K')) castlingBuf.write('K');
-    if (pos.castling.contains('Q')) castlingBuf.write('Q');
-    if (pos.castling.contains('k')) castlingBuf.write('k');
-    if (pos.castling.contains('q')) castlingBuf.write('q');
-    final castlingStr = castlingBuf.isEmpty ? '-' : castlingBuf.toString();
-
-    var epStr = '-';
-    if (pos.enPassant != null && _canCaptureEnPassant(pos)) {
-      epStr = squareName(pos.enPassant!);
-    }
-
-    return '$boardStr $activeColor $castlingStr $epStr';
+    final fenParts = Fen.format(pos).split(' ');
+    final epStr = (pos.enPassant != null && _canCaptureEnPassant(pos))
+        ? fenParts[3]
+        : '-';
+    return '${fenParts[0]} ${fenParts[1]} ${fenParts[2]} $epStr';
   }
 
   static bool _canCaptureEnPassant(GamePosition pos) {
@@ -530,5 +500,25 @@ class ChessRules {
       }
     }
     return false;
+  }
+
+  /// Kiểm tra xem [move] có phải là nước đi hợp lệ tại [position] hay không.
+  static bool isLegalMove(GamePosition position, Move move) {
+    if (move.from < 0 || move.from >= 64 || move.to < 0 || move.to >= 64) {
+      return false;
+    }
+    final targets = legalMoves(position, move.from);
+    if (!targets.contains(move.to)) return false;
+
+    final isPromo = isPromotionMove(position, move.from, move.to);
+    if (isPromo) {
+      if (move.promotion == null) return false;
+      const validPromos = ['q', 'r', 'b', 'n', 'Q', 'R', 'B', 'N'];
+      return validPromos.contains(move.promotion);
+    } else {
+      if (move.promotion != null) return false;
+    }
+
+    return true;
   }
 }

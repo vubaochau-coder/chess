@@ -84,7 +84,7 @@ final class SearchBoard {
   bool get whiteToMove => _whiteToMove;
   int get zobristKey => _zobristKey;
   int get halfmoveClock => _halfmoveClock;
-  Int8List get board => _board;
+  Int8List get board => _board.asUnmodifiableView();
 
   bool isInsufficientMaterial() {
     var whiteKnights = 0;
@@ -158,6 +158,21 @@ final class SearchBoard {
     _zobristKey = computeZobristKey();
   }
 
+  bool _hasPawnNearEnPassant() {
+    if (_enPassantCol == -1) return false;
+    final pawnRank = _whiteToMove ? 3 : 4;
+    final pawnCode = _whiteToMove ? 1 : 9;
+    if (_enPassantCol > 0 &&
+        _board[pawnRank * 8 + (_enPassantCol - 1)] == pawnCode) {
+      return true;
+    }
+    if (_enPassantCol < 7 &&
+        _board[pawnRank * 8 + (_enPassantCol + 1)] == pawnCode) {
+      return true;
+    }
+    return false;
+  }
+
   int computeZobristKey() {
     _Zobrist.ensureInitialized();
     var key = 0;
@@ -171,7 +186,7 @@ final class SearchBoard {
       key ^= _Zobrist.sideToMove;
     }
     key ^= _Zobrist.castling[_castlingRights];
-    if (_enPassantCol != -1) {
+    if (_enPassantCol != -1 && _hasPawnNearEnPassant()) {
       key ^= _Zobrist.enPassant[_enPassantCol];
     }
     return key;
@@ -675,6 +690,14 @@ final class SearchBoard {
     undo.halfmoveClock = _halfmoveClock;
     undo.zobristKey = _zobristKey;
 
+    // Cập nhật Zobrist cho enPassant cũ trước khi bàn cờ thay đổi
+    if (_enPassantCol != -1) {
+      if (_hasPawnNearEnPassant()) {
+        _zobristKey ^= _Zobrist.enPassant[_enPassantCol];
+      }
+      _enPassantCol = -1;
+    }
+
     final movingPiece = _board[from];
     final pieceType = movingPiece & 7;
     final isWhite = (movingPiece & 8) == 0;
@@ -739,16 +762,9 @@ final class SearchBoard {
       }
     }
 
-    // Cập nhật Zobrist cho enPassant cũ
-    if (_enPassantCol != -1) {
-      _zobristKey ^= _Zobrist.enPassant[_enPassantCol];
-      _enPassantCol = -1;
-    }
-
     // En passant mới nếu tốt đi 2 ô
     if (isTwo) {
       _enPassantCol = from % 8;
-      _zobristKey ^= _Zobrist.enPassant[_enPassantCol];
     }
 
     // Cập nhật quyền nhập thành
@@ -778,6 +794,10 @@ final class SearchBoard {
     // Đổi lượt đi
     _whiteToMove = !_whiteToMove;
     _zobristKey ^= _Zobrist.sideToMove;
+
+    if (_enPassantCol != -1 && _hasPawnNearEnPassant()) {
+      _zobristKey ^= _Zobrist.enPassant[_enPassantCol];
+    }
   }
 
   void unmakeMove() {
