@@ -8,11 +8,14 @@ giai đoạn tương ứng. Agent chỉ làm task được owner giao, theo đú
 1. Đọc `AGENTS.md`, `docs/architecture.md`, rồi mục task được giao.
 2. Kiểm tra cột **Phụ thuộc**: mọi task phụ thuộc phải ở trạng thái `done`. Chưa xong → dừng, báo owner.
 3. Kiểm tra **Đầu vào cần owner** (nếu có). Chưa có → đánh dấu `blocked`, báo owner, dừng.
-4. Tạo nhánh `task/<mã>-<mô-tả>` từ `main` mới nhất.
+4. Tạo nhánh `task/<mã>-<mô-tả>` từ `main` mới nhất. **Không** tạo nhánh chồng lên nhánh của task khác chưa
+   merge — task phụ thuộc phải đã nằm trên `main`.
 5. Làm **đúng phạm vi**. Gặp điểm đặc tả không nói tới → hỏi, không đoán (xem AGENTS.md mục 1).
 6. Đạt Definition of done (AGENTS.md mục 9) + mọi tiêu chí nghiệm thu của task.
 7. Sửa cột **Trạng thái** của task trong bảng dưới thành `review`, mở PR theo mẫu trong AGENTS.md mục 8.
    Owner merge xong sẽ đổi thành `done`.
+8. Ghi chú review không chặn merge được tổng hợp trong [`docs/review-notes.md`](../review-notes.md);
+   agent **không** tự xử lý các ghi chú đó trừ khi chúng được đưa vào một task.
 
 Trạng thái: `todo` · `in-progress` · `blocked` · `review` · `done`
 
@@ -42,19 +45,20 @@ Mỗi đặc tả task có các mục:
 
 | Mã | Task | Phụ thuộc | Đầu vào owner | Trạng thái |
 |---|---|---|---|---|
-| T2.1 | FEN đầy đủ (parse/format) | — | — | review |
-| T2.2 | Luật hòa: 50 nước, lặp 3 lần, thiếu quân | T2.1 | — | review |
-| T2.3 | Chọn quân khi phong cấp | — | — | review |
-| T2.4 | Ký hiệu SAN, danh sách nước đi, quân bị ăn | T2.2, T2.3 | — | review |
-| T2.5 | Đi lại (undo) | T2.4 | — | review |
+| T2.1 | FEN đầy đủ (parse/format) | — | — | done |
+| T2.2 | Luật hòa: 50 nước, lặp 3 lần, thiếu quân | T2.1 | — | done |
+| T2.3 | Chọn quân khi phong cấp | — | — | done |
+| T2.4 | Ký hiệu SAN, danh sách nước đi, quân bị ăn | T2.2, T2.3 | — | done |
+| T2.5 | Đi lại (undo) | T2.4 | — | done |
 
 ### Giai đoạn 3 — PvE ([phase-3.md](phase-3.md))
 
 | Mã | Task | Phụ thuộc | Đầu vào owner | Trạng thái |
 |---|---|---|---|---|
-| T3.1 | Bàn cờ nội bộ tốc độ cao cho AI | T2.2 | — | review |
-| T3.2 | Thuật toán tìm nước đi | T3.1 | — | review |
-| T3.3 | Mức độ khó + service `ChessAi` chạy Isolate | T3.2 | — | todo |
+| T3.0 | Dọn dẹp sau review (engine, SearchBoard, test) | T3.2 | — | todo |
+| T3.1 | Bàn cờ nội bộ tốc độ cao cho AI | T2.2 | — | done |
+| T3.2 | Thuật toán tìm nước đi | T3.1 | — | done |
+| T3.3 | Mức độ khó + service `ChessAi` chạy Isolate | T3.0, T3.2 | — | todo |
 | T3.4 | Tích hợp AI vào game bloc | T3.3, T2.5 | — | todo |
 | T3.5 | Màn hình chính chọn chế độ | T3.4 | — | todo |
 | T3.6 | Đầu hàng | T3.4 | — | todo |
@@ -93,3 +97,5 @@ Mỗi đặc tả task có các mục:
 - Chọn và kiểm tra giấy phép asset (icon, âm thanh, bộ quân cờ).
 - Tìm 12 tester và chạy closed testing 14 ngày.
 - Tạo task mới, sửa đặc tả task, nâng Flutter/package.
+- **Chỉ merge PR sau khi review xong** và các mục "nên sửa trong PR" đã được xử lý; sau khi merge, đổi trạng thái
+  task thành `done` ngay (cùng commit với việc cập nhật `docs/review-notes.md` nếu có).
