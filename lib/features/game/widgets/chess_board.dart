@@ -16,7 +16,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 /// - 64 ô quân cờ: mỗi ô chỉ rebuild khi quân trên chính ô đó đổi.
 /// Chạm được xử lý một lần ở cấp bàn cờ (tính ô từ tọa độ) thay vì 64 widget.
 class ChessBoard extends StatelessWidget {
-  const ChessBoard({super.key});
+  const ChessBoard({super.key, this.flipped = false});
+
+  final bool flipped;
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +34,9 @@ class ChessBoard extends StatelessWidget {
             onTapUp: (details) {
               final col = (details.localPosition.dx ~/ cell).clamp(0, 7);
               final row = (details.localPosition.dy ~/ cell).clamp(0, 7);
-              context.read<ChessGameBloc>().add(SquareTapped(row * 8 + col));
+              final displayIndex = row * 8 + col;
+              final actualIndex = flipped ? (63 - displayIndex) : displayIndex;
+              context.read<ChessGameBloc>().add(SquareTapped(actualIndex));
             },
             child: Stack(
               fit: StackFit.expand,
@@ -40,8 +44,10 @@ class ChessBoard extends StatelessWidget {
                 const RepaintBoundary(
                   child: CustomPaint(painter: BoardPainter()),
                 ),
-                const RepaintBoundary(child: _HighlightLayer()),
-                RepaintBoundary(child: _PiecesLayer(cellSize: cell)),
+                RepaintBoundary(child: _HighlightLayer(flipped: flipped)),
+                RepaintBoundary(
+                  child: _PiecesLayer(cellSize: cell, flipped: flipped),
+                ),
               ],
             ),
           ),
@@ -59,7 +65,9 @@ typedef _Highlights = ({
 });
 
 class _HighlightLayer extends StatelessWidget {
-  const _HighlightLayer();
+  const _HighlightLayer({required this.flipped});
+
+  final bool flipped;
 
   @override
   Widget build(BuildContext context) {
@@ -79,6 +87,7 @@ class _HighlightLayer extends StatelessWidget {
             ],
             targets: h.targets,
             checkSquare: h.checkSquare,
+            flipped: flipped,
           ),
         );
       },
@@ -87,9 +96,10 @@ class _HighlightLayer extends StatelessWidget {
 }
 
 class _PiecesLayer extends StatelessWidget {
-  const _PiecesLayer({required this.cellSize});
+  const _PiecesLayer({required this.cellSize, required this.flipped});
 
   final double cellSize;
+  final bool flipped;
 
   @override
   Widget build(BuildContext context) {
@@ -99,7 +109,10 @@ class _PiecesLayer extends StatelessWidget {
           Row(
             children: [
               for (var col = 0; col < 8; col++)
-                _SquarePiece(index: row * 8 + col, cellSize: cellSize),
+                _SquarePiece(
+                  index: flipped ? (63 - (row * 8 + col)) : (row * 8 + col),
+                  cellSize: cellSize,
+                ),
             ],
           ),
       ],

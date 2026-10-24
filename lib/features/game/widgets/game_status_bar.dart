@@ -10,10 +10,32 @@ class GameStatusBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocSelector<ChessGameBloc, ChessGameState, (GameStatus, bool)>(
-      selector: (state) => (state.status, state.position.whiteToMove),
+    return BlocSelector<
+      ChessGameBloc,
+      ChessGameState,
+      (GameStatus, bool, bool)
+    >(
+      selector: (state) =>
+          (state.status, state.position.whiteToMove, state.isAiThinking),
       builder: (context, value) {
-        final (status, whiteToMove) = value;
+        final (status, whiteToMove, isAiThinking) = value;
+        if (isAiThinking) {
+          return Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox.square(
+                dimension: 16,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Máy đang nghĩ…',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            ],
+          );
+        }
+
         final side = whiteToMove ? 'Trắng' : 'Đen';
         final winner = whiteToMove ? 'Đen' : 'Trắng';
         final text = switch (status) {

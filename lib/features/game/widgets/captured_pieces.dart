@@ -1,9 +1,8 @@
+import 'package:chess/core/game/game_config.dart';
 import 'package:chess/features/game/bloc/chess_game_bloc.dart';
 import 'package:chess/features/game/widgets/piece_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
-enum PieceColor { white, black }
 
 class CapturedPieces extends StatelessWidget {
   const CapturedPieces({super.key, required this.color});
