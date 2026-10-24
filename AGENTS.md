@@ -134,7 +134,7 @@ Lint được ép bởi `analysis_options.yaml` (strict-casts, strict-inference,
   ```
 
 - Không push trực tiếp lên `main`. Không force-push nhánh người khác.
-- Cập nhật trạng thái task trong `docs/tasks/README.md` ngay trong PR.
+- Trong chính PR, đổi trạng thái task trong `docs/tasks/README.md` thành `done` (merge = xong).
 
 ## 9. Definition of done
 
@@ -144,7 +144,7 @@ Lint được ép bởi `analysis_options.yaml` (strict-casts, strict-inference,
 - [ ] `fvm flutter build apk --release` build được
 - [ ] Đạt toàn bộ *Tiêu chí nghiệm thu* của task
 - [ ] Đã chạy thử trên Android (emulator/máy thật) nếu task có thay đổi UI hoặc native
-- [ ] Cập nhật trạng thái task trong `docs/tasks/README.md`; cập nhật `docs/architecture.md`
+- [ ] Đổi trạng thái task thành `done` trong `docs/tasks/README.md`; cập nhật `docs/architecture.md`
       nếu task thêm thành phần kiến trúc mới (layer, repository, bloc mới)
 
 ## 10. Tuyệt đối không

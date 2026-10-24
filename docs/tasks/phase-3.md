@@ -227,6 +227,10 @@ Engine công khai (`ChessRules`, `GamePosition`) **giữ nguyên**, UI vẫn dù
 - [ ] Người cầm Đen → máy đi trước; bàn cờ lật (widget test kiểm tra quân trắng nằm phía trên).
 - [ ] Undo trong pve quay về đúng lượt người.
 - [ ] Chế độ pvp hoạt động như trước (test cũ vẫn xanh).
+- [ ] Ngoài các test dùng mock, có test bloc dùng **AI thật** (một `ChessAi` gọi thẳng `search` với `seed` cố định,
+      không qua Isolate): ở mức Easy và Medium máy luôn đi nước hợp lệ; ở thế có hậu treo
+      (`rnb1kbnr/ppp1pppp/8/3q4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 3`, người cầm Đen) máy mức Medium ăn hậu
+      với mọi seed trong 10 seed thử.
 
 ---
 
