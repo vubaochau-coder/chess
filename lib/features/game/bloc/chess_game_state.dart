@@ -43,6 +43,36 @@ final class ChessGameState extends Equatable {
     );
   }
 
+  factory ChessGameState.restore(SavedGame restore, {int gameId = 0}) {
+    final start = Fen.parse(restore.startFen);
+    var current = ChessGameState.initial(
+      start,
+      config: restore.config,
+      gameId: gameId,
+    );
+
+    for (final uci in restore.moves) {
+      final move = Move.fromUci(uci);
+      final before = current.position;
+      final san = San.format(before, move);
+      final type = before.board[move.from].toLowerCase();
+      final isEnPassant = type == 'p' && move.to == before.enPassant;
+      final captured = isEnPassant
+          ? before.board[(move.from ~/ 8) * 8 + (move.to % 8)]
+          : (before.board[move.to].isNotEmpty ? before.board[move.to] : null);
+      final record = MoveRecord(move: move, san: san, captured: captured);
+      final result = ChessRules.applyMove(
+        before,
+        move.from,
+        move.to,
+        promotion: move.promotion ?? 'q',
+      );
+      current = current.afterMove(result.position, record);
+    }
+
+    return current;
+  }
+
   final GameConfig config;
 
   final int gameId;

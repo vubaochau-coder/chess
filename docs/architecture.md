@@ -39,7 +39,7 @@ lib/
     ai/                     # (Giai đoạn 3) SearchBoard, search, ChessAi
     game/                   # (Giai đoạn 3) GameConfig, (Giai đoạn 6) ChessClock
     settings/               # (Giai đoạn 4) AppSettings
-    storage/                # (Giai đoạn 3–4) GameRepository, SettingsRepository
+    storage/                # saved_game.dart, game_repository.dart, (Giai đoạn 4) SettingsRepository
   features/
     game/
       bloc/                 # chess_game_bloc.dart (+ part event/state)

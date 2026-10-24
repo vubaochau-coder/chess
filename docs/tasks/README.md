@@ -63,7 +63,7 @@ Mỗi đặc tả task có các mục:
 | T3.4 | Tích hợp AI vào game bloc | T3.0, T3.3, T2.5 | — | done |
 | T3.5 | Màn hình chính chọn chế độ | T3.4 | — | review |
 | T3.6 | Đầu hàng | T3.4 | — | review |
-| T3.7 | Lưu và tiếp tục ván đang chơi | T3.5, T3.6 | — | todo |
+| T3.7 | Lưu và tiếp tục ván đang chơi | T3.5, T3.6 | — | review |
 
 ### Giai đoạn 4 — Tùy biến giao diện ([phase-4.md](phase-4.md))
 

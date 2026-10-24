@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:chess/core/ai/ai_level.dart';
 import 'package:chess/core/game/game_config.dart';
+import 'package:chess/core/storage/game_repository.dart';
 import 'package:chess/features/game/view/game_page.dart';
 import 'package:chess/features/home/cubit/home_cubit.dart';
 import 'package:flutter/material.dart';
@@ -14,8 +15,14 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    GameRepository? repo;
+    try {
+      repo = context.read<GameRepository>();
+    } catch (_) {
+      repo = null;
+    }
     return BlocProvider(
-      create: (_) => HomeCubit(),
+      create: (_) => HomeCubit(repo),
       child: HomeView(random: random),
     );
   }
@@ -26,7 +33,7 @@ class HomeView extends StatelessWidget {
 
   final math.Random? random;
 
-  void _startGame(BuildContext context, HomeState state) {
+  Future<void> _startGame(BuildContext context, HomeState state) async {
     final PieceColor resolvedColor;
     if (state.colorChoice == ColorChoice.random) {
       resolvedColor = (random ?? math.Random()).nextBool()
@@ -46,10 +53,39 @@ class HomeView extends StatelessWidget {
             humanColor: resolvedColor,
           );
 
-    Navigator.push(
+    await Navigator.push(
       context,
       MaterialPageRoute<void>(builder: (_) => GamePage(config: config)),
     );
+    if (context.mounted) {
+      context.read<HomeCubit>().refresh();
+    }
+  }
+
+  Future<void> _resumeGame(BuildContext context) async {
+    GameRepository? repo;
+    try {
+      repo = context.read<GameRepository>();
+    } catch (_) {
+      repo = null;
+    }
+    final saved = repo?.load();
+    if (saved == null) {
+      if (context.mounted) {
+        context.read<HomeCubit>().refresh();
+      }
+      return;
+    }
+
+    await Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (_) => GamePage(config: saved.config, restore: saved),
+      ),
+    );
+    if (context.mounted) {
+      context.read<HomeCubit>().refresh();
+    }
   }
 
   @override
@@ -135,6 +171,21 @@ class HomeView extends StatelessWidget {
                       ),
                     ],
                     const SizedBox(height: 36),
+                    if (state.hasSavedGame) ...[
+                      FilledButton.tonalIcon(
+                        onPressed: () => _resumeGame(context),
+                        icon: const Icon(Icons.play_circle_outline),
+                        label: const Text('Tiếp tục ván đang chơi'),
+                        style: FilledButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 14,
+                          ),
+                          textStyle: theme.textTheme.titleMedium,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
                     FilledButton.icon(
                       onPressed: () => _startGame(context, state),
                       icon: const Icon(Icons.play_arrow),
