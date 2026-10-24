@@ -309,4 +309,80 @@ void main() {
       expect(find.text('Lượt đi: Đen'), findsOneWidget);
     },
   );
+
+  testWidgets(
+    'resigning: cancel in dialog changes nothing; confirm sets result text and disables buttons',
+    (tester) async {
+      await pumpGame(tester);
+      await tester.pump();
+
+      final resignButton = find.widgetWithIcon(IconButton, Icons.flag);
+      final undoButton = find.widgetWithIcon(IconButton, Icons.undo);
+
+      expect(tester.widget<IconButton>(resignButton).onPressed, isNotNull);
+      expect(find.text('Lượt đi: Trắng'), findsOneWidget);
+
+      // Bấm nút Đầu hàng -> hiện dialog
+      await tester.tap(resignButton);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Đầu hàng?'), findsOneWidget);
+      expect(find.text('Hủy'), findsOneWidget);
+
+      // Bấm Hủy -> dialog đóng, ván cờ không đổi
+      await tester.tap(find.text('Hủy'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Đầu hàng?'), findsNothing);
+      expect(find.text('Lượt đi: Trắng'), findsOneWidget);
+      expect(tester.widget<IconButton>(resignButton).onPressed, isNotNull);
+
+      // Bấm Đầu hàng lần nữa và xác nhận
+      await tester.tap(resignButton);
+      await tester.pumpAndSettle();
+
+      final confirmButton = find.widgetWithText(TextButton, 'Đầu hàng');
+      await tester.tap(confirmButton);
+      await tester.pumpAndSettle();
+
+      // Kết quả đúng: Trắng đầu hàng - Đen thắng
+      expect(find.text('Trắng đầu hàng - Đen thắng'), findsOneWidget);
+
+      // Nút Đầu hàng và nút Đi lại bị disable
+      expect(tester.widget<IconButton>(resignButton).onPressed, isNull);
+      expect(tester.widget<IconButton>(undoButton).onPressed, isNull);
+    },
+  );
+
+  testWidgets(
+    'resigning on Black turn sets "Đen đầu hàng - Trắng thắng" and disables buttons',
+    (tester) async {
+      await pumpGame(tester);
+      await tester.pump();
+
+      final resignButton = find.widgetWithIcon(IconButton, Icons.flag);
+      final undoButton = find.widgetWithIcon(IconButton, Icons.undo);
+
+      // Đi e2 -> e4 để chuyển lượt sang Đen
+      await tapSquare(tester, 'e2');
+      await tapSquare(tester, 'e4');
+      expect(find.text('Lượt đi: Đen'), findsOneWidget);
+      expect(tester.widget<IconButton>(undoButton).onPressed, isNotNull);
+
+      // Bấm Đầu hàng và xác nhận
+      await tester.tap(resignButton);
+      await tester.pumpAndSettle();
+
+      final confirmButton = find.widgetWithText(TextButton, 'Đầu hàng');
+      await tester.tap(confirmButton);
+      await tester.pumpAndSettle();
+
+      // Kết quả đúng: Đen đầu hàng - Trắng thắng
+      expect(find.text('Đen đầu hàng - Trắng thắng'), findsOneWidget);
+
+      // Cả nút Đầu hàng và Đi lại đều bị disable
+      expect(tester.widget<IconButton>(resignButton).onPressed, isNull);
+      expect(tester.widget<IconButton>(undoButton).onPressed, isNull);
+    },
+  );
 }

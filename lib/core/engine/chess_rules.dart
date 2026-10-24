@@ -17,10 +17,16 @@ enum GameStatus {
   stalemate,
   drawFiftyMove,
   drawRepetition,
-  drawInsufficientMaterial;
+  drawInsufficientMaterial,
+  whiteResigned,
+  blackResigned;
 
   bool get isGameOver => this != playing && this != check;
-  bool get isDraw => isGameOver && this != checkmate;
+  bool get isDraw =>
+      isGameOver &&
+      this != checkmate &&
+      this != whiteResigned &&
+      this != blackResigned;
 }
 
 class GamePosition {

@@ -100,6 +100,19 @@ class GameView extends StatelessWidget {
                       );
                     },
                   ),
+                  const SizedBox(width: 8),
+                  BlocSelector<ChessGameBloc, ChessGameState, bool>(
+                    selector: (state) => !state.isGameOver,
+                    builder: (context, canResign) {
+                      return IconButton(
+                        icon: const Icon(Icons.flag),
+                        tooltip: 'Đầu hàng',
+                        onPressed: canResign
+                            ? () => _showResignDialog(context)
+                            : null,
+                      );
+                    },
+                  ),
                 ],
               ),
               const SizedBox(height: 8),
@@ -120,5 +133,27 @@ class GameView extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _showResignDialog(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Đầu hàng?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Hủy'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Đầu hàng'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && context.mounted) {
+      context.read<ChessGameBloc>().add(const ResignRequested());
+    }
   }
 }

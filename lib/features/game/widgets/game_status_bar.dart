@@ -47,6 +47,8 @@ class GameStatusBar extends StatelessWidget {
           GameStatus.drawRepetition => 'Hòa - lặp lại 3 lần',
           GameStatus.drawInsufficientMaterial =>
             'Hòa - không đủ quân chiếu hết',
+          GameStatus.whiteResigned => 'Trắng đầu hàng - Đen thắng',
+          GameStatus.blackResigned => 'Đen đầu hàng - Trắng thắng',
         };
         return Text(text, style: Theme.of(context).textTheme.titleLarge);
       },

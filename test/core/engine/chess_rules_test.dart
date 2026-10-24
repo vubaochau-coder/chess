@@ -151,5 +151,12 @@ void main() {
         isTrue,
       );
     });
+
+    test('GameStatus resignation properties', () {
+      expect(GameStatus.whiteResigned.isGameOver, isTrue);
+      expect(GameStatus.whiteResigned.isDraw, isFalse);
+      expect(GameStatus.blackResigned.isGameOver, isTrue);
+      expect(GameStatus.blackResigned.isDraw, isFalse);
+    });
   });
 }
