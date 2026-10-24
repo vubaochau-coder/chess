@@ -1,3 +1,4 @@
+import 'package:chess/core/ai/ai_level.dart';
 import 'package:chess/core/ai/chess_ai.dart';
 import 'package:chess/core/audio/sound_player.dart';
 import 'package:chess/core/engine/chess_rules.dart';
@@ -38,6 +39,16 @@ class GameView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final config = context.select((ChessGameBloc b) => b.state.config);
+    final title = switch (config.mode) {
+      GameMode.pvp => '2 người',
+      GameMode.pve => switch (config.level) {
+        AiLevel.easy => 'Máy - Dễ',
+        AiLevel.medium => 'Máy - Trung bình',
+        AiLevel.hard => 'Máy - Khó',
+      },
+    };
+
     return BlocListener<ChessGameBloc, ChessGameState>(
       listenWhen: (previous, current) =>
           previous.pendingPromotion == null && current.pendingPromotion != null,
@@ -55,6 +66,7 @@ class GameView extends StatelessWidget {
         }
       },
       child: Scaffold(
+        appBar: AppBar(title: Text(title)),
         body: SafeArea(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

@@ -46,7 +46,9 @@ lib/
       view/                 # game_page.dart: GamePage (tạo bloc) + GameView (UI thuần)
       widgets/              # chess_board.dart, piece_view.dart, game_status_bar.dart
       painter/              # board_painter.dart, highlight_painter.dart
-    home/                   # (Giai đoạn 3) màn hình chọn chế độ
+    home/
+      cubit/                # home_cubit.dart (+ part home_state.dart)
+      view/                 # home_page.dart: HomePage (tạo cubit) + HomeView (UI thuần)
     settings/               # (Giai đoạn 4) cài đặt
   theme/
 test/                       # song song với lib/, helper dùng chung ở test/helpers/
