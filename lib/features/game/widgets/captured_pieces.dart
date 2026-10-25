@@ -59,8 +59,11 @@ class CapturedPieces extends StatelessWidget {
             ? whiteScore - blackScore
             : blackScore - whiteScore;
 
+        final theme = Theme.of(context);
+        final colorScheme = theme.colorScheme;
+
         return SizedBox(
-          height: 24,
+          height: 28,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
@@ -68,17 +71,25 @@ class CapturedPieces extends StatelessWidget {
                 for (final piece in displayedPieces)
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 1),
-                    child: PieceView(piece: piece, size: 20),
+                    child: PieceView(piece: piece, size: 22),
                   ),
                 if (diff > 0)
-                  Padding(
-                    padding: const EdgeInsets.only(left: 4),
+                  Container(
+                    margin: const EdgeInsets.only(left: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                     child: Text(
                       '+$diff',
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 11,
                         fontWeight: FontWeight.bold,
-                        color: Colors.grey.shade700,
+                        color: colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ),

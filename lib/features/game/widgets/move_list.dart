@@ -7,10 +7,37 @@ class MoveList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return BlocSelector<ChessGameBloc, ChessGameState, List<MoveRecord>>(
       selector: (state) => state.moves,
       builder: (context, moves) {
-        return SizedBox(height: 40, child: _MoveListView(moves: moves));
+        return Container(
+          height: 42,
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: colorScheme.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+            ),
+          ),
+          child: moves.isEmpty
+              ? Center(
+                  child: Text(
+                    'Chưa có nước đi',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontStyle: FontStyle.italic,
+                      color: colorScheme.onSurfaceVariant.withValues(
+                        alpha: 0.7,
+                      ),
+                    ),
+                  ),
+                )
+              : _MoveListView(moves: moves),
+        );
       },
     );
   }
@@ -48,10 +75,13 @@ class _MoveListViewState extends State<_MoveListView> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return ListView.builder(
       controller: _scrollController,
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       itemCount: widget.moves.length,
       itemBuilder: (context, index) {
         final isLatest = index == widget.moves.length - 1;
@@ -61,13 +91,23 @@ class _MoveListViewState extends State<_MoveListView> {
             : widget.moves[index].san;
 
         return Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 2),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: isLatest
+                  ? colorScheme.primaryContainer
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(8),
+            ),
             child: Text(
               text,
               style: TextStyle(
-                fontSize: 14,
-                fontWeight: isLatest ? FontWeight.bold : FontWeight.normal,
+                fontSize: 13,
+                fontWeight: isLatest ? FontWeight.bold : FontWeight.w500,
+                color: isLatest
+                    ? colorScheme.onPrimaryContainer
+                    : colorScheme.onSurface,
               ),
             ),
           ),
