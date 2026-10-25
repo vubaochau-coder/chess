@@ -111,60 +111,77 @@ class _BoardThemePreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final themeData = Theme.of(context);
+    final colorScheme = themeData.colorScheme;
     final colors = theme.colors;
 
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(10),
       child: Container(
-        padding: const EdgeInsets.all(4),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: isSelected ? colorScheme.primary : Colors.transparent,
-            width: 2,
+            color: isSelected
+                ? colorScheme.primary
+                : colorScheme.outlineVariant.withValues(alpha: 0.5),
+            width: isSelected ? 2.5 : 1,
           ),
+          color: isSelected
+              ? colorScheme.primaryContainer.withValues(alpha: 0.25)
+              : null,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: SizedBox(
-                width: 44,
-                height: 44,
-                child: Column(
-                  children: [
-                    Expanded(
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: ColoredBox(color: colors.lightSquare),
-                          ),
-                          Expanded(child: ColoredBox(color: colors.darkSquare)),
-                        ],
-                      ),
-                    ),
-                    Expanded(
-                      child: Row(
-                        children: [
-                          Expanded(child: ColoredBox(color: colors.darkSquare)),
-                          Expanded(
-                            child: ColoredBox(color: colors.lightSquare),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: Colors.black26, width: 1),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(5),
+                child: SizedBox.square(
+                  dimension: 48,
+                  child: CustomPaint(painter: _MiniBoardPainter(colors)),
                 ),
               ),
             ),
-            const SizedBox(height: 4),
-            Text(theme.label, style: Theme.of(context).textTheme.bodySmall),
+            const SizedBox(height: 6),
+            Text(
+              theme.label,
+              style: themeData.textTheme.labelMedium?.copyWith(
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                color: isSelected ? colorScheme.primary : null,
+              ),
+            ),
           ],
         ),
       ),
     );
   }
+}
+
+class _MiniBoardPainter extends CustomPainter {
+  const _MiniBoardPainter(this.colors);
+
+  final BoardColors colors;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final cellW = size.width / 2;
+    final cellH = size.height / 2;
+    final light = Paint()..color = colors.lightSquare;
+    final dark = Paint()..color = colors.darkSquare;
+
+    canvas.drawRect(Rect.fromLTWH(0, 0, cellW, cellH), light);
+    canvas.drawRect(Rect.fromLTWH(cellW, 0, cellW, cellH), dark);
+    canvas.drawRect(Rect.fromLTWH(0, cellH, cellW, cellH), dark);
+    canvas.drawRect(Rect.fromLTWH(cellW, cellH, cellW, cellH), light);
+  }
+
+  @override
+  bool shouldRepaint(_MiniBoardPainter oldDelegate) =>
+      colors != oldDelegate.colors;
 }
