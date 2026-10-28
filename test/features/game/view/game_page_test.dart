@@ -87,6 +87,42 @@ void main() {
     expect(pieceAt(tester, 'd8'), 'q');
   });
 
+  testWidgets('PvP player rows show the colour names', (tester) async {
+    await pumpGame(tester);
+
+    expect(find.text('Trắng'), findsOneWidget);
+    expect(find.text('Đen'), findsOneWidget);
+  });
+
+  testWidgets('PvE player rows show Bạn and Máy', (tester) async {
+    await pumpGame(tester, config: const GameConfig(mode: GameMode.pve));
+
+    expect(find.text('Bạn · Trắng'), findsOneWidget);
+    expect(find.text('Máy · Đen'), findsOneWidget);
+  });
+
+  testWidgets('PvE as Black: human row is below the board', (tester) async {
+    final ai = MockChessAi();
+    final pending = Completer<Move>();
+    when(() => ai.chooseMove(any(), any())).thenAnswer((_) => pending.future);
+
+    await pumpGame(
+      tester,
+      config: const GameConfig(
+        mode: GameMode.pve,
+        humanColor: PieceColor.black,
+      ),
+      ai: ai,
+    );
+    await tester.pump();
+
+    final board = tester.getRect(find.byType(ChessBoard));
+    final human = tester.getCenter(find.text('Bạn · Đen'));
+    final machine = tester.getCenter(find.text('Máy · Trắng'));
+    expect(human.dy, greaterThan(board.bottom));
+    expect(machine.dy, lessThan(board.top));
+  });
+
   testWidgets('tapping e2 then e4 moves the pawn and passes the turn', (
     tester,
   ) async {

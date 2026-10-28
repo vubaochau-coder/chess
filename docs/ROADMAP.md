@@ -45,6 +45,11 @@ Bật/tắt âm thanh, âm lượng, rung, bộ âm thanh, animation di chuyển
 Đồng hồ đánh cờ cho chế độ 2 người cùng máy. PvP online: **chưa lên kế hoạch** (cần đặc tả riêng:
 backend, tài khoản, Data safety, xóa tài khoản).
 
+## Giai đoạn 7 — Hướng dẫn người mới → [phase-7.md](tasks/phase-7.md)
+
+Màn `Học chơi cờ`: 17 bài (cách đi quân, luật đặc biệt, chiếu hết và hòa, mẹo cơ bản), bàn cờ chạm để thử,
+thử thách có chấm, lưu tiến độ.
+
 ## Mốc phát hành
 
 | Version | Nội dung | Kênh |

@@ -39,7 +39,9 @@ lib/
     ai/                     # (Giai đoạn 3) SearchBoard, search, ChessAi
     game/                   # (Giai đoạn 3) GameConfig, (Giai đoạn 6) ChessClock
     settings/               # app_settings.dart
-    storage/                # saved_game.dart, game_repository.dart, settings_repository.dart
+    storage/                # saved_game.dart, game_repository.dart, settings_repository.dart,
+                            # tutorial_progress_repository.dart
+    tutorial/               # (Giai đoạn 7) lesson.dart, lesson_catalog.dart, lesson_board.dart
   features/
     game/
       bloc/                 # chess_game_bloc.dart (+ part event/state)
@@ -50,7 +52,11 @@ lib/
       cubit/                # home_cubit.dart (+ part home_state.dart)
       view/                 # home_page.dart: HomePage (tạo cubit) + HomeView (UI thuần)
     settings/               # cubit/settings_cubit.dart, view/settings_page.dart
-  theme/                    # board_theme.dart
+    tutorial/
+      cubit/                # tutorial_cubit.dart (tiến độ), lesson_cubit.dart (bọc LessonBoard)
+      view/                 # tutorial_page.dart (danh sách bài), lesson_page.dart (một bài)
+      widgets/              # lesson_board_view.dart (dùng lại painter + PieceView của game)
+  theme/                    # board_theme.dart, app_theme.dart (ThemeData cổ điển), section_label.dart
 test/                       # song song với lib/, helper dùng chung ở test/helpers/
 ```
 
