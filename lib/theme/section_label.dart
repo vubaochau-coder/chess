@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Nhãn nhóm giãn chữ, màu nhấn (`Chế độ`, `Giao diện`…).
+/// Nhãn nhóm viết hoa, giãn chữ, màu nhấn (`CHẾ ĐỘ`, `GIAO DIỆN`…).
 class SectionLabel extends StatelessWidget {
   const SectionLabel(this.text, {super.key});
 
@@ -9,11 +9,11 @@ class SectionLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Text(
-      text,
+      text.toUpperCase(),
       style: TextStyle(
-        fontSize: 12,
+        fontSize: 11,
         fontWeight: FontWeight.w600,
-        letterSpacing: 1.2,
+        letterSpacing: 2,
         color: Theme.of(context).colorScheme.tertiary,
       ),
     );
