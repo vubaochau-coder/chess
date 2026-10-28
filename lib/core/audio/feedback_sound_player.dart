@@ -23,10 +23,12 @@ final class FeedbackSoundPlayer implements SoundPlayer {
   /// Mức rung cho [effect]; `null` là không rung.
   static HapticKind? hapticFor(SoundEffect effect) => switch (effect) {
     SoundEffect.select => HapticKind.selection,
-    SoundEffect.move || SoundEffect.castle || SoundEffect.promote =>
-      HapticKind.light,
-    SoundEffect.capture || SoundEffect.check || SoundEffect.gameEnd =>
-      HapticKind.medium,
+    SoundEffect.move ||
+    SoundEffect.castle ||
+    SoundEffect.promote => HapticKind.light,
+    SoundEffect.capture ||
+    SoundEffect.check ||
+    SoundEffect.gameEnd => HapticKind.medium,
     SoundEffect.illegal => null,
   };
 
