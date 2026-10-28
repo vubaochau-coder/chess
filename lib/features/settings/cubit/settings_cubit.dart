@@ -12,16 +12,35 @@ class SettingsCubit extends Cubit<AppSettings> {
 
   final SettingsRepository _repository;
 
-  void setThemeMode(AppThemeMode mode) {
-    if (state.themeMode == mode) return;
-    final next = state.copyWith(themeMode: mode);
-    emit(next);
-    unawaited(_repository.save(next));
-  }
+  void setThemeMode(AppThemeMode mode) =>
+      _update(state.copyWith(themeMode: mode));
 
-  void setBoardTheme(BoardTheme theme) {
-    if (state.boardTheme == theme) return;
-    final next = state.copyWith(boardTheme: theme);
+  void setBoardTheme(BoardTheme theme) =>
+      _update(state.copyWith(boardTheme: theme));
+
+  void setShowCoordinates(bool value) =>
+      _update(state.copyWith(showCoordinates: value));
+
+  void setShowLegalMoves(bool value) =>
+      _update(state.copyWith(showLegalMoves: value));
+
+  void setHighlightLastMove(bool value) =>
+      _update(state.copyWith(highlightLastMove: value));
+
+  void setAutoFlipInPvp(bool value) =>
+      _update(state.copyWith(autoFlipInPvp: value));
+
+  void setSoundEnabled(bool value) =>
+      _update(state.copyWith(soundEnabled: value));
+
+  void setSoundVolume(double value) =>
+      _update(state.copyWith(soundVolume: value.clamp(0.0, 1.0)));
+
+  void setHapticsEnabled(bool value) =>
+      _update(state.copyWith(hapticsEnabled: value));
+
+  void _update(AppSettings next) {
+    if (next == state) return;
     emit(next);
     unawaited(_repository.save(next));
   }
