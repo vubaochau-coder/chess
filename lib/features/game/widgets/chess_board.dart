@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:chess/core/settings/app_settings.dart';
 import 'package:chess/features/game/bloc/chess_game_bloc.dart';
 import 'package:chess/features/game/painter/board_painter.dart';
+import 'package:chess/features/game/painter/coordinates_painter.dart';
 import 'package:chess/features/game/painter/highlight_painter.dart';
 import 'package:chess/features/game/widgets/piece_view.dart';
 import 'package:chess/features/settings/cubit/settings_cubit.dart';
@@ -25,10 +26,15 @@ class ChessBoard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocSelector<SettingsCubit, AppSettings, BoardTheme>(
-      selector: (settings) => settings.boardTheme,
-      builder: (context, boardTheme) {
-        final colors = boardTheme.colors;
+    return BlocSelector<SettingsCubit, AppSettings, _BoardOptions>(
+      selector: (settings) => (
+        theme: settings.boardTheme,
+        coordinates: settings.showCoordinates,
+        legalMoves: settings.showLegalMoves,
+        lastMove: settings.highlightLastMove,
+      ),
+      builder: (context, options) {
+        final colors = options.theme.colors;
 
         return LayoutBuilder(
           builder: (context, constraints) {
@@ -57,8 +63,22 @@ class ChessBoard extends StatelessWidget {
                     RepaintBoundary(
                       child: CustomPaint(painter: BoardPainter(colors)),
                     ),
+                    if (options.coordinates)
+                      RepaintBoundary(
+                        child: CustomPaint(
+                          painter: CoordinatesPainter(
+                            colors: colors,
+                            flipped: flipped,
+                          ),
+                        ),
+                      ),
                     RepaintBoundary(
-                      child: _HighlightLayer(flipped: flipped, colors: colors),
+                      child: _HighlightLayer(
+                        flipped: flipped,
+                        colors: colors,
+                        showTargets: options.legalMoves,
+                        showLastMove: options.lastMove,
+                      ),
                     ),
                     RepaintBoundary(
                       child: _PiecesLayer(cellSize: cell, flipped: flipped),
@@ -74,6 +94,13 @@ class ChessBoard extends StatelessWidget {
   }
 }
 
+typedef _BoardOptions = ({
+  BoardTheme theme,
+  bool coordinates,
+  bool legalMoves,
+  bool lastMove,
+});
+
 typedef _Highlights = ({
   int? selected,
   LastMove? lastMove,
@@ -82,10 +109,17 @@ typedef _Highlights = ({
 });
 
 class _HighlightLayer extends StatelessWidget {
-  const _HighlightLayer({required this.flipped, required this.colors});
+  const _HighlightLayer({
+    required this.flipped,
+    required this.colors,
+    required this.showTargets,
+    required this.showLastMove,
+  });
 
   final bool flipped;
   final BoardColors colors;
+  final bool showTargets;
+  final bool showLastMove;
 
   @override
   Widget build(BuildContext context) {
@@ -97,14 +131,15 @@ class _HighlightLayer extends StatelessWidget {
         checkSquare: state.checkSquare,
       ),
       builder: (context, h) {
+        final lastMove = showLastMove ? h.lastMove : null;
         return CustomPaint(
           painter: HighlightPainter(
             colors: colors,
             highlighted: [
-              if (h.lastMove case final move?) ...[move.from, move.to],
+              if (lastMove case final move?) ...[move.from, move.to],
               ?h.selected,
             ],
-            targets: h.targets,
+            targets: showTargets ? h.targets : const [],
             checkSquare: h.checkSquare,
             flipped: flipped,
           ),

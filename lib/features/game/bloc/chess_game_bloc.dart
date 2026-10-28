@@ -54,6 +54,7 @@ class ChessGameBloc extends Bloc<ChessGameEvent, ChessGameState> {
     on<PromotionCancelled>(_onPromotionCancelled);
     on<UndoRequested>(_onUndoRequested);
     on<ResignRequested>(_onResignRequested);
+    on<BoardFlipToggled>(_onBoardFlipToggled);
     on<_AiMoveRequested>(_onAiMoveRequested, transformer: restartable());
 
     if (restore == null) {
@@ -77,6 +78,13 @@ class ChessGameBloc extends Bloc<ChessGameEvent, ChessGameState> {
     emit(ChessGameState.initial(_start, config: _config, gameId: _gameId));
     _saveGame();
     _checkRequestAiMove();
+  }
+
+  void _onBoardFlipToggled(
+    BoardFlipToggled event,
+    Emitter<ChessGameState> emit,
+  ) {
+    emit(state.copyWith(flipped: !state.flipped));
   }
 
   void _onSquareTapped(SquareTapped event, Emitter<ChessGameState> emit) {
