@@ -57,6 +57,9 @@ class GameView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     final config = context.select((ChessGameBloc b) => b.state.config);
     final title = switch (config.mode) {
       GameMode.pvp => '2 người',
@@ -85,10 +88,13 @@ class GameView extends StatelessWidget {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text(title),
+          title: Text(
+            title,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
           actions: [
             IconButton(
-              icon: const Icon(Icons.settings),
+              icon: const Icon(Icons.settings_outlined),
               tooltip: 'Cài đặt',
               onPressed: () {
                 Navigator.push(
@@ -103,63 +109,112 @@ class GameView extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              const SizedBox(height: 6),
               const GameStatusBar(),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               const MoveList(),
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  FilledButton.icon(
-                    onPressed: () => context.read<ChessGameBloc>().add(
-                      const NewGameRequested(),
+              const SizedBox(height: 10),
+
+              // Control buttons bar
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: colorScheme.surfaceContainerLow,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    FilledButton.icon(
+                      onPressed: () => context.read<ChessGameBloc>().add(
+                        const NewGameRequested(),
+                      ),
+                      icon: const Icon(Icons.refresh_rounded, size: 20),
+                      label: const Text('Ván mới'),
+                      style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
                     ),
-                    icon: const Icon(Icons.refresh),
-                    label: const Text('Ván mới'),
-                  ),
-                  const SizedBox(width: 8),
-                  BlocSelector<ChessGameBloc, ChessGameState, bool>(
-                    selector: (state) => state.canUndo,
-                    builder: (context, canUndo) {
-                      return IconButton(
-                        icon: const Icon(Icons.undo),
-                        tooltip: 'Đi lại',
-                        onPressed: canUndo
-                            ? () => context.read<ChessGameBloc>().add(
-                                const UndoRequested(),
-                              )
-                            : null,
-                      );
-                    },
-                  ),
-                  const SizedBox(width: 8),
-                  BlocSelector<ChessGameBloc, ChessGameState, bool>(
-                    selector: (state) => !state.isGameOver,
-                    builder: (context, canResign) {
-                      return IconButton(
-                        icon: const Icon(Icons.flag),
-                        tooltip: 'Đầu hàng',
-                        onPressed: canResign
-                            ? () => _showResignDialog(context)
-                            : null,
-                      );
-                    },
-                  ),
-                ],
+                    const SizedBox(width: 8),
+                    BlocSelector<ChessGameBloc, ChessGameState, bool>(
+                      selector: (state) => state.canUndo,
+                      builder: (context, canUndo) {
+                        return IconButton(
+                          icon: const Icon(Icons.undo),
+                          tooltip: 'Đi lại',
+                          onPressed: canUndo
+                              ? () => context.read<ChessGameBloc>().add(
+                                  const UndoRequested(),
+                                )
+                              : null,
+                        );
+                      },
+                    ),
+                    const SizedBox(width: 4),
+                    BlocSelector<ChessGameBloc, ChessGameState, bool>(
+                      selector: (state) => !state.isGameOver,
+                      builder: (context, canResign) {
+                        return IconButton(
+                          icon: const Icon(Icons.flag),
+                          tooltip: 'Đầu hàng',
+                          onPressed: canResign
+                              ? () => _showResignDialog(context)
+                              : null,
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
+
+              // Top captured pieces
               const CapturedPieces(color: PieceColor.white),
               const SizedBox(height: 4),
+
+              // Chess board
               Flexible(
-                child: BlocSelector<ChessGameBloc, ChessGameState, bool>(
-                  selector: (state) =>
-                      state.config.mode == GameMode.pve &&
-                      state.config.humanColor == PieceColor.black,
-                  builder: (context, flipped) => ChessBoard(flipped: flipped),
+                child: Center(
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(6),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.15),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: BlocSelector<ChessGameBloc, ChessGameState, bool>(
+                      selector: (state) =>
+                          state.config.mode == GameMode.pve &&
+                          state.config.humanColor == PieceColor.black,
+                      builder: (context, flipped) =>
+                          ChessBoard(flipped: flipped),
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 4),
+
+              // Bottom captured pieces
               const CapturedPieces(color: PieceColor.black),
+              const SizedBox(height: 8),
             ],
           ),
         ),
@@ -172,6 +227,7 @@ class GameView extends StatelessWidget {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Đầu hàng?'),
+        content: const Text('Bạn có chắc chắn muốn đầu hàng ván cờ này không?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),

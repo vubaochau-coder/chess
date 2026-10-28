@@ -2,6 +2,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:chess/core/settings/app_settings.dart';
 import 'package:chess/features/settings/cubit/settings_cubit.dart';
 import 'package:chess/features/settings/view/settings_page.dart';
+import 'package:chess/theme/board_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -36,6 +37,12 @@ void main() {
       expect(find.text('Theo hệ thống'), findsOneWidget);
       expect(find.text('Sáng'), findsOneWidget);
       expect(find.text('Tối'), findsOneWidget);
+      expect(find.text('Màu bàn cờ'), findsOneWidget);
+      expect(find.text('Gỗ'), findsOneWidget);
+      expect(find.text('Xanh lá'), findsOneWidget);
+      expect(find.text('Xanh dương'), findsOneWidget);
+      expect(find.text('Xám'), findsOneWidget);
+      expect(find.text('Tím'), findsOneWidget);
     });
 
     testWidgets('tapping Tối calls cubit.setThemeMode(AppThemeMode.dark)', (
@@ -60,6 +67,18 @@ void main() {
       await tester.pump();
 
       verify(() => cubit.setThemeMode(AppThemeMode.light)).called(1);
+    });
+
+    testWidgets('tapping Xanh lá calls cubit.setBoardTheme(BoardTheme.green)', (
+      tester,
+    ) async {
+      when(() => cubit.state).thenReturn(const AppSettings());
+
+      await tester.pumpWidget(buildSubject());
+      await tester.tap(find.text('Xanh lá'));
+      await tester.pump();
+
+      verify(() => cubit.setBoardTheme(BoardTheme.green)).called(1);
     });
   });
 }

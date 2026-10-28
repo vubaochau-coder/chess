@@ -48,17 +48,57 @@ class ChessApp extends StatelessWidget {
               debugShowCheckedModeBanner: false,
               theme: ThemeData(
                 colorScheme: ColorScheme.fromSeed(
-                  seedColor: Colors.deepPurple,
+                  seedColor: const Color(0xFF3B4968),
                   brightness: Brightness.light,
                 ),
                 useMaterial3: true,
+                appBarTheme: const AppBarTheme(
+                  centerTitle: true,
+                  elevation: 0,
+                  scrolledUnderElevation: 1,
+                ),
+                cardTheme: CardThemeData(
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                segmentedButtonTheme: SegmentedButtonThemeData(
+                  style: ButtonStyle(
+                    shape: WidgetStatePropertyAll(
+                      RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ),
               ),
               darkTheme: ThemeData(
                 colorScheme: ColorScheme.fromSeed(
-                  seedColor: Colors.deepPurple,
+                  seedColor: const Color(0xFF3B4968),
                   brightness: Brightness.dark,
                 ),
                 useMaterial3: true,
+                appBarTheme: const AppBarTheme(
+                  centerTitle: true,
+                  elevation: 0,
+                  scrolledUnderElevation: 1,
+                ),
+                cardTheme: CardThemeData(
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                segmentedButtonTheme: SegmentedButtonThemeData(
+                  style: ButtonStyle(
+                    shape: WidgetStatePropertyAll(
+                      RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ),
               ),
               themeMode: themeMode,
               home: const HomePage(),

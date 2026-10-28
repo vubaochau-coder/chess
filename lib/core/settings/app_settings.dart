@@ -1,3 +1,4 @@
+import 'package:chess/theme/board_theme.dart';
 import 'package:equatable/equatable.dart';
 
 enum AppThemeMode {
@@ -15,16 +16,26 @@ enum AppThemeMode {
 }
 
 final class AppSettings extends Equatable {
-  const AppSettings({this.themeMode = AppThemeMode.system});
+  const AppSettings({
+    this.themeMode = AppThemeMode.system,
+    this.boardTheme = BoardTheme.wood,
+  });
 
   final AppThemeMode themeMode;
+  final BoardTheme boardTheme;
 
-  AppSettings copyWith({AppThemeMode? themeMode}) {
-    return AppSettings(themeMode: themeMode ?? this.themeMode);
+  AppSettings copyWith({AppThemeMode? themeMode, BoardTheme? boardTheme}) {
+    return AppSettings(
+      themeMode: themeMode ?? this.themeMode,
+      boardTheme: boardTheme ?? this.boardTheme,
+    );
   }
 
   Map<String, dynamic> toJson() {
-    return <String, dynamic>{'themeMode': themeMode.name};
+    return <String, dynamic>{
+      'themeMode': themeMode.name,
+      'boardTheme': boardTheme.name,
+    };
   }
 
   factory AppSettings.fromJson(Map<dynamic, dynamic>? json) {
@@ -37,9 +48,14 @@ final class AppSettings extends Equatable {
         ? AppThemeMode.fromName(rawThemeMode)
         : AppThemeMode.system;
 
-    return AppSettings(themeMode: themeMode);
+    final rawBoardTheme = json['boardTheme'];
+    final boardTheme = rawBoardTheme is String
+        ? BoardTheme.fromName(rawBoardTheme)
+        : BoardTheme.wood;
+
+    return AppSettings(themeMode: themeMode, boardTheme: boardTheme);
   }
 
   @override
-  List<Object?> get props => [themeMode];
+  List<Object?> get props => [themeMode, boardTheme];
 }

@@ -1,9 +1,12 @@
 import 'dart:math' as math;
 
+import 'package:chess/core/settings/app_settings.dart';
 import 'package:chess/features/game/bloc/chess_game_bloc.dart';
 import 'package:chess/features/game/painter/board_painter.dart';
 import 'package:chess/features/game/painter/highlight_painter.dart';
 import 'package:chess/features/game/widgets/piece_view.dart';
+import 'package:chess/features/settings/cubit/settings_cubit.dart';
+import 'package:chess/theme/board_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -11,8 +14,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 ///
 /// Chia thành các lớp độc lập, mỗi lớp nằm trong [RepaintBoundary] riêng và
 /// chỉ lắng nghe phần state nó cần:
-/// - ô bàn cờ: tĩnh, không bao giờ vẽ lại;
-/// - lớp tô màu: rebuild khi chọn quân / đi quân / chiếu;
+/// - ô bàn cờ: vẽ theo [BoardColors] từ [BoardTheme];
+/// - lớp tô màu: rebuild khi chọn quân / đi quân / chiếu / đổi theme;
 /// - 64 ô quân cờ: mỗi ô chỉ rebuild khi quân trên chính ô đó đổi.
 /// Chạm được xử lý một lần ở cấp bàn cờ (tính ô từ tọa độ) thay vì 64 widget.
 class ChessBoard extends StatelessWidget {
@@ -22,35 +25,49 @@ class ChessBoard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final boardSize = math.min(constraints.maxWidth, constraints.maxHeight);
-        final cell = boardSize / 8;
+    return BlocSelector<SettingsCubit, AppSettings, BoardTheme>(
+      selector: (settings) => settings.boardTheme,
+      builder: (context, boardTheme) {
+        final colors = boardTheme.colors;
 
-        return SizedBox.square(
-          dimension: boardSize,
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTapUp: (details) {
-              final col = (details.localPosition.dx ~/ cell).clamp(0, 7);
-              final row = (details.localPosition.dy ~/ cell).clamp(0, 7);
-              final displayIndex = row * 8 + col;
-              final actualIndex = flipped ? (63 - displayIndex) : displayIndex;
-              context.read<ChessGameBloc>().add(SquareTapped(actualIndex));
-            },
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                const RepaintBoundary(
-                  child: CustomPaint(painter: BoardPainter()),
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final boardSize = math.min(
+              constraints.maxWidth,
+              constraints.maxHeight,
+            );
+            final cell = boardSize / 8;
+
+            return SizedBox.square(
+              dimension: boardSize,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTapUp: (details) {
+                  final col = (details.localPosition.dx ~/ cell).clamp(0, 7);
+                  final row = (details.localPosition.dy ~/ cell).clamp(0, 7);
+                  final displayIndex = row * 8 + col;
+                  final actualIndex = flipped
+                      ? (63 - displayIndex)
+                      : displayIndex;
+                  context.read<ChessGameBloc>().add(SquareTapped(actualIndex));
+                },
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    RepaintBoundary(
+                      child: CustomPaint(painter: BoardPainter(colors)),
+                    ),
+                    RepaintBoundary(
+                      child: _HighlightLayer(flipped: flipped, colors: colors),
+                    ),
+                    RepaintBoundary(
+                      child: _PiecesLayer(cellSize: cell, flipped: flipped),
+                    ),
+                  ],
                 ),
-                RepaintBoundary(child: _HighlightLayer(flipped: flipped)),
-                RepaintBoundary(
-                  child: _PiecesLayer(cellSize: cell, flipped: flipped),
-                ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
       },
     );
@@ -65,9 +82,10 @@ typedef _Highlights = ({
 });
 
 class _HighlightLayer extends StatelessWidget {
-  const _HighlightLayer({required this.flipped});
+  const _HighlightLayer({required this.flipped, required this.colors});
 
   final bool flipped;
+  final BoardColors colors;
 
   @override
   Widget build(BuildContext context) {
@@ -81,6 +99,7 @@ class _HighlightLayer extends StatelessWidget {
       builder: (context, h) {
         return CustomPaint(
           painter: HighlightPainter(
+            colors: colors,
             highlighted: [
               if (h.lastMove case final move?) ...[move.from, move.to],
               ?h.selected,
