@@ -50,7 +50,7 @@ lib/
       cubit/                # home_cubit.dart (+ part home_state.dart)
       view/                 # home_page.dart: HomePage (tạo cubit) + HomeView (UI thuần)
     settings/               # cubit/settings_cubit.dart, view/settings_page.dart
-  theme/                    # board_theme.dart
+  theme/                    # board_theme.dart, app_theme.dart (ThemeData cổ điển), section_label.dart
 test/                       # song song với lib/, helper dùng chung ở test/helpers/
 ```
 

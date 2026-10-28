@@ -73,6 +73,7 @@ Mỗi đặc tả task có các mục:
 | T4.2 | Theme màu bàn cờ | T4.1 | — | review |
 | T4.3 | Tùy chọn hiển thị bàn cờ | T4.1 | — | todo |
 | T4.4 | Bộ quân cờ | T4.1 | File SVG + giấy phép | todo |
+| T4.5 | Giao diện cổ điển (nâng cấp UI) | T4.2 | — | done |
 
 ### Giai đoạn 5 — Âm thanh & hiệu ứng ([phase-5.md](phase-5.md))
 
