@@ -7,7 +7,8 @@ import 'package:chess/core/audio/sound_effect.dart';
 /// (dùng mock) và để đổi cách phát (bộ âm thanh, tắt tiếng…) mà không sửa bloc.
 abstract interface class SoundPlayer {
   /// Không chờ âm thanh phát xong; lỗi phát âm thanh không được làm hỏng game.
-  void play(SoundEffect effect);
+  /// [volume] từ 0 đến 1.
+  void play(SoundEffect effect, {double volume = 1.0});
 
   Future<void> dispose();
 }
@@ -18,11 +19,11 @@ class AudioPoolSoundPlayer implements SoundPlayer {
   final Map<SoundEffect, Future<AudioPool>> _pools = {};
 
   @override
-  void play(SoundEffect effect) {
-    unawaited(_play(effect));
+  void play(SoundEffect effect, {double volume = 1.0}) {
+    unawaited(_play(effect, volume));
   }
 
-  Future<void> _play(SoundEffect effect) async {
+  Future<void> _play(SoundEffect effect, double volume) async {
     // Lỗi âm thanh (thiếu file, thiết bị không phát được) chỉ bỏ qua,
     // game vẫn chạy bình thường.
     final AudioPool pool;
@@ -37,7 +38,7 @@ class AudioPoolSoundPlayer implements SoundPlayer {
       return;
     }
     try {
-      await pool.start();
+      await pool.start(volume: volume);
     } on Object {
       return;
     }
