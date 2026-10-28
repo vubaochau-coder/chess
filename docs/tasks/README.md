@@ -71,19 +71,20 @@ Mỗi đặc tả task có các mục:
 |---|---|---|---|---|
 | T4.1 | Hạ tầng cài đặt + màn Cài đặt + chế độ sáng/tối | T3.5 | — | review |
 | T4.2 | Theme màu bàn cờ | T4.1 | — | review |
-| T4.3 | Tùy chọn hiển thị bàn cờ | T4.1 | — | todo |
+| T4.3 | Tùy chọn hiển thị bàn cờ | T4.1 | — | done (trong T4.6) |
 | T4.4 | Bộ quân cờ | T4.1 | File SVG + giấy phép | todo |
 | T4.5 | Giao diện cổ điển (nâng cấp UI) | T4.2 | — | done |
+| T4.6 | Hoàn thiện giao diện theo mockup (gộp T4.3, T5.1, dialog kết thúc ván) | T4.5 | — | done |
 
 ### Giai đoạn 5 — Âm thanh & hiệu ứng ([phase-5.md](phase-5.md))
 
 | Mã | Task | Phụ thuộc | Đầu vào owner | Trạng thái |
 |---|---|---|---|---|
-| T5.1 | Cài đặt âm thanh và rung | T4.1, T1.3 | — | todo |
+| T5.1 | Cài đặt âm thanh và rung | T4.1, T1.3 | — | done (trong T4.6) |
 | T5.2 | Bộ âm thanh có thể chọn | T5.1 | File âm thanh | todo |
 | T5.3 | Animation di chuyển quân | T4.3 | — | todo |
 | T5.4 | Kéo-thả quân | T5.3 | — | todo |
-| T5.5 | Hiệu ứng chiếu và kết thúc ván | T5.3 | — | todo |
+| T5.5 | Hiệu ứng chiếu và kết thúc ván (còn nhấp nháy + pháo giấy; dialog đã làm trong T4.6) | T5.3 | — | todo |
 
 ### Giai đoạn 6 — PvP ([phase-6.md](phase-6.md))
 

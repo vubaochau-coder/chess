@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:chess/core/settings/app_settings.dart';
 import 'package:chess/core/tutorial/lesson_board.dart';
 import 'package:chess/features/game/painter/board_painter.dart';
+import 'package:chess/features/game/painter/coordinates_painter.dart';
 import 'package:chess/features/game/painter/highlight_painter.dart';
 import 'package:chess/features/game/widgets/piece_view.dart';
 import 'package:chess/features/settings/cubit/settings_cubit.dart';
@@ -17,9 +18,10 @@ class LessonBoardView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocSelector<SettingsCubit, AppSettings, BoardTheme>(
-      selector: (settings) => settings.boardTheme,
-      builder: (context, boardTheme) {
+    return BlocSelector<SettingsCubit, AppSettings, (BoardTheme, bool)>(
+      selector: (settings) => (settings.boardTheme, settings.showCoordinates),
+      builder: (context, options) {
+        final (boardTheme, showCoordinates) = options;
         final colors = boardTheme.colors;
 
         return LayoutBuilder(
@@ -45,6 +47,12 @@ class LessonBoardView extends StatelessWidget {
                     RepaintBoundary(
                       child: CustomPaint(painter: BoardPainter(colors)),
                     ),
+                    if (showCoordinates)
+                      RepaintBoundary(
+                        child: CustomPaint(
+                          painter: CoordinatesPainter(colors: colors),
+                        ),
+                      ),
                     BlocBuilder<LessonCubit, LessonBoard>(
                       builder: (context, board) =>
                           _Layers(board: board, colors: colors, cell: cell),

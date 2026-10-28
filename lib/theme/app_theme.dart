@@ -140,6 +140,16 @@ abstract final class AppTheme {
           foregroundColor: _whenSelected(scheme.onPrimary, scheme.onSurface),
         ),
       ),
+      switchTheme: SwitchThemeData(
+        thumbColor: _whenSelected(scheme.onPrimary, scheme.onSurfaceVariant),
+        trackColor: _whenSelected(scheme.primary, scheme.surfaceContainerHigh),
+        trackOutlineColor: _whenSelected(scheme.primary, scheme.outlineVariant),
+      ),
+      sliderTheme: SliderThemeData(
+        activeTrackColor: scheme.tertiary,
+        inactiveTrackColor: scheme.outlineVariant,
+        thumbColor: scheme.tertiary,
+      ),
       dialogTheme: DialogThemeData(
         backgroundColor: scheme.surfaceContainerLow,
         surfaceTintColor: Colors.transparent,
