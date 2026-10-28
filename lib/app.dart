@@ -5,6 +5,7 @@ import 'package:chess/core/audio/sound_player.dart';
 import 'package:chess/core/settings/app_settings.dart';
 import 'package:chess/core/storage/game_repository.dart';
 import 'package:chess/core/storage/settings_repository.dart';
+import 'package:chess/core/storage/tutorial_progress_repository.dart';
 import 'package:chess/features/home/view/home_page.dart';
 import 'package:chess/features/settings/cubit/settings_cubit.dart';
 import 'package:chess/theme/app_theme.dart';
@@ -16,10 +17,12 @@ class ChessApp extends StatelessWidget {
     super.key,
     required this.gameRepository,
     required this.settingsRepository,
+    required this.tutorialProgressRepository,
   });
 
   final GameRepository gameRepository;
   final SettingsRepository settingsRepository;
+  final TutorialProgressRepository tutorialProgressRepository;
 
   @override
   Widget build(BuildContext context) {
@@ -33,6 +36,9 @@ class ChessApp extends StatelessWidget {
         RepositoryProvider<ChessAi>(create: (_) => const IsolateChessAi()),
         RepositoryProvider<GameRepository>.value(value: gameRepository),
         RepositoryProvider<SettingsRepository>.value(value: settingsRepository),
+        RepositoryProvider<TutorialProgressRepository>.value(
+          value: tutorialProgressRepository,
+        ),
       ],
       child: BlocProvider<SettingsCubit>(
         create: (context) =>

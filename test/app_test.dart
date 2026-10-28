@@ -2,6 +2,7 @@ import 'package:chess/app.dart';
 import 'package:chess/core/settings/app_settings.dart';
 import 'package:chess/core/storage/game_repository.dart';
 import 'package:chess/core/storage/settings_repository.dart';
+import 'package:chess/core/storage/tutorial_progress_repository.dart';
 import 'package:chess/features/settings/cubit/settings_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -18,7 +19,11 @@ void main() {
       const gameRepo = NoopGameRepository();
 
       await tester.pumpWidget(
-        ChessApp(gameRepository: gameRepo, settingsRepository: settingsRepo),
+        ChessApp(
+          gameRepository: gameRepo,
+          settingsRepository: settingsRepo,
+          tutorialProgressRepository: InMemoryTutorialProgressRepository(),
+        ),
       );
       await tester.pumpAndSettle();
 
