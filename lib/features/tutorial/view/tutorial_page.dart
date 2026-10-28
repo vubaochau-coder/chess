@@ -175,9 +175,8 @@ class _ChapterHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final lessons = LessonCatalog.lessons
-        .where((l) => l.chapter == chapter)
-        .toList();
+    const all = LessonCatalog.lessons;
+    final lessons = all.where((l) => l.chapter == chapter).toList();
     final done = lessons.where((l) => completed.contains(l.id)).length;
 
     return Row(
