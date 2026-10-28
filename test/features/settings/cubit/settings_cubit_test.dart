@@ -99,9 +99,8 @@ void main() {
       act: (cubit) => cubit.setShowCoordinates(false),
       expect: () => [const AppSettings(showCoordinates: false)],
       verify: (_) {
-        verify(
-          () => repository.save(const AppSettings(showCoordinates: false)),
-        ).called(1);
+        verify(() => repository.save(const AppSettings(showCoordinates: false)))
+            .called(1);
       },
     );
 
