@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:chess/core/audio/sound_effect.dart';
 import 'package:chess/core/audio/sound_player.dart';
 import 'package:chess/core/settings/app_settings.dart';
@@ -50,11 +52,11 @@ final class FeedbackSoundPlayer implements SoundPlayer {
   static void _systemHaptic(HapticKind kind) {
     switch (kind) {
       case HapticKind.selection:
-        HapticFeedback.selectionClick().ignore();
+        unawaited(HapticFeedback.selectionClick());
       case HapticKind.light:
-        HapticFeedback.lightImpact().ignore();
+        unawaited(HapticFeedback.lightImpact());
       case HapticKind.medium:
-        HapticFeedback.mediumImpact().ignore();
+        unawaited(HapticFeedback.mediumImpact());
     }
   }
 }
