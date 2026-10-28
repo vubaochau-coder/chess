@@ -18,7 +18,9 @@ void main() {
       setUp: () => repository = InMemoryTutorialProgressRepository(),
       build: () => TutorialCubit(repository: repository),
       act: (cubit) => cubit.markCompleted('knight'),
-      expect: () => [const TutorialState(completed: {'knight'})],
+      expect: () => [
+        const TutorialState(completed: {'knight'}),
+      ],
       verify: (_) => expect(repository.load(), {'knight'}),
     );
 
