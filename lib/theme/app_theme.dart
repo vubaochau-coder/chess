@@ -170,4 +170,3 @@ abstract final class AppTheme {
         (states) => states.contains(WidgetState.selected) ? on : off,
       );
 }
-
