@@ -32,7 +32,7 @@ void main() {
       await tester.pumpWidget(buildSubject());
 
       expect(find.text('Cài đặt'), findsOneWidget);
-      expect(find.text('Giao diện'), findsOneWidget);
+      expect(find.text('GIAO DIỆN'), findsOneWidget);
       expect(find.text('Chế độ màu'), findsOneWidget);
       expect(find.text('Theo hệ thống'), findsOneWidget);
       expect(find.text('Sáng'), findsOneWidget);
@@ -79,6 +79,53 @@ void main() {
       await tester.pump();
 
       verify(() => cubit.setBoardTheme(BoardTheme.green)).called(1);
+    });
+
+    testWidgets('shows the board and sound sections', (tester) async {
+      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      when(() => cubit.state).thenReturn(const AppSettings());
+
+      await tester.pumpWidget(buildSubject());
+
+      expect(find.text('BÀN CỜ'), findsOneWidget);
+      expect(find.text('Hiện tọa độ'), findsOneWidget);
+      expect(find.text('Hiện nước đi hợp lệ'), findsOneWidget);
+      expect(find.text('Tô nước vừa đi'), findsOneWidget);
+      expect(find.text('Tự lật bàn khi chơi 2 người'), findsOneWidget);
+      expect(find.text('ÂM THANH'), findsOneWidget);
+      expect(find.text('Âm lượng'), findsOneWidget);
+      expect(find.text('Rung'), findsOneWidget);
+    });
+
+    testWidgets('switches call the matching cubit setters', (tester) async {
+      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      when(() => cubit.state).thenReturn(const AppSettings());
+
+      await tester.pumpWidget(buildSubject());
+      await tester.tap(find.text('Hiện tọa độ'));
+      await tester.tap(find.text('Tự lật bàn khi chơi 2 người'));
+      await tester.tap(find.text('Rung'));
+      await tester.pump();
+
+      verify(() => cubit.setShowCoordinates(false)).called(1);
+      verify(() => cubit.setAutoFlipInPvp(true)).called(1);
+      verify(() => cubit.setHapticsEnabled(false)).called(1);
+    });
+
+    testWidgets('volume slider is disabled when sound is off', (tester) async {
+      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      const muted = AppSettings(soundEnabled: false);
+      when(() => cubit.state).thenReturn(muted);
+
+      await tester.pumpWidget(buildSubject());
+
+      expect(tester.widget<Slider>(find.byType(Slider)).onChanged, isNull);
     });
   });
 }

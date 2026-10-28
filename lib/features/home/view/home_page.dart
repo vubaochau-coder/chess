@@ -1,9 +1,12 @@
 import 'dart:math' as math;
 
 import 'package:chess/core/ai/ai_level.dart';
+import 'package:chess/core/engine/fen.dart';
 import 'package:chess/core/game/game_config.dart';
 import 'package:chess/core/storage/game_repository.dart';
+import 'package:chess/core/storage/saved_game.dart';
 import 'package:chess/features/game/view/game_page.dart';
+import 'package:chess/features/game/widgets/game_labels.dart';
 import 'package:chess/features/game/widgets/piece_view.dart';
 import 'package:chess/features/home/cubit/home_cubit.dart';
 import 'package:chess/features/settings/view/settings_page.dart';
@@ -101,16 +104,27 @@ class HomeView extends StatelessWidget {
         leading: Align(
           alignment: Alignment.centerLeft,
           child: Padding(
-            padding: const EdgeInsets.only(left: 8),
-            child: TextButton.icon(
+            padding: const EdgeInsets.only(left: 12),
+            child: OutlinedButton.icon(
               onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute<void>(builder: (_) => const TutorialPage()),
                 );
               },
-              icon: const Icon(Icons.school_outlined, size: 20),
-              label: const Text('Học chơi cờ'),
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size(0, 36),
+                padding: const EdgeInsets.fromLTRB(10, 0, 14, 0),
+                shape: const StadiumBorder(),
+                foregroundColor: Theme.of(context).colorScheme.onSurface,
+                side: BorderSide(color: Theme.of(context).colorScheme.outline),
+              ),
+              icon: Icon(
+                Icons.school_outlined,
+                size: 18,
+                color: Theme.of(context).colorScheme.tertiary,
+              ),
+              label: const Text('Học chơi cờ', style: TextStyle(fontSize: 13)),
             ),
           ),
         ),
@@ -142,7 +156,10 @@ class HomeView extends StatelessWidget {
                       const _Hero(),
                       if (state.hasSavedGame) ...[
                         const SizedBox(height: 22),
-                        _ResumeCard(onTap: () => _resumeGame(context)),
+                        _ResumeCard(
+                          saved: state.savedGame!,
+                          onTap: () => _resumeGame(context),
+                        ),
                       ],
                       const SizedBox(height: 24),
                       const SectionLabel('Chế độ'),
@@ -268,18 +285,18 @@ class _Hero extends StatelessWidget {
         ),
         const SizedBox(height: 14),
         Text(
-          'Cờ vua',
+          'Cờ Vua',
           style: theme.textTheme.displaySmall?.copyWith(
             color: colorScheme.onSurface,
           ),
         ),
         const SizedBox(height: 6),
         Text(
-          'Trí tuệ & Chiến thuật đỉnh cao',
+          'TRÍ TUỆ & CHIẾN THUẬT ĐỈNH CAO',
           textAlign: TextAlign.center,
           style: TextStyle(
-            fontSize: 12,
-            letterSpacing: 1.6,
+            fontSize: 11,
+            letterSpacing: 2.4,
             color: colorScheme.onSurfaceVariant,
           ),
         ),
@@ -307,9 +324,22 @@ class _Hero extends StatelessWidget {
 }
 
 class _ResumeCard extends StatelessWidget {
-  const _ResumeCard({required this.onTap});
+  const _ResumeCard({required this.saved, required this.onTap});
 
+  final SavedGame saved;
   final VoidCallback onTap;
+
+  /// Vd. `Máy · Trung bình · Nước 8 · Lượt Trắng`.
+  String get _summary {
+    final config = saved.config;
+    final mode = config.mode == GameMode.pve
+        ? 'Máy · ${aiLevelLabel(config.level)}'
+        : '2 người';
+    final plies = saved.moves.length;
+    final whiteStarts = Fen.parse(saved.startFen).whiteToMove;
+    final turn = whiteStarts == plies.isEven ? 'Trắng' : 'Đen';
+    return '$mode · Nước ${plies ~/ 2 + 1} · Lượt $turn';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -341,7 +371,7 @@ class _ResumeCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      'Quay lại đúng thế cờ bạn đã dừng',
+                      _summary,
                       style: TextStyle(
                         fontSize: 12,
                         color: colorScheme.onSurfaceVariant,

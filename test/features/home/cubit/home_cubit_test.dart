@@ -23,7 +23,7 @@ void main() {
         GameMode.pve,
         AiLevel.medium,
         ColorChoice.white,
-        false,
+        null,
       ]);
     });
 

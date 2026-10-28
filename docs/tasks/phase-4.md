@@ -190,3 +190,30 @@ hộp thoại kết thúc ván (hành vi mới — task riêng), các cài đặ
 - [ ] Widget test màn chơi: hàng người chơi hiện đúng tên theo chế độ (pve: `Bạn`/`Máy`; pvp: `Trắng`/`Đen`).
 - [ ] Không thêm `BlocBuilder` thiếu `buildWhen`; dữ liệu mới đọc bằng `BlocSelector` (architecture.md mục 5).
 - [ ] Thử trên Android cả chế độ sáng và tối.
+
+---
+
+## T4.6 — Hoàn thiện giao diện theo mockup (gộp T4.3, T5.1, hộp thoại kết thúc ván)
+
+**Quyết định owner (2026-10-28):** làm chung một PR: T4.3, T5.1, phần hộp thoại kết thúc ván của T5.5 và các
+chỗ lệch mockup còn lại. Âm thanh vẫn dùng bộ file hiện có (bộ có giấy phép là việc của T1.3).
+
+**Phạm vi**
+- T4.3 và T5.1 theo đúng đặc tả của từng task, với một khác biệt: tự lật bàn khi chơi 2 người được tính ở
+  `GameView` (kết hợp state `flipped` của bloc với cài đặt) để bloc không phụ thuộc `SettingsCubit`.
+- T5.5, chỉ phần `GameOverDialog` (mở sau 500 ms bằng `BlocListener`): lý do kết thúc, kết quả theo góc nhìn
+  người chơi (`Bạn đã thắng` / `Bạn đã thua` / `Trắng thắng` / `Đen thắng` / `Hòa`), số nước; nút `Xem bàn cờ`,
+  `Ván mới`, `Về màn chính`. Nhấp nháy ô bị chiếu và pháo giấy vẫn thuộc T5.5.
+- Màn chính: thẻ `Tiếp tục ván đang chơi` hiện chế độ, số nước, lượt đi; tiêu đề `Cờ Vua`; dòng phụ và nhãn nhóm
+  viết hoa giãn chữ; nút `Học chơi cờ` dạng viên có viền.
+- Màn chơi: tiêu đề 2 dòng (`Chơi với máy` + mức độ / `2 người`); nhãn lượt đi trong hàng người chơi; avatar
+  robot cho máy, Vua theo màu quân cho người; 3 nút điều khiển chia đều, icon và chữ trong cùng nút; nút `Lật bàn cờ`;
+  hộp thoại đầu hàng hai nút chia đều.
+- Bài học: tọa độ trên bàn cờ bài học (theo cài đặt); nút `Bài tiếp: <tên bài>`.
+
+**Ngoài phạm vi:** font tùy chỉnh, đổi màu theme `Gỗ`, hiệu ứng nhấp nháy/pháo giấy, bộ âm thanh mới.
+
+**Tiêu chí nghiệm thu**
+- [ ] Tiêu chí của T4.3 và T5.1.
+- [ ] Widget test: chiếu hết → sau 500 ms có `GameOverDialog`; `Ván mới` reset ván.
+- [ ] Test cũ chỉ sửa ở chỗ chữ hiển thị đổi theo mockup (tiêu đề, nhãn viết hoa, nút `Bài tiếp`).

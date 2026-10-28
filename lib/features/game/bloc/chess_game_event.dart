@@ -55,6 +55,11 @@ final class ResignRequested extends ChessGameEvent {
   const ResignRequested();
 }
 
+/// Đảo chiều hiển thị bàn cờ.
+final class BoardFlipToggled extends ChessGameEvent {
+  const BoardFlipToggled();
+}
+
 /// Yêu cầu AI tính nước đi cho ván [gameId] ở độ sâu [ply].
 final class _AiMoveRequested extends ChessGameEvent {
   const _AiMoveRequested({required this.gameId, required this.ply});

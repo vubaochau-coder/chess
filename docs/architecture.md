@@ -35,7 +35,7 @@ lib/
   app.dart                  # ChessApp: RepositoryProvider cho service dùng chung + MaterialApp
   core/
     engine/                 # chess_rules.dart, fen.dart, square.dart
-    audio/                  # sound_effect.dart, sound_player.dart
+    audio/                  # sound_effect.dart, sound_player.dart, feedback_sound_player.dart (áp cài đặt âm thanh/rung)
     ai/                     # (Giai đoạn 3) SearchBoard, search, ChessAi
     game/                   # (Giai đoạn 3) GameConfig, (Giai đoạn 6) ChessClock
     settings/               # app_settings.dart
@@ -46,8 +46,8 @@ lib/
     game/
       bloc/                 # chess_game_bloc.dart (+ part event/state)
       view/                 # game_page.dart: GamePage (tạo bloc) + GameView (UI thuần)
-      widgets/              # chess_board.dart, piece_view.dart, game_status_bar.dart
-      painter/              # board_painter.dart, highlight_painter.dart
+      widgets/              # chess_board.dart, piece_view.dart, game_status_bar.dart, game_over_dialog.dart
+      painter/              # board_painter.dart, highlight_painter.dart, coordinates_painter.dart
     home/
       cubit/                # home_cubit.dart (+ part home_state.dart)
       view/                 # home_page.dart: HomePage (tạo cubit) + HomeView (UI thuần)

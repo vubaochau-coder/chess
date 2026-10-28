@@ -43,6 +43,18 @@ void main() {
   });
 
   blocTest<ChessGameBloc, ChessGameState>(
+    'BoardFlipToggled flips the board and back',
+    build: buildBloc,
+    act: (bloc) => bloc
+      ..add(const BoardFlipToggled())
+      ..add(const BoardFlipToggled()),
+    expect: () => [
+      isA<ChessGameState>().having((s) => s.flipped, 'flipped', true),
+      isA<ChessGameState>().having((s) => s.flipped, 'flipped', false),
+    ],
+  );
+
+  blocTest<ChessGameBloc, ChessGameState>(
     'selecting an own piece exposes its legal targets',
     build: buildBloc,
     act: (bloc) => bloc.add(const SquareTapped(e2)),
