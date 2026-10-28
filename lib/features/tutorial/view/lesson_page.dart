@@ -20,8 +20,8 @@ Future<void> openLesson(
     ),
   );
   return replace
-      ? Navigator.pushReplacement(context, route)
-      : Navigator.push(context, route);
+      ? Navigator.pushReplacement<void, void>(context, route)
+      : Navigator.push<void>(context, route);
 }
 
 class LessonPage extends StatelessWidget {
