@@ -104,10 +104,10 @@ class LessonView extends StatelessWidget {
                       _ChallengeCard(challenge: challenge),
                     ],
                     const SizedBox(height: 14),
-                    const Center(
+                    Center(
                       child: ConstrainedBox(
-                        constraints: BoxConstraints(maxWidth: 420),
-                        child: _Frame(
+                        constraints: const BoxConstraints(maxWidth: 420),
+                        child: const _Frame(
                           child: AspectRatio(
                             aspectRatio: 1,
                             child: LessonBoardView(),
