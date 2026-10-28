@@ -7,6 +7,8 @@ import 'package:chess/features/game/view/game_page.dart';
 import 'package:chess/features/game/widgets/piece_view.dart';
 import 'package:chess/features/home/cubit/home_cubit.dart';
 import 'package:chess/features/settings/view/settings_page.dart';
+import 'package:chess/theme/app_theme.dart';
+import 'package:chess/theme/section_label.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -92,9 +94,6 @@ class HomeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
     return Scaffold(
       appBar: AppBar(
         actions: [
@@ -113,252 +112,314 @@ class HomeView extends StatelessWidget {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 420),
               child: BlocBuilder<HomeCubit, HomeState>(
                 builder: (context, state) {
+                  final cubit = context.read<HomeCubit>();
                   return Column(
-                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Hero emblem
-                      Container(
-                        width: 76,
-                        height: 76,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              colorScheme.primaryContainer,
-                              colorScheme.secondaryContainer,
-                            ],
+                      const _Hero(),
+                      if (state.hasSavedGame) ...[
+                        const SizedBox(height: 22),
+                        _ResumeCard(onTap: () => _resumeGame(context)),
+                      ],
+                      const SizedBox(height: 24),
+                      const SectionLabel('Chế độ'),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _ModeCard(
+                              icon: Icons.smart_toy_outlined,
+                              title: 'Chơi với máy',
+                              subtitle: 'Ba mức độ khó',
+                              selected: state.mode == GameMode.pve,
+                              onTap: () => cubit.setMode(GameMode.pve),
+                            ),
                           ),
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: colorScheme.shadow.withValues(alpha: 0.08),
-                              blurRadius: 16,
-                              offset: const Offset(0, 6),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _ModeCard(
+                              icon: Icons.people_outline,
+                              title: '2 người',
+                              subtitle: 'Cùng một máy',
+                              selected: state.mode == GameMode.pvp,
+                              onTap: () => cubit.setMode(GameMode.pvp),
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (state.mode == GameMode.pve) ...[
+                        const SizedBox(height: 20),
+                        const SectionLabel('Độ khó'),
+                        const SizedBox(height: 10),
+                        SegmentedButton<AiLevel>(
+                          showSelectedIcon: false,
+                          segments: const [
+                            ButtonSegment(
+                              value: AiLevel.easy,
+                              label: Text('Dễ'),
+                            ),
+                            ButtonSegment(
+                              value: AiLevel.medium,
+                              label: Text('Trung bình'),
+                            ),
+                            ButtonSegment(
+                              value: AiLevel.hard,
+                              label: Text('Khó'),
                             ),
                           ],
+                          selected: {state.level},
+                          onSelectionChanged: (selected) =>
+                              cubit.setLevel(selected.first),
                         ),
-                        child: const Center(
-                          child: PieceView(piece: 'K', size: 48),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Cờ vua',
-                        style: theme.textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -0.5,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Trí tuệ & Chiến thuật đỉnh cao',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                      const SizedBox(height: 28),
-
-                      // Configuration card
-                      Card(
-                        elevation: 0,
-                        color: colorScheme.surfaceContainerLow,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                          side: BorderSide(
-                            color: colorScheme.outlineVariant.withValues(
-                              alpha: 0.6,
+                        const SizedBox(height: 18),
+                        const SectionLabel('Quân của bạn'),
+                        const SizedBox(height: 10),
+                        SegmentedButton<ColorChoice>(
+                          showSelectedIcon: false,
+                          segments: const [
+                            ButtonSegment(
+                              value: ColorChoice.white,
+                              label: Text('Trắng'),
+                              icon: PieceView(piece: 'K', size: 18),
                             ),
-                          ),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.sports_esports_outlined,
-                                    size: 18,
-                                    color: colorScheme.primary,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    'Chế độ',
-                                    style: theme.textTheme.titleSmall?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 10),
-                              SizedBox(
-                                width: double.infinity,
-                                child: SegmentedButton<GameMode>(
-                                  segments: const [
-                                    ButtonSegment(
-                                      value: GameMode.pve,
-                                      label: Text('Chơi với máy'),
-                                      icon: Icon(Icons.smart_toy_outlined),
-                                    ),
-                                    ButtonSegment(
-                                      value: GameMode.pvp,
-                                      label: Text('2 người'),
-                                      icon: Icon(Icons.people_outline),
-                                    ),
-                                  ],
-                                  selected: {state.mode},
-                                  onSelectionChanged: (selected) {
-                                    context.read<HomeCubit>().setMode(
-                                      selected.first,
-                                    );
-                                  },
-                                ),
-                              ),
-                              if (state.mode == GameMode.pve) ...[
-                                const SizedBox(height: 20),
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.tune_rounded,
-                                      size: 18,
-                                      color: colorScheme.primary,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      'Độ khó',
-                                      style: theme.textTheme.titleSmall
-                                          ?.copyWith(
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 10),
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: SegmentedButton<AiLevel>(
-                                    segments: const [
-                                      ButtonSegment(
-                                        value: AiLevel.easy,
-                                        label: Text('Dễ'),
-                                      ),
-                                      ButtonSegment(
-                                        value: AiLevel.medium,
-                                        label: Text('Trung bình'),
-                                      ),
-                                      ButtonSegment(
-                                        value: AiLevel.hard,
-                                        label: Text('Khó'),
-                                      ),
-                                    ],
-                                    selected: {state.level},
-                                    onSelectionChanged: (selected) {
-                                      context.read<HomeCubit>().setLevel(
-                                        selected.first,
-                                      );
-                                    },
-                                  ),
-                                ),
-                                const SizedBox(height: 20),
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.palette_outlined,
-                                      size: 18,
-                                      color: colorScheme.primary,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      'Chọn quân',
-                                      style: theme.textTheme.titleSmall
-                                          ?.copyWith(
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 10),
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: SegmentedButton<ColorChoice>(
-                                    segments: const [
-                                      ButtonSegment(
-                                        value: ColorChoice.white,
-                                        label: Text('Trắng'),
-                                      ),
-                                      ButtonSegment(
-                                        value: ColorChoice.black,
-                                        label: Text('Đen'),
-                                      ),
-                                      ButtonSegment(
-                                        value: ColorChoice.random,
-                                        label: Text('Ngẫu nhiên'),
-                                      ),
-                                    ],
-                                    selected: {state.colorChoice},
-                                    onSelectionChanged: (selected) {
-                                      context.read<HomeCubit>().setColorChoice(
-                                        selected.first,
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 28),
-
-                      // Action buttons
-                      if (state.hasSavedGame) ...[
-                        SizedBox(
-                          width: double.infinity,
-                          child: FilledButton.tonalIcon(
-                            onPressed: () => _resumeGame(context),
-                            icon: const Icon(Icons.play_circle_outline_rounded),
-                            label: const Text('Tiếp tục ván đang chơi'),
-                            style: FilledButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                              textStyle: theme.textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                              ),
+                            ButtonSegment(
+                              value: ColorChoice.black,
+                              label: Text('Đen'),
+                              icon: PieceView(piece: 'k', size: 18),
                             ),
-                          ),
+                            ButtonSegment(
+                              value: ColorChoice.random,
+                              label: Text('Ngẫu nhiên'),
+                              icon: Icon(Icons.shuffle_rounded, size: 18),
+                            ),
+                          ],
+                          selected: {state.colorChoice},
+                          onSelectionChanged: (selected) =>
+                              cubit.setColorChoice(selected.first),
                         ),
-                        const SizedBox(height: 12),
                       ],
-                      SizedBox(
-                        width: double.infinity,
-                        child: FilledButton.icon(
-                          onPressed: () => _startGame(context, state),
-                          icon: const Icon(Icons.play_arrow_rounded),
-                          label: const Text('Bắt đầu'),
-                          style: FilledButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            textStyle: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
+                      const SizedBox(height: 28),
+                      FilledButton(
+                        onPressed: () => _startGame(context, state),
+                        child: const Text('Bắt đầu'),
                       ),
                     ],
                   );
                 },
               ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Emblem, tên game và đường kẻ trang trí.
+class _Hero extends StatelessWidget {
+  const _Hero();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Column(
+      children: [
+        Container(
+          width: 84,
+          height: 84,
+          padding: const EdgeInsets.all(5),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: colorScheme.tertiary),
+          ),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: colorScheme.surfaceContainer,
+              border: Border.all(color: colorScheme.outline),
+            ),
+            child: const Center(child: PieceView(piece: 'N', size: 44)),
+          ),
+        ),
+        const SizedBox(height: 14),
+        Text(
+          'Cờ vua',
+          style: theme.textTheme.displaySmall?.copyWith(
+            color: colorScheme.onSurface,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          'Trí tuệ & Chiến thuật đỉnh cao',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 12,
+            letterSpacing: 1.6,
+            color: colorScheme.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: 14),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(width: 70, height: 1, color: colorScheme.outline),
+            const SizedBox(width: 10),
+            Transform.rotate(
+              angle: math.pi / 4,
+              child: Container(
+                width: 7,
+                height: 7,
+                color: colorScheme.tertiary,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Container(width: 70, height: 1, color: colorScheme.outline),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _ResumeCard extends StatelessWidget {
+  const _ResumeCard({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: BorderSide(color: colorScheme.outline),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 14, 14, 14),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Tiếp tục ván đang chơi',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      'Quay lại đúng thế cờ bạn đã dừng',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: colorScheme.primary,
+                ),
+                child: Icon(
+                  Icons.play_arrow_rounded,
+                  color: colorScheme.onPrimary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ModeCard extends StatelessWidget {
+  const _ModeCard({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Semantics(
+      button: true,
+      selected: selected,
+      child: Material(
+        color: selected
+            ? colorScheme.surfaceContainerHigh
+            : colorScheme.surfaceContainerLow,
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+          side: BorderSide(
+            color: selected ? colorScheme.tertiary : colorScheme.outlineVariant,
+            width: selected ? 1.5 : 1,
+          ),
+        ),
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  icon,
+                  size: 26,
+                  color: selected
+                      ? colorScheme.tertiary
+                      : colorScheme.onSurfaceVariant,
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontFamily: AppTheme.serifFamily,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
             ),
           ),
         ),

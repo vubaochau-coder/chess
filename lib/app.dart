@@ -7,6 +7,7 @@ import 'package:chess/core/storage/game_repository.dart';
 import 'package:chess/core/storage/settings_repository.dart';
 import 'package:chess/features/home/view/home_page.dart';
 import 'package:chess/features/settings/cubit/settings_cubit.dart';
+import 'package:chess/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -46,60 +47,8 @@ class ChessApp extends StatelessWidget {
             return MaterialApp(
               title: 'Chess',
               debugShowCheckedModeBanner: false,
-              theme: ThemeData(
-                colorScheme: ColorScheme.fromSeed(
-                  seedColor: const Color(0xFF3B4968),
-                  brightness: Brightness.light,
-                ),
-                useMaterial3: true,
-                appBarTheme: const AppBarTheme(
-                  centerTitle: true,
-                  elevation: 0,
-                  scrolledUnderElevation: 1,
-                ),
-                cardTheme: CardThemeData(
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-                segmentedButtonTheme: SegmentedButtonThemeData(
-                  style: ButtonStyle(
-                    shape: WidgetStatePropertyAll(
-                      RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              darkTheme: ThemeData(
-                colorScheme: ColorScheme.fromSeed(
-                  seedColor: const Color(0xFF3B4968),
-                  brightness: Brightness.dark,
-                ),
-                useMaterial3: true,
-                appBarTheme: const AppBarTheme(
-                  centerTitle: true,
-                  elevation: 0,
-                  scrolledUnderElevation: 1,
-                ),
-                cardTheme: CardThemeData(
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-                segmentedButtonTheme: SegmentedButtonThemeData(
-                  style: ButtonStyle(
-                    shape: WidgetStatePropertyAll(
-                      RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+              theme: AppTheme.light(),
+              darkTheme: AppTheme.dark(),
               themeMode: themeMode,
               home: const HomePage(),
             );

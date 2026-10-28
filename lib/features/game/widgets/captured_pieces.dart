@@ -63,38 +63,32 @@ class CapturedPieces extends StatelessWidget {
         final colorScheme = theme.colorScheme;
 
         return SizedBox(
-          height: 28,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                for (final piece in displayedPieces)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 1),
-                    child: PieceView(piece: piece, size: 22),
+          height: 22,
+          child: Row(
+            children: [
+              for (final piece in displayedPieces)
+                PieceView(piece: piece, size: 18),
+              if (diff > 0)
+                Container(
+                  margin: const EdgeInsets.only(left: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 1,
                   ),
-                if (diff > 0)
-                  Container(
-                    margin: const EdgeInsets.only(left: 6),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      '+$diff',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: colorScheme.onSurfaceVariant,
-                      ),
+                  decoration: BoxDecoration(
+                    color: colorScheme.surfaceContainerHigh,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    '+$diff',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.tertiary,
                     ),
                   ),
-              ],
-            ),
+                ),
+            ],
           ),
         );
       },

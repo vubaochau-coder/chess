@@ -10,8 +10,7 @@ class GameStatusBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return BlocSelector<
       ChessGameBloc,
@@ -24,31 +23,18 @@ class GameStatusBar extends StatelessWidget {
         final (status, whiteToMove, isAiThinking) = value;
 
         if (isAiThinking) {
-          return Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.6),
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+          return _Pill(
+            background: colorScheme.surfaceContainerLow,
+            border: colorScheme.outlineVariant,
+            leading: SizedBox.square(
+              dimension: 16,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: colorScheme.tertiary,
               ),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const SizedBox.square(
-                  dimension: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  'Máy đang nghĩ…',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
+            text: 'Máy đang nghĩ…',
+            textColor: colorScheme.onSurface,
           );
         }
 
@@ -69,73 +55,95 @@ class GameStatusBar extends StatelessWidget {
           GameStatus.blackResigned => 'Đen đầu hàng - Trắng thắng',
         };
 
-        final containerBg = isCheck
-            ? colorScheme.errorContainer.withValues(alpha: 0.3)
-            : isGameOver
-            ? colorScheme.primaryContainer.withValues(alpha: 0.3)
-            : colorScheme.surfaceContainerHighest.withValues(alpha: 0.6);
+        if (isCheck) {
+          return _Pill(
+            background: colorScheme.errorContainer,
+            border: colorScheme.error,
+            leading: Icon(
+              Icons.warning_amber_rounded,
+              size: 18,
+              color: colorScheme.onErrorContainer,
+            ),
+            text: text,
+            textColor: colorScheme.onErrorContainer,
+          );
+        }
 
-        final borderColor = isCheck
-            ? colorScheme.error.withValues(alpha: 0.4)
-            : colorScheme.outlineVariant.withValues(alpha: 0.5);
+        if (isGameOver) {
+          return _Pill(
+            background: colorScheme.primaryContainer,
+            border: colorScheme.tertiary,
+            leading: Icon(
+              Icons.emoji_events_outlined,
+              size: 18,
+              color: colorScheme.tertiary,
+            ),
+            text: text,
+            textColor: colorScheme.onPrimaryContainer,
+          );
+        }
 
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            color: containerBg,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: borderColor),
+        return _Pill(
+          background: colorScheme.surfaceContainerLow,
+          border: colorScheme.outlineVariant,
+          leading: Container(
+            width: 14,
+            height: 14,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: whiteToMove
+                  ? const Color(0xFFFBF6EA)
+                  : const Color(0xFF2B1D14),
+              border: Border.all(color: colorScheme.outline, width: 1.5),
+            ),
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (isCheck)
-                Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: Icon(
-                    Icons.warning_amber_rounded,
-                    size: 18,
-                    color: colorScheme.error,
-                  ),
-                )
-              else if (isGameOver)
-                Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: Icon(
-                    Icons.emoji_events_outlined,
-                    size: 18,
-                    color: colorScheme.primary,
-                  ),
-                )
-              else
-                Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: Container(
-                    width: 14,
-                    height: 14,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: whiteToMove ? Colors.white : Colors.grey.shade900,
-                      border: Border.all(
-                        color: whiteToMove
-                            ? Colors.grey.shade500
-                            : Colors.grey.shade700,
-                        width: 1.5,
-                      ),
-                    ),
-                  ),
-                ),
-              Text(
-                text,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: isCheck ? colorScheme.error : null,
-                ),
-              ),
-            ],
-          ),
+          text: text,
+          textColor: colorScheme.onSurface,
         );
       },
+    );
+  }
+}
+
+class _Pill extends StatelessWidget {
+  const _Pill({
+    required this.background,
+    required this.border,
+    required this.leading,
+    required this.text,
+    required this.textColor,
+  });
+
+  final Color background;
+  final Color border;
+  final Widget leading;
+  final String text;
+  final Color textColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: border),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          leading,
+          const SizedBox(width: 10),
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: textColor,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

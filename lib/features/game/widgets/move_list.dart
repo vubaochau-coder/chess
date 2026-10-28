@@ -14,13 +14,11 @@ class MoveList extends StatelessWidget {
       selector: (state) => state.moves,
       builder: (context, moves) {
         return Container(
-          height: 42,
-          margin: const EdgeInsets.symmetric(horizontal: 16),
+          height: 44,
+          margin: const EdgeInsets.symmetric(horizontal: 20),
           decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerLow,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+            border: Border.symmetric(
+              horizontal: BorderSide(color: colorScheme.outlineVariant),
             ),
           ),
           child: moves.isEmpty
@@ -30,9 +28,7 @@ class MoveList extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 13,
                       fontStyle: FontStyle.italic,
-                      color: colorScheme.onSurfaceVariant.withValues(
-                        alpha: 0.7,
-                      ),
+                      color: colorScheme.onSurfaceVariant,
                     ),
                   ),
                 )
@@ -81,7 +77,7 @@ class _MoveListViewState extends State<_MoveListView> {
     return ListView.builder(
       controller: _scrollController,
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
       itemCount: widget.moves.length,
       itemBuilder: (context, index) {
         final isLatest = index == widget.moves.length - 1;
@@ -95,19 +91,15 @@ class _MoveListViewState extends State<_MoveListView> {
             margin: const EdgeInsets.symmetric(horizontal: 2),
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: isLatest
-                  ? colorScheme.primaryContainer
-                  : Colors.transparent,
-              borderRadius: BorderRadius.circular(8),
+              color: isLatest ? colorScheme.primary : Colors.transparent,
+              borderRadius: BorderRadius.circular(6),
             ),
             child: Text(
               text,
               style: TextStyle(
                 fontSize: 13,
-                fontWeight: isLatest ? FontWeight.bold : FontWeight.w500,
-                color: isLatest
-                    ? colorScheme.onPrimaryContainer
-                    : colorScheme.onSurface,
+                fontWeight: isLatest ? FontWeight.w700 : FontWeight.w500,
+                color: isLatest ? colorScheme.onPrimary : colorScheme.onSurface,
               ),
             ),
           ),

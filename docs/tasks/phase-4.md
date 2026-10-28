@@ -140,3 +140,53 @@ tiếng Việt của bộ, nguồn và giấy phép (cho phép dùng thương m�
 - [ ] Mỗi bộ đủ 12 file, có dòng giấy phép trong `assets/LICENSES.md`.
 - [ ] Widget test: đổi bộ quân → `PieceView` vẽ bằng `SvgPicture` với đúng asset.
 - [ ] Đổi bộ quân trong lúc chơi không mất thế cờ.
+
+---
+
+## T4.5 — Giao diện cổ điển (đợt nâng cấp UI)
+
+**Mục tiêu:** đổi toàn bộ app sang phong cách cổ điển sang trọng theo mockup owner đã duyệt
+(tông nâu gỗ đậm / ngà / vàng đồng ở chế độ tối, giấy cũ / nâu đậm ở chế độ sáng; tiêu đề chữ có chân).
+
+**Phạm vi**
+- `lib/theme/app_theme.dart`: `abstract final class AppTheme { static ThemeData light(); static ThemeData dark(); }`
+  — `ColorScheme` dựng tay theo bảng màu dưới, theme cho `AppBar`, `FilledButton`, `SegmentedButton`, `Card`,
+  `Dialog`, `Divider`; tiêu đề (`display*`, `headline*`, `titleLarge`) dùng `fontFamily: 'serif'`.
+  `ChessApp` dùng `AppTheme.light()` / `AppTheme.dark()` (bỏ `ColorScheme.fromSeed`).
+- Màn chính: emblem viền đôi, tiêu đề chữ có chân, dòng phụ viết hoa giãn chữ, đường kẻ trang trí; nút
+  `Tiếp tục ván đang chơi` dạng thẻ đặt ngay dưới tiêu đề; chọn chế độ bằng 2 thẻ (`Chơi với máy` / `2 người`);
+  nhãn nhóm viết hoa màu nhấn (`Chế độ`, `Độ khó`, `Quân của bạn`); nút `Bắt đầu` cao, full width.
+- Màn chơi: hàng người chơi phía trên và dưới bàn cờ (tên `Bạn`/`Máy` hoặc `Trắng`/`Đen` + màu quân, quân đã
+  ăn, viền màu nhấn cho bên tới lượt); khung bàn cờ viền đồng; danh sách nước đi dạng dải ngang có kẻ trên/dưới,
+  nước mới nhất tô màu nhấn; 3 nút điều khiển cỡ lớn có nhãn (`Ván mới`, `Đi lại`, `Đầu hàng`).
+- Màn Cài đặt: nhãn nhóm viết hoa màu nhấn, nội dung trong thẻ, xem trước theme bàn cờ dạng lưới 5 ô.
+- Dialog: phong cấp (4 ô có tên quân + nút `Hủy`), đầu hàng (icon, chữ căn giữa, nút xác nhận màu đỏ).
+
+**Bảng màu**
+
+| Token | Tối | Sáng |
+|---|---|---|
+| surface (nền) | `#17110D` | `#F6F0E4` |
+| surfaceContainerLow (thẻ) | `#1E1712` | `#FFFBF3` |
+| outlineVariant (viền) | `#3A2E24` | `#E2D5BE` |
+| onSurface (chữ) | `#F2E8D5` | `#2A1E16` |
+| onSurfaceVariant (chữ phụ) | `#B7A58A` | `#6F5E48` |
+| primary (nút chính) | `#C8A15A` | `#2A1E16` |
+| tertiary (nhãn nhóm, viền chọn) | `#C8A15A` | `#8A6A2F` |
+| error (đầu hàng) | `#A4483A` | `#A4483A` |
+
+**Ngoài phạm vi:** đổi màu theme bàn cờ (`BoardTheme`, T4.2), font tùy chỉnh (cần file font + giấy phép từ owner),
+hộp thoại kết thúc ván (hành vi mới — task riêng), các cài đặt của T4.3/T5.x, đổi chuỗi trạng thái/tiêu đề đang có.
+
+**File được sửa:** `lib/theme/**`, `lib/app.dart`, `lib/features/home/view/**`, `lib/features/game/view/**`,
+`lib/features/game/widgets/**` (trừ `chess_board.dart`, `piece_view.dart`, `lib/features/game/painter/**`),
+`lib/features/settings/view/**`, `test/**`, `docs/architecture.md`.
+
+**Package được phép:** không.
+
+**Tiêu chí nghiệm thu**
+- [ ] Toàn bộ test hiện có vẫn xanh (chỉ được sửa finder nếu widget đổi kiểu, không bỏ kiểm tra hành vi).
+- [ ] Test `AppTheme`: `light()`/`dark()` đúng `brightness` và đúng màu `primary`/`surface` theo bảng.
+- [ ] Widget test màn chơi: hàng người chơi hiện đúng tên theo chế độ (pve: `Bạn`/`Máy`; pvp: `Trắng`/`Đen`).
+- [ ] Không thêm `BlocBuilder` thiếu `buildWhen`; dữ liệu mới đọc bằng `BlocSelector` (architecture.md mục 5).
+- [ ] Thử trên Android cả chế độ sáng và tối.
