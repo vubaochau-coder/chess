@@ -50,8 +50,8 @@ void main() {
 
     expect(find.text('Học chơi cờ'), findsOneWidget);
     expect(find.text('0/17 bài'), findsOneWidget);
-    expect(find.text('Chương 1 · Các quân cờ'), findsOneWidget);
-    expect(find.text('Chương 4 · Mẹo cơ bản'), findsOneWidget);
+    expect(find.text('CHƯƠNG 1 · CÁC QUÂN CỜ'), findsOneWidget);
+    expect(find.text('CHƯƠNG 4 · MẸO CƠ BẢN'), findsOneWidget);
     expect(find.text('Mã'), findsOneWidget);
     expect(find.text('Bảo vệ Vua'), findsOneWidget);
   });
@@ -65,7 +65,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(LessonPage), findsOneWidget);
 
-    final next = find.widgetWithText(FilledButton, 'Bài tiếp');
+    final next = find.widgetWithText(FilledButton, 'Bài tiếp: Tốt');
     expect(tester.widget<FilledButton>(next).onPressed, isNull);
 
     await movePiece(tester, 'b1', 'c3');
@@ -115,7 +115,7 @@ void main() {
     await tester.tap(find.text('Bàn cờ và cách xếp quân'));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.widgetWithText(FilledButton, 'Bài tiếp'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Bài tiếp: Vua'));
     await tester.pumpAndSettle();
 
     expect(find.text('Vua'), findsOneWidget);
