@@ -6,9 +6,13 @@ import 'package:chess/core/engine/chess_rules.dart';
 import 'package:chess/core/engine/fen.dart';
 import 'package:chess/core/engine/move.dart';
 import 'package:chess/core/game/game_config.dart';
+import 'package:chess/core/settings/app_settings.dart';
 import 'package:chess/core/storage/settings_repository.dart';
+import 'package:chess/features/game/painter/coordinates_painter.dart';
+import 'package:chess/features/game/painter/highlight_painter.dart';
 import 'package:chess/features/game/view/game_page.dart';
 import 'package:chess/features/game/widgets/chess_board.dart';
+import 'package:chess/features/game/widgets/game_over_dialog.dart';
 import 'package:chess/features/game/widgets/piece_view.dart';
 import 'package:chess/features/game/widgets/promotion_dialog.dart';
 import 'package:chess/features/settings/cubit/settings_cubit.dart';
@@ -28,12 +32,13 @@ void main() {
     GamePosition? startPosition,
     GameConfig? config,
     ChessAi? ai,
+    AppSettings? settings,
   }) async {
     tester.view.physicalSize = const Size(800, 1200);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
-    final settingsRepo = InMemorySettingsRepository();
+    final settingsRepo = InMemorySettingsRepository(settings);
     await tester.pumpWidget(
       MultiRepositoryProvider(
         providers: [
@@ -443,5 +448,89 @@ void main() {
 
     expect(find.byType(SettingsPage), findsOneWidget);
     expect(find.text('Cài đặt'), findsOneWidget);
+  });
+
+  double pieceY(WidgetTester tester, String piece) {
+    final finder = find.byWidgetPredicate(
+      (w) => w is PieceView && w.piece == piece,
+    );
+    return tester.getCenter(finder).dy;
+  }
+
+  testWidgets('Lật bàn cờ flips the board', (tester) async {
+    await pumpGame(tester);
+    expect(pieceY(tester, 'K'), greaterThan(pieceY(tester, 'k')));
+
+    await tester.tap(find.byTooltip('Lật bàn cờ'));
+    await tester.pump();
+
+    expect(pieceY(tester, 'K'), lessThan(pieceY(tester, 'k')));
+  });
+
+  testWidgets('auto flip in PvP keeps the side to move at the bottom', (
+    tester,
+  ) async {
+    await pumpGame(tester, settings: const AppSettings(autoFlipInPvp: true));
+
+    await tapSquare(tester, 'e2');
+    await tapSquare(tester, 'e4');
+
+    expect(find.text('Lượt đi: Đen'), findsOneWidget);
+    expect(pieceY(tester, 'k'), greaterThan(pieceY(tester, 'K')));
+  });
+
+  final coordinates = find.byWidgetPredicate(
+    (w) => w is CustomPaint && w.painter is CoordinatesPainter,
+  );
+
+  testWidgets('coordinates are shown by default', (tester) async {
+    await pumpGame(tester);
+
+    expect(coordinates, findsOneWidget);
+  });
+
+  testWidgets('coordinates are hidden when turned off', (tester) async {
+    await pumpGame(tester, settings: const AppSettings(showCoordinates: false));
+
+    expect(coordinates, findsNothing);
+  });
+
+  testWidgets('legal move hints are hidden when turned off', (tester) async {
+    await pumpGame(tester, settings: const AppSettings(showLegalMoves: false));
+    await tapSquare(tester, 'e2');
+
+    final paint = tester.widget<CustomPaint>(
+      find.byWidgetPredicate(
+        (w) => w is CustomPaint && w.painter is HighlightPainter,
+      ),
+    );
+    expect((paint.painter! as HighlightPainter).targets, isEmpty);
+  });
+
+  testWidgets('checkmate opens the game over dialog after a short delay', (
+    tester,
+  ) async {
+    await pumpGame(
+      tester,
+      startPosition: Fen.parse('6k1/5ppp/8/8/8/8/8/R5K1 w - - 0 1'),
+    );
+
+    await tapSquare(tester, 'a1');
+    await tapSquare(tester, 'a8');
+    expect(find.byType(GameOverDialog), findsNothing);
+
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(GameOverDialog), findsOneWidget);
+    expect(find.text('CHIẾU HẾT'), findsOneWidget);
+    expect(find.text('Trắng thắng'), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Ván mới'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(GameOverDialog), findsNothing);
+    expect(find.text('Lượt đi: Trắng'), findsOneWidget);
+    expect(pieceAt(tester, 'a1'), 'R');
   });
 }

@@ -76,6 +76,35 @@ void main() {
         expect(restored.boardTheme, BoardTheme.wood);
       });
 
+      test('round-trip keeps board and sound options', () {
+        const settings = AppSettings(
+          showCoordinates: false,
+          showLegalMoves: false,
+          highlightLastMove: false,
+          autoFlipInPvp: true,
+          soundEnabled: false,
+          soundVolume: 0.35,
+          hapticsEnabled: false,
+        );
+
+        expect(AppSettings.fromJson(settings.toJson()), settings);
+      });
+
+      test('fromJson falls back per field for wrong option types', () {
+        final restored = AppSettings.fromJson({
+          'showCoordinates': 'yes',
+          'autoFlipInPvp': 1,
+          'soundVolume': 'loud',
+        });
+
+        expect(restored, const AppSettings());
+      });
+
+      test('fromJson clamps soundVolume into 0..1', () {
+        expect(AppSettings.fromJson({'soundVolume': 3}).soundVolume, 1.0);
+        expect(AppSettings.fromJson({'soundVolume': -1}).soundVolume, 0.0);
+      });
+
       test('fromJson with unknown enum string falls back to default', () {
         final restored = AppSettings.fromJson({
           'themeMode': 'high_contrast',

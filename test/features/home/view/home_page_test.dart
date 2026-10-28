@@ -93,7 +93,7 @@ void main() {
     ) async {
       await pumpHome(tester);
 
-      expect(find.text('Cờ vua'), findsOneWidget);
+      expect(find.text('Cờ Vua'), findsOneWidget);
       expect(find.text('Chơi với máy'), findsOneWidget);
       expect(find.text('2 người'), findsOneWidget);
 
@@ -158,8 +158,9 @@ void main() {
         expect(gamePage.config.level, AiLevel.hard);
         expect(gamePage.config.humanColor, PieceColor.black);
 
-        // AppBar title should be 'Máy - Khó'
-        expect(find.text('Máy - Khó'), findsOneWidget);
+        // Tiêu đề AppBar: 'Chơi với máy' + mức độ 'KHÓ'
+        expect(find.text('Chơi với máy'), findsOneWidget);
+        expect(find.text('KHÓ'), findsOneWidget);
       },
     );
 

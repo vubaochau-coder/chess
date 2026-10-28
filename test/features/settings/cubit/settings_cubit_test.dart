@@ -88,5 +88,31 @@ void main() {
         verifyNever(() => repository.save(any()));
       },
     );
+
+    blocTest<SettingsCubit, AppSettings>(
+      'setShowCoordinates emits updated state and saves it',
+      setUp: () {
+        when(repository.load).thenReturn(const AppSettings());
+        when(() => repository.save(any())).thenAnswer((_) async {});
+      },
+      build: () => SettingsCubit(repository: repository),
+      act: (cubit) => cubit.setShowCoordinates(false),
+      expect: () => [const AppSettings(showCoordinates: false)],
+      verify: (_) {
+        verify(() => repository.save(const AppSettings(showCoordinates: false)))
+            .called(1);
+      },
+    );
+
+    blocTest<SettingsCubit, AppSettings>(
+      'setSoundVolume clamps the value into 0..1',
+      setUp: () {
+        when(repository.load).thenReturn(const AppSettings());
+        when(() => repository.save(any())).thenAnswer((_) async {});
+      },
+      build: () => SettingsCubit(repository: repository),
+      act: (cubit) => cubit.setSoundVolume(1.5),
+      expect: () => [const AppSettings(soundVolume: 1)],
+    );
   });
 }
