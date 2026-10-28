@@ -15,9 +15,8 @@ class TutorialPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => TutorialCubit(
-        repository: context.read<TutorialProgressRepository>(),
-      ),
+      create: (context) =>
+          TutorialCubit(repository: context.read<TutorialProgressRepository>()),
       child: const TutorialView(),
     );
   }
