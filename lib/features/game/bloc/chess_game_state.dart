@@ -25,6 +25,7 @@ final class ChessGameState extends Equatable {
     this.legalTargets = const [],
     this.checkSquare,
     this.pendingPromotion,
+    this.flipped = false,
   });
 
   factory ChessGameState.initial(
@@ -37,6 +38,7 @@ final class ChessGameState extends Equatable {
       gameId: gameId,
       isAiThinking: false,
       history: [start],
+      flipped: _startsFlipped(config),
       moves: const [],
       status: ChessRules.gameStatus([start]),
       checkSquare: _checkSquareOf(start),
@@ -105,6 +107,9 @@ final class ChessGameState extends Equatable {
   /// Nước đi phong cấp đang chờ người chơi chọn quân.
   final LastMove? pendingPromotion;
 
+  /// Bàn cờ hiển thị lật (quân Đen ở phía dưới).
+  final bool flipped;
+
   GamePosition get position => history.last;
 
   bool get isGameOver => status.isGameOver;
@@ -138,6 +143,7 @@ final class ChessGameState extends Equatable {
     return ChessGameState(
       config: config,
       gameId: gameId,
+      flipped: flipped,
       isAiThinking: false,
       history: history,
       moves: moves,
@@ -145,6 +151,10 @@ final class ChessGameState extends Equatable {
       checkSquare: checkSquare,
     );
   }
+
+  /// Người cầm Đen khi chơi với máy thì bàn cờ lật (quân Đen ở dưới).
+  static bool _startsFlipped(GameConfig config) =>
+      config.mode == GameMode.pve && config.humanColor == PieceColor.black;
 
   static int? _checkSquareOf(GamePosition position) {
     if (!ChessRules.isInCheck(position.board, position.whiteToMove)) {
@@ -160,6 +170,7 @@ final class ChessGameState extends Equatable {
     return ChessGameState(
       config: config,
       gameId: gameId,
+      flipped: flipped,
       isAiThinking: false,
       history: nextHistory,
       moves: nextMoves,
@@ -177,6 +188,7 @@ final class ChessGameState extends Equatable {
       return ChessGameState(
         config: config,
         gameId: gameId,
+        flipped: flipped,
         isAiThinking: false,
         history: nextHistory,
         moves: nextMoves,
@@ -200,6 +212,7 @@ final class ChessGameState extends Equatable {
     return ChessGameState(
       config: config,
       gameId: gameId,
+      flipped: flipped,
       isAiThinking: false,
       history: nextHistory,
       moves: nextMoves,
@@ -212,6 +225,7 @@ final class ChessGameState extends Equatable {
     return ChessGameState(
       config: config,
       gameId: gameId,
+      flipped: flipped,
       isAiThinking: isAiThinking,
       history: history,
       moves: moves,
@@ -226,6 +240,7 @@ final class ChessGameState extends Equatable {
     return ChessGameState(
       config: config,
       gameId: gameId,
+      flipped: flipped,
       isAiThinking: isAiThinking,
       history: history,
       moves: moves,
@@ -238,6 +253,7 @@ final class ChessGameState extends Equatable {
     return ChessGameState(
       config: config,
       gameId: gameId,
+      flipped: flipped,
       isAiThinking: isAiThinking,
       history: history,
       moves: moves,
@@ -253,6 +269,7 @@ final class ChessGameState extends Equatable {
     return ChessGameState(
       config: config,
       gameId: gameId,
+      flipped: flipped,
       isAiThinking: isAiThinking,
       history: history,
       moves: moves,
@@ -272,6 +289,7 @@ final class ChessGameState extends Equatable {
     List<int>? legalTargets,
     int? checkSquare,
     LastMove? pendingPromotion,
+    bool? flipped,
   }) {
     return ChessGameState(
       config: config ?? this.config,
@@ -284,6 +302,7 @@ final class ChessGameState extends Equatable {
       legalTargets: legalTargets ?? this.legalTargets,
       checkSquare: checkSquare ?? this.checkSquare,
       pendingPromotion: pendingPromotion ?? this.pendingPromotion,
+      flipped: flipped ?? this.flipped,
     );
   }
 
@@ -299,5 +318,6 @@ final class ChessGameState extends Equatable {
     legalTargets,
     checkSquare,
     pendingPromotion,
+    flipped,
   ];
 }

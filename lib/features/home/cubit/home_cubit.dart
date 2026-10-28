@@ -2,6 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:chess/core/ai/ai_level.dart';
 import 'package:chess/core/game/game_config.dart';
 import 'package:chess/core/storage/game_repository.dart';
+import 'package:chess/core/storage/saved_game.dart';
 import 'package:equatable/equatable.dart';
 
 part 'home_state.dart';
@@ -10,10 +11,7 @@ class HomeCubit extends Cubit<HomeState> {
   HomeCubit([GameRepository? repository])
     : _repository = repository ?? const NoopGameRepository(),
       super(
-        HomeState(
-          hasSavedGame:
-              (repository ?? const NoopGameRepository()).load() != null,
-        ),
+        HomeState(savedGame: (repository ?? const NoopGameRepository()).load()),
       );
 
   final GameRepository _repository;
@@ -24,6 +22,13 @@ class HomeCubit extends Cubit<HomeState> {
       emit(state.copyWith(colorChoice: choice));
 
   void refresh() {
-    emit(state.copyWith(hasSavedGame: _repository.load() != null));
+    emit(
+      HomeState(
+        mode: state.mode,
+        level: state.level,
+        colorChoice: state.colorChoice,
+        savedGame: _repository.load(),
+      ),
+    );
   }
 }

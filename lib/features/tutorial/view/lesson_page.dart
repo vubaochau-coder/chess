@@ -372,7 +372,11 @@ class _NextButton extends StatelessWidget {
                   }
                 }
               : null,
-          child: Text(isLast ? 'Hoàn thành' : 'Bài tiếp'),
+          child: Text(
+            isLast
+                ? 'Hoàn thành'
+                : 'Bài tiếp: ${LessonCatalog.lessons[index + 1].title}',
+          ),
         );
       },
     );

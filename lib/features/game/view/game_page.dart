@@ -1,16 +1,21 @@
-import 'package:chess/core/ai/ai_level.dart';
+import 'dart:async';
+
 import 'package:chess/core/ai/chess_ai.dart';
 import 'package:chess/core/audio/sound_player.dart';
 import 'package:chess/core/engine/chess_rules.dart';
 import 'package:chess/core/game/game_config.dart';
+import 'package:chess/core/settings/app_settings.dart';
 import 'package:chess/core/storage/game_repository.dart';
 import 'package:chess/core/storage/saved_game.dart';
 import 'package:chess/features/game/bloc/chess_game_bloc.dart';
 import 'package:chess/features/game/widgets/captured_pieces.dart';
 import 'package:chess/features/game/widgets/chess_board.dart';
+import 'package:chess/features/game/widgets/game_labels.dart';
+import 'package:chess/features/game/widgets/game_over_dialog.dart';
 import 'package:chess/features/game/widgets/game_status_bar.dart';
 import 'package:chess/features/game/widgets/move_list.dart';
 import 'package:chess/features/game/widgets/promotion_dialog.dart';
+import 'package:chess/features/settings/cubit/settings_cubit.dart';
 import 'package:chess/features/settings/view/settings_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -57,120 +62,161 @@ class GameView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final config = context.select((ChessGameBloc b) => b.state.config);
-    final title = switch (config.mode) {
-      GameMode.pvp => '2 người',
-      GameMode.pve => switch (config.level) {
-        AiLevel.easy => 'Máy - Dễ',
-        AiLevel.medium => 'Máy - Trung bình',
-        AiLevel.hard => 'Máy - Khó',
-      },
+    final (title, subtitle) = switch (config.mode) {
+      GameMode.pvp => ('2 người', 'Cùng một máy'),
+      GameMode.pve => ('Chơi với máy', aiLevelLabel(config.level)),
     };
 
-    return BlocListener<ChessGameBloc, ChessGameState>(
-      listenWhen: (previous, current) =>
-          previous.pendingPromotion == null && current.pendingPromotion != null,
-      listener: (context, state) async {
-        final bloc = context.read<ChessGameBloc>();
-        final piece = await showDialog<String>(
-          context: context,
-          barrierDismissible: true,
-          builder: (_) => PromotionDialog(white: state.position.whiteToMove),
-        );
-        if (piece == null) {
-          bloc.add(const PromotionCancelled());
-        } else {
-          bloc.add(PromotionPieceSelected(piece));
-        }
-      },
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(title),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.settings_outlined),
-              tooltip: 'Cài đặt',
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute<void>(builder: (_) => const SettingsPage()),
-                );
-              },
+    return _GameOverWatcher(
+      child: BlocListener<ChessGameBloc, ChessGameState>(
+        listenWhen: (previous, current) =>
+            previous.pendingPromotion == null &&
+            current.pendingPromotion != null,
+        listener: (context, state) async {
+          final bloc = context.read<ChessGameBloc>();
+          final piece = await showDialog<String>(
+            context: context,
+            barrierDismissible: true,
+            builder: (_) => PromotionDialog(white: state.position.whiteToMove),
+          );
+          if (piece == null) {
+            bloc.add(const PromotionCancelled());
+          } else {
+            bloc.add(PromotionPieceSelected(piece));
+          }
+        },
+        child: Scaffold(
+          appBar: AppBar(
+            title: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(title),
+                Text(
+                  subtitle.toUpperCase(),
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 2,
+                    color: colorScheme.tertiary,
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-        body: SafeArea(
-          child: Column(
-            children: [
-              const SizedBox(height: 4),
-              const GameStatusBar(),
-              const SizedBox(height: 8),
-              const _PlayerRow(bottom: false),
-              Flexible(
-                child: Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: _BoardFrame(
-                      child: BlocSelector<ChessGameBloc, ChessGameState, bool>(
-                        selector: (state) => _isFlipped(state.config),
-                        builder: (context, flipped) =>
-                            ChessBoard(flipped: flipped),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.swap_vert),
+                tooltip: 'Lật bàn cờ',
+                onPressed: () =>
+                    context.read<ChessGameBloc>().add(const BoardFlipToggled()),
+              ),
+              IconButton(
+                icon: const Icon(Icons.settings_outlined),
+                tooltip: 'Cài đặt',
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute<void>(
+                      builder: (_) => const SettingsPage(),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+          body: SafeArea(
+            child: Column(
+              children: [
+                const SizedBox(height: 4),
+                const GameStatusBar(),
+                const SizedBox(height: 4),
+                const _PlayerRow(bottom: false),
+                Flexible(
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: _BoardFrame(
+                        child: _FlipSelector(
+                          builder: (context, flipped) =>
+                              ChessBoard(flipped: flipped),
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              const _PlayerRow(bottom: true),
-              const SizedBox(height: 8),
-              const MoveList(),
-              const SizedBox(height: 14),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _ControlButton(
-                    icon: Icons.refresh_rounded,
-                    label: 'Ván mới',
-                    onPressed: () => context.read<ChessGameBloc>().add(
-                      const NewGameRequested(),
-                    ),
+                const _PlayerRow(bottom: true),
+                const SizedBox(height: 8),
+                const MoveList(),
+                const SizedBox(height: 14),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: _ControlButton(
+                          icon: Icons.refresh_rounded,
+                          label: 'Ván mới',
+                          onPressed: () => context.read<ChessGameBloc>().add(
+                            const NewGameRequested(),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      const Expanded(child: _UndoButton()),
+                      const SizedBox(width: 10),
+                      const Expanded(child: _ResignButton()),
+                    ],
                   ),
-                  BlocSelector<ChessGameBloc, ChessGameState, bool>(
-                    selector: (state) => state.canUndo,
-                    builder: (context, canUndo) {
-                      return _ControlButton(
-                        icon: Icons.undo,
-                        label: 'Đi lại',
-                        onPressed: canUndo
-                            ? () => context.read<ChessGameBloc>().add(
-                                const UndoRequested(),
-                              )
-                            : null,
-                      );
-                    },
-                  ),
-                  BlocSelector<ChessGameBloc, ChessGameState, bool>(
-                    selector: (state) => !state.isGameOver,
-                    builder: (context, canResign) {
-                      return _ControlButton(
-                        icon: Icons.flag,
-                        label: 'Đầu hàng',
-                        onPressed: canResign
-                            ? () => _showResignDialog(context)
-                            : null,
-                      );
-                    },
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-            ],
+                ),
+                const SizedBox(height: 16),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
+}
 
-  Future<void> _showResignDialog(BuildContext context) async {
+class _UndoButton extends StatelessWidget {
+  const _UndoButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocSelector<ChessGameBloc, ChessGameState, bool>(
+      selector: (state) => state.canUndo,
+      builder: (context, canUndo) {
+        return _ControlButton(
+          icon: Icons.undo,
+          label: 'Đi lại',
+          onPressed: canUndo
+              ? () => context.read<ChessGameBloc>().add(const UndoRequested())
+              : null,
+        );
+      },
+    );
+  }
+}
+
+class _ResignButton extends StatelessWidget {
+  const _ResignButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocSelector<ChessGameBloc, ChessGameState, bool>(
+      selector: (state) => !state.isGameOver,
+      builder: (context, canResign) {
+        return _ControlButton(
+          icon: Icons.flag,
+          label: 'Đầu hàng',
+          onPressed: canResign ? () => _confirmResign(context) : null,
+        );
+      },
+    );
+  }
+
+  Future<void> _confirmResign(BuildContext context) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
@@ -178,26 +224,41 @@ class GameView extends StatelessWidget {
         return AlertDialog(
           icon: Icon(Icons.flag_outlined, color: colorScheme.tertiary),
           title: const Text('Đầu hàng?'),
-          content: const Text(
-            'Bạn có chắc chắn muốn đầu hàng ván cờ này không?',
-            textAlign: TextAlign.center,
-          ),
-          actionsAlignment: MainAxisAlignment.center,
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('Hủy'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(true),
-              style: TextButton.styleFrom(
-                backgroundColor: colorScheme.error,
-                foregroundColor: colorScheme.onError,
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Bạn có chắc chắn muốn đầu hàng ván cờ này không?',
+                textAlign: TextAlign.center,
               ),
-              child: const Text('Đầu hàng'),
-            ),
-          ],
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.of(dialogContext).pop(false),
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: const Size(0, 48),
+                      ),
+                      child: const Text('Hủy'),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Navigator.of(dialogContext).pop(true),
+                      style: TextButton.styleFrom(
+                        minimumSize: const Size(0, 48),
+                        backgroundColor: colorScheme.error,
+                        foregroundColor: colorScheme.onError,
+                      ),
+                      child: const Text('Đầu hàng'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         );
       },
     );
@@ -207,9 +268,90 @@ class GameView extends StatelessWidget {
   }
 }
 
-/// Người cầm Đen khi chơi với máy thì bàn cờ lật (quân Đen ở dưới).
-bool _isFlipped(GameConfig config) =>
-    config.mode == GameMode.pve && config.humanColor == PieceColor.black;
+/// Mở [GameOverDialog] 500 ms sau khi ván kết thúc. Hẹn giờ bị hủy khi rời
+/// màn chơi để không mở dialog trên màn khác.
+class _GameOverWatcher extends StatefulWidget {
+  const _GameOverWatcher({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_GameOverWatcher> createState() => _GameOverWatcherState();
+}
+
+class _GameOverWatcherState extends State<_GameOverWatcher> {
+  Timer? _timer;
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _schedule() {
+    _timer?.cancel();
+    _timer = Timer(const Duration(milliseconds: 500), _show);
+  }
+
+  Future<void> _show() async {
+    if (!mounted) return;
+    final bloc = context.read<ChessGameBloc>();
+    final state = bloc.state;
+    if (!state.isGameOver) return;
+
+    final action = await showDialog<GameOverAction>(
+      context: context,
+      builder: (_) => GameOverDialog(
+        status: state.status,
+        config: state.config,
+        whiteToMove: state.position.whiteToMove,
+        moveCount: state.moves.length,
+      ),
+    );
+    if (!mounted) return;
+    if (action == GameOverAction.newGame) {
+      bloc.add(const NewGameRequested());
+    } else if (action == GameOverAction.home) {
+      Navigator.of(context).pop();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocListener<ChessGameBloc, ChessGameState>(
+      listenWhen: (previous, current) =>
+          !previous.isGameOver && current.isGameOver,
+      listener: (context, state) => _schedule(),
+      child: widget.child,
+    );
+  }
+}
+
+/// Chiều bàn cờ: khi chơi 2 người và bật "Tự lật bàn" thì bên tới lượt luôn ở
+/// dưới; ngược lại theo state của bloc (người cầm Đen, nút Lật bàn cờ).
+class _FlipSelector extends StatelessWidget {
+  const _FlipSelector({required this.builder});
+
+  final Widget Function(BuildContext context, bool flipped) builder;
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocSelector<SettingsCubit, AppSettings, bool>(
+      selector: (settings) => settings.autoFlipInPvp,
+      builder: (context, autoFlip) {
+        return BlocSelector<ChessGameBloc, ChessGameState, bool>(
+          // Selector đổi khi đổi cài đặt: key mới để tính lại ngay.
+          key: ValueKey(autoFlip),
+          selector: (state) {
+            final auto = autoFlip && state.config.mode == GameMode.pvp;
+            return auto ? !state.position.whiteToMove : state.flipped;
+          },
+          builder: builder,
+        );
+      },
+    );
+  }
+}
 
 /// Khung viền đồng quanh bàn cờ.
 class _BoardFrame extends StatelessWidget {
@@ -240,8 +382,7 @@ class _BoardFrame extends StatelessWidget {
   }
 }
 
-/// Một bên trong ván: màu quân, tên (Bạn/Máy khi chơi với máy), quân đã ăn.
-/// [bottom] là bên nằm dưới bàn cờ (tính cả khi bàn cờ lật).
+/// Một bên trong ván, phía trên hoặc dưới bàn cờ theo chiều bàn đang hiển thị.
 class _PlayerRow extends StatelessWidget {
   const _PlayerRow({required this.bottom});
 
@@ -249,57 +390,52 @@ class _PlayerRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return _FlipSelector(
+      builder: (context, flipped) => _PlayerInfo(isWhite: bottom != flipped),
+    );
+  }
+}
+
+class _PlayerInfo extends StatelessWidget {
+  const _PlayerInfo({required this.isWhite});
+
+  final bool isWhite;
+
+  @override
+  Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return BlocSelector<ChessGameBloc, ChessGameState, (GameConfig, bool)>(
-      selector: (state) => (state.config, state.position.whiteToMove),
+    return BlocSelector<
+      ChessGameBloc,
+      ChessGameState,
+      (GameConfig, bool, bool)
+    >(
+      selector: (state) =>
+          (state.config, state.position.whiteToMove, state.isGameOver),
       builder: (context, value) {
-        final (config, whiteToMove) = value;
-        final flipped = _isFlipped(config);
-        final isWhite = bottom != flipped;
+        final (config, whiteToMove, isGameOver) = value;
         final side = isWhite ? PieceColor.white : PieceColor.black;
         final opponent = isWhite ? PieceColor.black : PieceColor.white;
         final colorName = isWhite ? 'Trắng' : 'Đen';
         final isPve = config.mode == GameMode.pve;
-        final isHuman = config.humanColor == side;
+        final isMachine = isPve && config.humanColor != side;
         final name = !isPve
             ? colorName
-            : isHuman
-            ? 'Bạn · $colorName'
-            : 'Máy · $colorName';
-        final active = whiteToMove == isWhite;
+            : isMachine
+            ? 'Máy · $colorName'
+            : 'Bạn · $colorName';
+        final active = !isGameOver && whiteToMove == isWhite;
+        final turnLabel = !isPve
+            ? 'Đang đi'
+            : isMachine
+            ? 'Lượt của máy'
+            : 'Lượt của bạn';
 
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
           child: Row(
             children: [
-              Container(
-                width: 34,
-                height: 34,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: isWhite
-                      ? const Color(0xFFFBF6EA)
-                      : const Color(0xFF2B1D14),
-                  border: Border.all(
-                    color: active
-                        ? colorScheme.tertiary
-                        : colorScheme.outlineVariant,
-                    width: active ? 2 : 1,
-                  ),
-                ),
-                child: isPve
-                    ? Icon(
-                        isHuman
-                            ? Icons.person_outline_rounded
-                            : Icons.smart_toy_outlined,
-                        size: 18,
-                        color: isWhite
-                            ? const Color(0xFF2B1D14)
-                            : const Color(0xFFFBF6EA),
-                      )
-                    : null,
-              ),
+              _Avatar(isWhite: isWhite, isMachine: isMachine, active: active),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -320,6 +456,25 @@ class _PlayerRow extends StatelessWidget {
                   ],
                 ),
               ),
+              if (active)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(
+                    turnLabel,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: colorScheme.onPrimary,
+                    ),
+                  ),
+                ),
             ],
           ),
         );
@@ -328,7 +483,47 @@ class _PlayerRow extends StatelessWidget {
   }
 }
 
-/// Nút điều khiển cỡ lớn có nhãn bên dưới; chạm vào nhãn cũng kích hoạt nút.
+/// Máy: icon robot; người: Vua theo màu quân. Viền nhấn khi tới lượt.
+class _Avatar extends StatelessWidget {
+  const _Avatar({
+    required this.isWhite,
+    required this.isMachine,
+    required this.active,
+  });
+
+  final bool isWhite;
+  final bool isMachine;
+  final bool active;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final accent = active ? colorScheme.tertiary : colorScheme.onSurfaceVariant;
+
+    return Container(
+      width: 38,
+      height: 38,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: active
+            ? colorScheme.surfaceContainerHigh
+            : colorScheme.surfaceContainer,
+        border: Border.all(
+          color: active ? colorScheme.tertiary : colorScheme.outlineVariant,
+        ),
+      ),
+      child: isMachine
+          ? Icon(Icons.smart_toy_outlined, size: 20, color: accent)
+          : Text(
+              isWhite ? '♔︎' : '♚︎',
+              style: TextStyle(fontSize: 20, height: 1, color: accent),
+            ),
+    );
+  }
+}
+
+/// Ô điều khiển lớn: icon và nhãn nằm trong cùng một nút.
 class _ControlButton extends StatelessWidget {
   const _ControlButton({
     required this.icon,
@@ -343,46 +538,38 @@ class _ControlButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final enabled = onPressed != null;
+    final foreground = onPressed != null
+        ? colorScheme.onSurface
+        : colorScheme.onSurfaceVariant.withValues(alpha: 0.45);
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        IconButton(
-          icon: Icon(icon),
-          tooltip: label,
-          onPressed: onPressed,
-          style: IconButton.styleFrom(
-            fixedSize: const Size(76, 50),
-            backgroundColor: colorScheme.surfaceContainerLow,
-            foregroundColor: colorScheme.onSurface,
-            disabledBackgroundColor: colorScheme.surfaceContainerLow,
-            disabledForegroundColor: colorScheme.onSurfaceVariant.withValues(
-              alpha: 0.4,
-            ),
-            side: BorderSide(color: colorScheme.outlineVariant),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
-            ),
+    return SizedBox(
+      height: 64,
+      child: IconButton(
+        onPressed: onPressed,
+        style: IconButton.styleFrom(
+          backgroundColor: colorScheme.surfaceContainerLow,
+          disabledBackgroundColor: colorScheme.surfaceContainerLow,
+          side: BorderSide(color: colorScheme.outlineVariant),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
           ),
         ),
-        const SizedBox(height: 6),
-        GestureDetector(
-          onTap: onPressed,
-          child: ExcludeSemantics(
-            child: Text(
+        icon: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 20, color: foreground),
+            const SizedBox(height: 4),
+            Text(
               label,
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
-                color: enabled
-                    ? colorScheme.onSurface
-                    : colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                color: foreground,
               ),
             ),
-          ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
