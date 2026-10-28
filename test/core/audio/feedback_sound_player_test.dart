@@ -13,11 +13,8 @@ void main() {
   late List<HapticKind> haptics;
   late AppSettings settings;
 
-  FeedbackSoundPlayer buildPlayer() => FeedbackSoundPlayer(
-    inner,
-    readSettings: () => settings,
-    haptic: haptics.add,
-  );
+  FeedbackSoundPlayer buildPlayer() =>
+      FeedbackSoundPlayer(inner, () => settings, haptic: haptics.add);
 
   setUp(() {
     inner = MockSoundPlayer();

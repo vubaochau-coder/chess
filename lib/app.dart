@@ -44,7 +44,7 @@ class ChessApp extends StatelessWidget {
         child: RepositoryProvider<SoundPlayer>(
           create: (context) => FeedbackSoundPlayer(
             AudioPoolSoundPlayer(),
-            readSettings: () => context.read<SettingsCubit>().state,
+            () => context.read<SettingsCubit>().state,
           ),
           dispose: (player) => unawaited(player.dispose()),
           child: BlocSelector<SettingsCubit, AppSettings, ThemeMode>(

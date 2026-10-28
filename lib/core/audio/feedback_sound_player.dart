@@ -12,11 +12,10 @@ enum HapticKind { selection, light, medium }
 /// [SoundPlayer], nên bật/tắt âm thanh không cần sửa bloc.
 final class FeedbackSoundPlayer implements SoundPlayer {
   FeedbackSoundPlayer(
-    this._inner, {
-    required AppSettings Function() readSettings,
+    this._inner,
+    this._readSettings, {
     void Function(HapticKind kind)? haptic,
-  }) : _readSettings = readSettings,
-       _haptic = haptic ?? _systemHaptic;
+  }) : _haptic = haptic ?? _systemHaptic;
 
   final SoundPlayer _inner;
   final AppSettings Function() _readSettings;
