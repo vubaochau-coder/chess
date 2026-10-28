@@ -7,6 +7,7 @@ import 'package:chess/features/game/view/game_page.dart';
 import 'package:chess/features/game/widgets/piece_view.dart';
 import 'package:chess/features/home/cubit/home_cubit.dart';
 import 'package:chess/features/settings/view/settings_page.dart';
+import 'package:chess/features/tutorial/view/tutorial_page.dart';
 import 'package:chess/theme/app_theme.dart';
 import 'package:chess/theme/section_label.dart';
 import 'package:flutter/material.dart';
@@ -96,6 +97,23 @@ class HomeView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leadingWidth: 176,
+        leading: Align(
+          alignment: Alignment.centerLeft,
+          child: Padding(
+            padding: const EdgeInsets.only(left: 8),
+            child: TextButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute<void>(builder: (_) => const TutorialPage()),
+                );
+              },
+              icon: const Icon(Icons.school_outlined, size: 20),
+              label: const Text('Học chơi cờ'),
+            ),
+          ),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings_outlined),

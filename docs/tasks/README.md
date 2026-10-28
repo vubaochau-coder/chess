@@ -92,6 +92,12 @@ Mỗi đặc tả task có các mục:
 | T6.1 | Đồng hồ đánh cờ (chơi 2 người cùng máy) | T3.5 | — | todo |
 | T6.x | PvP online | — | — | **chưa lên kế hoạch — không được làm** |
 
+### Giai đoạn 7 — Hướng dẫn người mới ([phase-7.md](phase-7.md))
+
+| Mã | Task | Phụ thuộc | Đầu vào owner | Trạng thái |
+|---|---|---|---|---|
+| T7.1 | Màn hướng dẫn người mới | T4.5 | — | done |
+
 ## Quy tắc review
 
 Áp dụng cho người/agent review PR của task:

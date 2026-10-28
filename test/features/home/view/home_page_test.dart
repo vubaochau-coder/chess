@@ -9,10 +9,12 @@ import 'package:chess/core/game/game_config.dart';
 import 'package:chess/core/storage/game_repository.dart';
 import 'package:chess/core/storage/saved_game.dart';
 import 'package:chess/core/storage/settings_repository.dart';
+import 'package:chess/core/storage/tutorial_progress_repository.dart';
 import 'package:chess/features/game/view/game_page.dart';
 import 'package:chess/features/home/view/home_page.dart';
 import 'package:chess/features/settings/cubit/settings_cubit.dart';
 import 'package:chess/features/settings/view/settings_page.dart';
+import 'package:chess/features/tutorial/view/tutorial_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -71,6 +73,9 @@ void main() {
             value: gameRepository ?? repo,
           ),
           RepositoryProvider<SettingsRepository>.value(value: settingsRepo),
+          RepositoryProvider<TutorialProgressRepository>.value(
+            value: InMemoryTutorialProgressRepository(),
+          ),
         ],
         child: BlocProvider<SettingsCubit>(
           create: (_) => SettingsCubit(repository: settingsRepo),
@@ -266,6 +271,16 @@ void main() {
         expect(find.text('Tiếp tục ván đang chơi'), findsNothing);
       },
     );
+
+    testWidgets('tapping Học chơi cờ opens the tutorial', (tester) async {
+      await pumpHome(tester);
+
+      await tester.tap(find.text('Học chơi cờ'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(TutorialPage), findsOneWidget);
+      expect(find.text('0/17 bài'), findsOneWidget);
+    });
 
     testWidgets(
       'tapping settings button on HomePage navigates to SettingsPage',
