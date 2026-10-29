@@ -5,6 +5,7 @@ import 'package:chess/features/game/bloc/chess_game_bloc.dart';
 import 'package:chess/features/game/painter/board_painter.dart';
 import 'package:chess/features/game/painter/coordinates_painter.dart';
 import 'package:chess/features/game/painter/highlight_painter.dart';
+import 'package:chess/features/game/widgets/move_animation_layer.dart';
 import 'package:chess/features/game/widgets/piece_view.dart';
 import 'package:chess/features/settings/cubit/settings_cubit.dart';
 import 'package:chess/theme/board_theme.dart';
@@ -17,15 +18,32 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 /// chỉ lắng nghe phần state nó cần:
 /// - ô bàn cờ: vẽ theo [BoardColors] từ [BoardTheme];
 /// - lớp tô màu: rebuild khi chọn quân / đi quân / chiếu / đổi theme;
-/// - 64 ô quân cờ: mỗi ô chỉ rebuild khi quân trên chính ô đó đổi.
+/// - 64 ô quân cờ: mỗi ô chỉ rebuild khi quân trên chính ô đó đổi;
+/// - lớp animation nước đi ([MoveAnimationLayer]).
 /// Chạm được xử lý một lần ở cấp bàn cờ (tính ô từ tọa độ) thay vì 64 widget.
-class ChessBoard extends StatelessWidget {
+class ChessBoard extends StatefulWidget {
   const ChessBoard({super.key, this.flipped = false});
 
   final bool flipped;
 
   @override
+  State<ChessBoard> createState() => _ChessBoardState();
+}
+
+class _ChessBoardState extends State<ChessBoard> {
+  /// Ô đang có quân trượt tới: lớp quân thật ẩn quân ở đó tới khi trượt xong.
+  final _hiddenSquares = ValueNotifier<Set<int>>(const {});
+
+  @override
+  void dispose() {
+    _hiddenSquares.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final flipped = widget.flipped;
+
     return BlocSelector<SettingsCubit, AppSettings, _BoardOptions>(
       selector: (settings) => (
         theme: settings.boardTheme,
@@ -81,7 +99,18 @@ class ChessBoard extends StatelessWidget {
                       ),
                     ),
                     RepaintBoundary(
-                      child: _PiecesLayer(cellSize: cell, flipped: flipped),
+                      child: _PiecesLayer(
+                        cellSize: cell,
+                        flipped: flipped,
+                        hiddenSquares: _hiddenSquares,
+                      ),
+                    ),
+                    RepaintBoundary(
+                      child: MoveAnimationLayer(
+                        cellSize: cell,
+                        flipped: flipped,
+                        hiddenSquares: _hiddenSquares,
+                      ),
                     ),
                   ],
                 ),
@@ -150,10 +179,15 @@ class _HighlightLayer extends StatelessWidget {
 }
 
 class _PiecesLayer extends StatelessWidget {
-  const _PiecesLayer({required this.cellSize, required this.flipped});
+  const _PiecesLayer({
+    required this.cellSize,
+    required this.flipped,
+    required this.hiddenSquares,
+  });
 
   final double cellSize;
   final bool flipped;
+  final ValueNotifier<Set<int>> hiddenSquares;
 
   @override
   Widget build(BuildContext context) {
@@ -166,6 +200,7 @@ class _PiecesLayer extends StatelessWidget {
                 _SquarePiece(
                   index: flipped ? (63 - (row * 8 + col)) : (row * 8 + col),
                   cellSize: cellSize,
+                  hiddenSquares: hiddenSquares,
                 ),
             ],
           ),
@@ -175,10 +210,15 @@ class _PiecesLayer extends StatelessWidget {
 }
 
 class _SquarePiece extends StatelessWidget {
-  const _SquarePiece({required this.index, required this.cellSize});
+  const _SquarePiece({
+    required this.index,
+    required this.cellSize,
+    required this.hiddenSquares,
+  });
 
   final int index;
   final double cellSize;
+  final ValueNotifier<Set<int>> hiddenSquares;
 
   @override
   Widget build(BuildContext context) {
@@ -190,10 +230,15 @@ class _SquarePiece extends StatelessWidget {
         builder: (context, square) {
           final (piece, isSelected) = square;
           if (piece.isEmpty) return const SizedBox.shrink();
-          return Center(
-            child: PieceView(
-              piece: piece,
-              size: cellSize * (isSelected ? 0.8 : 0.68),
+          return ValueListenableBuilder<Set<int>>(
+            valueListenable: hiddenSquares,
+            builder: (context, hidden, child) =>
+                hidden.contains(index) ? const SizedBox.shrink() : child!,
+            child: Center(
+              child: PieceView(
+                piece: piece,
+                size: cellSize * (isSelected ? 0.8 : 0.68),
+              ),
             ),
           );
         },

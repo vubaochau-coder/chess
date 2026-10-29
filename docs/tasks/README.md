@@ -82,7 +82,7 @@ Mỗi đặc tả task có các mục:
 |---|---|---|---|---|
 | T5.1 | Cài đặt âm thanh và rung | T4.1, T1.3 | — | done (trong T4.6) |
 | T5.2 | Bộ âm thanh có thể chọn | T5.1 | File âm thanh | todo |
-| T5.3 | Animation di chuyển quân | T4.3 | — | todo |
+| T5.3 | Animation di chuyển quân | T4.3 | — | done |
 | T5.4 | Kéo-thả quân | T5.3 | — | todo |
 | T5.5 | Hiệu ứng chiếu và kết thúc ván (còn nhấp nháy + pháo giấy; dialog đã làm trong T4.6) | T5.3 | — | todo |
 
