@@ -33,12 +33,16 @@ void main() {
     GameConfig? config,
     ChessAi? ai,
     AppSettings? settings,
+    // Mặc định tắt animation để test chạm ô thấy bàn cờ mới ngay sau 1 frame.
+    bool animations = false,
   }) async {
     tester.view.physicalSize = const Size(800, 1200);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
-    final settingsRepo = InMemorySettingsRepository(settings);
+    final settingsRepo = InMemorySettingsRepository(
+      (settings ?? const AppSettings()).copyWith(animationsEnabled: animations),
+    );
     await tester.pumpWidget(
       MultiRepositoryProvider(
         providers: [
