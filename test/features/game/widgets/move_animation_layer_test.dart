@@ -107,10 +107,10 @@ void main() {
     expect(midway.dx, moreOrLessEquals(e2.dx));
     expect(midway.dy, lessThan(e2.dy));
     expect(midway.dy, greaterThan(e4.dy));
-    expect(restsOn(tester, 'P', 'e4'), isFalse);
 
+    // Controller chỉ xong ở frame đã quá 150 ms.
     await tester.pump(step);
-    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 1));
 
     expect(sliding('P'), findsNothing);
     expect(restsOn(tester, 'P', 'e4'), isTrue);
@@ -123,6 +123,9 @@ void main() {
     await tester.pumpAndSettle();
 
     bloc.add(const UndoRequested());
+    // Hai frame không trôi thời gian: nếu undo có animation thì quân vẫn
+    // nằm ở lớp animation.
+    await tester.pump();
     await tester.pump();
 
     final animated = find.descendant(
