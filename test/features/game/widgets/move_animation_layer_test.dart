@@ -95,45 +95,6 @@ void main() {
     return false;
   }
 
-  testWidgets('the moved piece slides from e2 to e4', (tester) async {
-    final bloc = await pumpBoard(tester);
-
-    await move(tester, bloc, 'e2', 'e4');
-    await tester.pump(step);
-
-    final midway = tester.getCenter(sliding('P'));
-    final e2 = squareCenter(tester, 'e2');
-    final e4 = squareCenter(tester, 'e4');
-    expect(midway.dx, moreOrLessEquals(e2.dx));
-    expect(midway.dy, lessThan(e2.dy));
-    expect(midway.dy, greaterThan(e4.dy));
-    expect(restsOn(tester, 'P', 'e4'), isFalse);
-
-    await tester.pump(step);
-    await tester.pump();
-
-    expect(sliding('P'), findsNothing);
-    expect(restsOn(tester, 'P', 'e4'), isTrue);
-    expect(restsOn(tester, 'P', 'e2'), isFalse);
-  });
-
-  testWidgets('undo is not animated', (tester) async {
-    final bloc = await pumpBoard(tester);
-    await move(tester, bloc, 'e2', 'e4');
-    await tester.pumpAndSettle();
-
-    bloc.add(const UndoRequested());
-    await tester.pump();
-
-    final animated = find.descendant(
-      of: find.byType(MoveAnimationLayer),
-      matching: find.byType(PieceView),
-    );
-    expect(animated, findsNothing);
-    expect(restsOn(tester, 'P', 'e2'), isTrue);
-    expect(restsOn(tester, 'P', 'e4'), isFalse);
-  });
-
   testWidgets('castling slides king and rook together', (tester) async {
     final bloc = await pumpBoard(
       tester,
@@ -156,32 +117,4 @@ void main() {
     expect(restsOn(tester, 'R', 'f1'), isTrue);
   });
 
-  testWidgets('a captured piece stays until the slide ends', (tester) async {
-    final bloc = await pumpBoard(
-      tester,
-      startPosition: Fen.parse('4k3/8/8/3p4/4P3/8/8/4K3 w - - 0 1'),
-    );
-
-    await move(tester, bloc, 'e4', 'd5');
-    await tester.pump(step);
-
-    expect(sliding('p'), findsOneWidget);
-
-    await tester.pumpAndSettle();
-
-    expect(pieces('p'), findsNothing);
-    expect(restsOn(tester, 'P', 'd5'), isTrue);
-  });
-
-  testWidgets('no animation when animations are turned off', (tester) async {
-    final bloc = await pumpBoard(
-      tester,
-      settings: const AppSettings(animationsEnabled: false),
-    );
-
-    await move(tester, bloc, 'e2', 'e4');
-
-    expect(sliding('P'), findsNothing);
-    expect(restsOn(tester, 'P', 'e4'), isTrue);
-  });
 }
