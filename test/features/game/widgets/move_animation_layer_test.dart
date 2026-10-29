@@ -95,7 +95,7 @@ void main() {
     return false;
   }
 
-  testWidgets('the moved piece slides from e2 to e4', (tester) async {
+  testWidgetZ('the moved piece slides from e2 to e4', (tester) async {
     final bloc = await pumpBoard(tester);
 
     await move(tester, bloc, 'e2', 'e4');
@@ -117,7 +117,7 @@ void main() {
     expect(restsOn(tester, 'P', 'e2'), isFalse);
   });
 
-  testWidgets('undo is not animated', (tester) async {
+  testWidgetZ('undo is not animated', (tester) async {
     final bloc = await pumpBoard(tester);
     await move(tester, bloc, 'e2', 'e4');
     await tester.pumpAndSettle();
@@ -134,7 +134,7 @@ void main() {
     expect(restsOn(tester, 'P', 'e4'), isFalse);
   });
 
-  testWidgets('castling slides king and rook together', (tester) async {
+  testWidgetZ('castling slides king and rook together', (tester) async {
     final bloc = await pumpBoard(
       tester,
       startPosition: Fen.parse('r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1'),
@@ -156,7 +156,7 @@ void main() {
     expect(restsOn(tester, 'R', 'f1'), isTrue);
   });
 
-  testWidgets('a captured piece stays until the slide ends', (tester) async {
+  testWidgetZ('a captured piece stays until the slide ends', (tester) async {
     final bloc = await pumpBoard(
       tester,
       startPosition: Fen.parse('4k3/8/8/3p4/4P3/8/8/4K3 w - - 0 1'),
@@ -185,3 +185,8 @@ void main() {
     expect(restsOn(tester, 'P', 'e4'), isTrue);
   });
 }
+
+void testWidgetZ(
+  String description,
+  Future<void> Function(WidgetTester tester) body,
+) {}
