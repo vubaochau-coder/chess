@@ -35,12 +35,12 @@ void main() {
         when(() => repository.save(any())).thenAnswer((_) async {});
       },
       build: () => SettingsCubit(repository: repository),
-      act: (cubit) => cubit.setThemeMode(AppThemeMode.dark),
-      expect: () => [const AppSettings(themeMode: AppThemeMode.dark)],
+      act: (cubit) => cubit.setThemeMode(AppThemeMode.light),
+      expect: () => [const AppSettings(themeMode: AppThemeMode.light)],
       verify: (_) {
         verify(
           () =>
-              repository.save(const AppSettings(themeMode: AppThemeMode.dark)),
+              repository.save(const AppSettings(themeMode: AppThemeMode.light)),
         ).called(1);
       },
     );

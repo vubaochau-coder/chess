@@ -10,11 +10,9 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('ChessApp', () {
-    testWidgets('themeMode updates to ThemeMode.dark when settings change', (
-      tester,
-    ) async {
+    testWidgets('themeMode follows the light/dark setting', (tester) async {
       final settingsRepo = InMemorySettingsRepository(
-        const AppSettings(themeMode: AppThemeMode.system),
+        const AppSettings(themeMode: AppThemeMode.light),
       );
       const gameRepo = NoopGameRepository();
 
@@ -28,7 +26,7 @@ void main() {
       await tester.pumpAndSettle();
 
       MaterialApp app = tester.widget<MaterialApp>(find.byType(MaterialApp));
-      expect(app.themeMode, ThemeMode.system);
+      expect(app.themeMode, ThemeMode.light);
 
       // Change settings to dark
       final BuildContext context = tester.element(find.byType(MaterialApp));

@@ -45,10 +45,6 @@ class SettingsPage extends StatelessWidget {
                         showSelectedIcon: false,
                         segments: const [
                           ButtonSegment(
-                            value: AppThemeMode.system,
-                            label: Text('Theo hệ thống'),
-                          ),
-                          ButtonSegment(
                             value: AppThemeMode.light,
                             label: Text('Sáng'),
                           ),

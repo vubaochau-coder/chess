@@ -36,7 +36,7 @@ void main() {
       expect(find.text('Cài đặt'), findsOneWidget);
       expect(find.text('GIAO DIỆN'), findsOneWidget);
       expect(find.text('Chế độ màu'), findsOneWidget);
-      expect(find.text('Theo hệ thống'), findsOneWidget);
+      expect(find.text('Theo hệ thống'), findsNothing);
       expect(find.text('Sáng'), findsOneWidget);
       expect(find.text('Tối'), findsOneWidget);
       expect(find.text('Màu bàn cờ'), findsOneWidget);
@@ -51,7 +51,8 @@ void main() {
     testWidgets('tapping Tối calls cubit.setThemeMode(AppThemeMode.dark)', (
       tester,
     ) async {
-      when(() => cubit.state).thenReturn(const AppSettings());
+      when(() => cubit.state)
+          .thenReturn(const AppSettings(themeMode: AppThemeMode.light));
 
       await tester.pumpWidget(buildSubject());
       await tester.tap(find.text('Tối'));

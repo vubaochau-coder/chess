@@ -49,7 +49,6 @@ class ChessApp extends StatelessWidget {
           dispose: (player) => unawaited(player.dispose()),
           child: BlocSelector<SettingsCubit, AppSettings, ThemeMode>(
             selector: (settings) => switch (settings.themeMode) {
-              AppThemeMode.system => ThemeMode.system,
               AppThemeMode.light => ThemeMode.light,
               AppThemeMode.dark => ThemeMode.dark,
             },
