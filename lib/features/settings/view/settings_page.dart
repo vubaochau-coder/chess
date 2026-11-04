@@ -201,7 +201,9 @@ class SettingsPage extends StatelessWidget {
 /// Một công tắc cài đặt; chỉ rebuild khi đúng field nó hiển thị thay đổi.
 ///
 /// Công tắc thu nhỏ còn [_switchScale] cho gọn; cả dòng vẫn bấm được nên vùng
-/// chạm không nhỏ đi.
+/// chạm không nhỏ đi. `Transform.scale` không thu khung bố cục, nên đặt công tắc
+/// trong khung đúng bằng rãnh đã thu nhỏ: mép phải rãnh cách mép thẻ đúng bằng lề
+/// trái của chữ.
 class _SettingSwitch extends StatelessWidget {
   const _SettingSwitch({
     required this.title,
@@ -215,7 +217,13 @@ class _SettingSwitch extends StatelessWidget {
   final void Function(SettingsCubit cubit, bool value) onChanged;
   final EdgeInsetsGeometry? contentPadding;
 
-  static const _switchScale = 0.8;
+  static const _switchScale = 0.65;
+
+  /// Kích thước rãnh công tắc Material 3; công tắc vẽ rãnh ở giữa khung của nó.
+  static const _trackSize = Size(52, 32);
+
+  /// Lề ngang của dòng, bằng lề trong của thẻ có [contentPadding] = 0.
+  static const _horizontalPadding = EdgeInsets.symmetric(horizontal: 16);
 
   @override
   Widget build(BuildContext context) {
@@ -226,11 +234,22 @@ class _SettingSwitch extends StatelessWidget {
         return MergeSemantics(
           child: ListTile(
             title: Text(title, style: const TextStyle(fontSize: 14)),
-            contentPadding: contentPadding,
+            contentPadding: contentPadding ?? _horizontalPadding,
             onTap: () => toggle(!value),
-            trailing: Transform.scale(
-              scale: _switchScale,
-              child: Switch(value: value, onChanged: toggle),
+            trailing: SizedBox.fromSize(
+              size: _trackSize * _switchScale,
+              child: OverflowBox(
+                maxWidth: double.infinity,
+                maxHeight: double.infinity,
+                child: Transform.scale(
+                  scale: _switchScale,
+                  child: Switch(
+                    value: value,
+                    onChanged: toggle,
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                ),
+              ),
             ),
           ),
         );

@@ -77,6 +77,7 @@ Mỗi đặc tả task có các mục:
 | T4.6 | Hoàn thiện giao diện theo mockup (gộp T4.3, T5.1, dialog kết thúc ván) | T4.5 | — | done |
 | T4.7 | Avatar người chơi theo bộ quân, logo app ở màn chính | T4.6 | — | done |
 | T4.8 | Bảng màu sáng theo logo, splash theo chế độ sáng/tối | T1.2 | — | done |
+| T4.9 | Căn công tắc ở màn Cài đặt | T4.6 | — | done |
 
 ### Giai đoạn 5 — Âm thanh & hiệu ứng ([phase-5.md](phase-5.md))
 

@@ -182,7 +182,7 @@ void main() {
       verify(() => cubit.setHapticsEnabled(false)).called(1);
     });
 
-    testWidgets('switches are drawn at 80% size and toggle when tapped', (
+    testWidgets('switches are drawn at 65% size and toggle when tapped', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(800, 1600);
@@ -198,19 +198,48 @@ void main() {
       );
       final toggle = find.descendant(of: rung, matching: find.byType(Switch));
       final scale = tester.widget<Transform>(
-        find.ancestor(
-          of: toggle,
-          matching: find.byWidgetPredicate(
-            (w) => w is Transform && w.child is Switch,
-          ),
-        ),
+        find.ancestor(of: toggle, matching: find.byType(Transform)).first,
       );
-      expect(scale.transform.entry(0, 0), closeTo(0.8, 1e-9));
+      expect(scale.transform.entry(0, 0), closeTo(0.65, 1e-9));
+      final box = find.ancestor(of: toggle, matching: find.byType(OverflowBox));
+      expect(tester.getSize(box), const Size(52 * 0.65, 32 * 0.65));
 
       await tester.tap(toggle);
       await tester.pump();
 
       verify(() => cubit.setHapticsEnabled(false)).called(1);
+    });
+
+    testWidgets('switches line up 16px from the card edge, like the titles', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(800, 2400);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      when(() => cubit.state).thenReturn(const AppSettings());
+
+      await tester.pumpWidget(buildSubject());
+
+      final boxes = find.ancestor(
+        of: find.byType(Switch),
+        matching: find.byType(OverflowBox),
+      );
+      expect(boxes, findsNWidgets(7));
+      final rights = boxes
+          .evaluate()
+          .map((e) => tester.getRect(find.byWidget(e.widget)).right)
+          .toSet();
+      expect(rights, hasLength(1));
+
+      final tile = tester.getRect(
+        find.ancestor(
+          of: find.text('Hiện tọa độ'),
+          matching: find.byType(ListTile),
+        ),
+      );
+      final title = tester.getRect(find.text('Hiện tọa độ'));
+      expect(title.left - tile.left, 16);
+      expect(tile.right - rights.single, 16);
     });
 
     testWidgets('motion switch calls setAnimationsEnabled', (tester) async {
