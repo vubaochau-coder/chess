@@ -64,6 +64,7 @@ Mỗi đặc tả task có các mục:
 | T3.5 | Màn hình chính chọn chế độ | T3.4 | — | review |
 | T3.6 | Đầu hàng | T3.4 | — | review |
 | T3.7 | Lưu và tiếp tục ván đang chơi | T3.5, T3.6 | — | review |
+| T3.8 | Giới hạn đi lại, gợi ý nước đi khi chơi với máy | T3.7 | — | done |
 
 ### Giai đoạn 4 — Tùy biến giao diện ([phase-4.md](phase-4.md))
 

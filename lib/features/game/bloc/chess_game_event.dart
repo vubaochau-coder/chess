@@ -45,9 +45,14 @@ final class PromotionCancelled extends ChessGameEvent {
   const PromotionCancelled();
 }
 
-/// Quay lại 1 nước đi.
+/// Quay lại lượt đi gần nhất của người (chỉ khi chơi với máy).
 final class UndoRequested extends ChessGameEvent {
   const UndoRequested();
+}
+
+/// Người chơi xin gợi ý nước đi (chỉ khi chơi với máy).
+final class HintRequested extends ChessGameEvent {
+  const HintRequested();
 }
 
 /// Người chơi yêu cầu đầu hàng.

@@ -151,25 +151,9 @@ class GameView extends StatelessWidget {
                 const SizedBox(height: 8),
                 const MoveList(),
                 const SizedBox(height: 14),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: _ControlButton(
-                          icon: Icons.refresh_rounded,
-                          label: 'Ván mới',
-                          onPressed: () => context.read<ChessGameBloc>().add(
-                            const NewGameRequested(),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      const Expanded(child: _UndoButton()),
-                      const SizedBox(width: 10),
-                      const Expanded(child: _ResignButton()),
-                    ],
-                  ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: _Controls(),
                 ),
                 const SizedBox(height: 16),
               ],
@@ -181,19 +165,75 @@ class GameView extends StatelessWidget {
   }
 }
 
+/// Hàng nút điều khiển: chơi 2 người không có Đi lại / Gợi ý.
+class _Controls extends StatelessWidget {
+  const _Controls();
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocSelector<ChessGameBloc, ChessGameState, bool>(
+      selector: (state) => state.config.mode == GameMode.pve,
+      builder: (context, isPve) {
+        final buttons = [
+          _ControlButton(
+            icon: Icons.refresh_rounded,
+            label: 'Ván mới',
+            onPressed: () =>
+                context.read<ChessGameBloc>().add(const NewGameRequested()),
+          ),
+          if (isPve) ...[const _UndoButton(), const _HintButton()],
+          const _ResignButton(),
+        ];
+        return Row(
+          children: [
+            for (final (i, button) in buttons.indexed) ...[
+              if (i > 0) SizedBox(width: isPve ? 8 : 10),
+              Expanded(child: button),
+            ],
+          ],
+        );
+      },
+    );
+  }
+}
+
 class _UndoButton extends StatelessWidget {
   const _UndoButton();
 
   @override
   Widget build(BuildContext context) {
-    return BlocSelector<ChessGameBloc, ChessGameState, bool>(
-      selector: (state) => state.canUndo,
-      builder: (context, canUndo) {
+    return BlocSelector<ChessGameBloc, ChessGameState, (bool, int)>(
+      selector: (state) => (state.canUndo, state.undosLeft),
+      builder: (context, value) {
+        final (canUndo, left) = value;
         return _ControlButton(
           icon: Icons.undo,
-          label: 'Đi lại',
+          label: 'Đi lại ($left)',
           onPressed: canUndo
               ? () => context.read<ChessGameBloc>().add(const UndoRequested())
+              : null,
+        );
+      },
+    );
+  }
+}
+
+class _HintButton extends StatelessWidget {
+  const _HintButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocSelector<ChessGameBloc, ChessGameState, (bool, bool, int)>(
+      selector: (state) =>
+          (state.canHint, state.isHintLoading, state.hintsLeft),
+      builder: (context, value) {
+        final (canHint, loading, left) = value;
+        return _ControlButton(
+          icon: Icons.lightbulb_outline,
+          label: 'Gợi ý ($left)',
+          loading: loading,
+          onPressed: canHint
+              ? () => context.read<ChessGameBloc>().add(const HintRequested())
               : null,
         );
       },
@@ -536,11 +576,15 @@ class _ControlButton extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.onPressed,
+    this.loading = false,
   });
 
   final IconData icon;
   final String label;
   final VoidCallback? onPressed;
+
+  /// Hiện vòng xoay thay cho icon (vd. đang tính gợi ý).
+  final bool loading;
 
   @override
   Widget build(BuildContext context) {
@@ -564,10 +608,25 @@ class _ControlButton extends StatelessWidget {
         icon: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 20, color: foreground),
+            if (loading)
+              SizedBox.square(
+                dimension: 20,
+                child: Padding(
+                  padding: const EdgeInsets.all(2),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: colorScheme.tertiary,
+                  ),
+                ),
+              )
+            else
+              Icon(icon, size: 20, color: foreground),
             const SizedBox(height: 4),
             Text(
               label,
+              maxLines: 1,
+              softWrap: false,
+              overflow: TextOverflow.fade,
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,

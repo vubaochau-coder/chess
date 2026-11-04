@@ -10,6 +10,9 @@ final class SavedGame extends Equatable {
     required this.startFen,
     required this.moves,
     required this.config,
+    this.undosUsed = 0,
+    this.hintsUsed = 0,
+    this.undoLockedAt,
   });
 
   /// Thế cờ bắt đầu ván (FEN).
@@ -21,6 +24,13 @@ final class SavedGame extends Equatable {
   /// Cấu hình ván chơi (chế độ, màu quân, mức độ khó).
   final GameConfig config;
 
+  /// Số lần đã đi lại / dùng gợi ý trong ván (chỉ PvE).
+  final int undosUsed;
+  final int hintsUsed;
+
+  /// Số nước tại lần đi lại gần nhất (xem `ChessGameState.undoLockedAt`).
+  final int? undoLockedAt;
+
   Map<String, dynamic> toJson() => {
     'version': 1,
     'startFen': startFen,
@@ -28,6 +38,9 @@ final class SavedGame extends Equatable {
     'mode': config.mode.name,
     'humanColor': config.humanColor.name,
     'level': config.level.name,
+    'undosUsed': undosUsed,
+    'hintsUsed': hintsUsed,
+    'undoLockedAt': ?undoLockedAt,
   };
 
   String encode() => jsonEncode(toJson());
@@ -77,6 +90,25 @@ final class SavedGame extends Equatable {
       throw const FormatException('Invalid level');
     }
 
+    // Ván lưu trước khi có giới hạn đi lại / gợi ý không có các khóa này.
+    int count(String key) {
+      final value = json[key] ?? 0;
+      if (value is! int || value < 0) {
+        throw FormatException('Invalid $key');
+      }
+      return value;
+    }
+
+    final undosUsed = count('undosUsed');
+    final hintsUsed = count('hintsUsed');
+    final undoLockedAt = json['undoLockedAt'];
+    if (undoLockedAt != null &&
+        (undoLockedAt is! int ||
+            undoLockedAt < 0 ||
+            undoLockedAt > moves.length)) {
+      throw const FormatException('Invalid undoLockedAt');
+    }
+
     final config = mode == GameMode.pvp
         ? const GameConfig.pvp()
         : GameConfig(mode: mode, humanColor: humanColor, level: level);
@@ -85,9 +117,19 @@ final class SavedGame extends Equatable {
       startFen: startFen,
       moves: List.unmodifiable(moves),
       config: config,
+      undosUsed: undosUsed,
+      hintsUsed: hintsUsed,
+      undoLockedAt: undoLockedAt as int?,
     );
   }
 
   @override
-  List<Object?> get props => [startFen, moves, config];
+  List<Object?> get props => [
+    startFen,
+    moves,
+    config,
+    undosUsed,
+    hintsUsed,
+    undoLockedAt,
+  ];
 }

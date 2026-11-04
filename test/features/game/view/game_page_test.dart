@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:chess/core/ai/ai_level.dart';
 import 'package:chess/core/ai/chess_ai.dart';
 import 'package:chess/core/audio/sound_player.dart';
 import 'package:chess/core/engine/chess_rules.dart';
@@ -335,38 +336,76 @@ void main() {
     },
   );
 
+  testWidgets('PvP shows only Ván mới and Đầu hàng', (tester) async {
+    await pumpGame(tester);
+
+    expect(find.text('Ván mới'), findsOneWidget);
+    expect(find.text('Đầu hàng'), findsOneWidget);
+    expect(find.byIcon(Icons.undo), findsNothing);
+    expect(find.byIcon(Icons.lightbulb_outline), findsNothing);
+  });
+
   testWidgets(
-    'undo button is disabled at start, enabled after 1 move, and reverts board on tap',
+    'PvE undo button shows the undos left and reverts both moves on tap',
     (tester) async {
-      await pumpGame(tester);
+      final ai = MockChessAi();
+      when(() => ai.chooseMove(any(), any()))
+          .thenAnswer((_) async => const Move(12, 28)); // e7e5
+      await pumpGame(
+        tester,
+        config: const GameConfig(mode: GameMode.pve),
+        ai: ai,
+      );
 
       final undoButton = find.widgetWithIcon(IconButton, Icons.undo);
-      expect(undoButton, findsOneWidget);
-
-      // Ban đầu bị disable
+      expect(find.text('Đi lại (3)'), findsOneWidget);
       expect(tester.widget<IconButton>(undoButton).onPressed, isNull);
 
-      // Đi 1 nước: e2 -> e4
       await tapSquare(tester, 'e2');
       await tapSquare(tester, 'e4');
       await tester.pump();
-
-      // Nút được enable
+      expect(pieceAt(tester, 'e5'), 'p');
       expect(tester.widget<IconButton>(undoButton).onPressed, isNotNull);
-      expect(pieceAt(tester, 'e2'), isNull);
-      expect(pieceAt(tester, 'e4'), 'P');
 
-      // Bấm nút đi lại
       await tester.tap(undoButton);
       await tester.pump();
 
-      // Bàn cờ trở lại thế ban đầu, nút lại bị disable
       expect(pieceAt(tester, 'e2'), 'P');
       expect(pieceAt(tester, 'e4'), isNull);
+      expect(pieceAt(tester, 'e7'), 'p');
+      expect(find.text('Đi lại (2)'), findsOneWidget);
+      // Phải đi thêm một nước mới được đi lại tiếp.
       expect(tester.widget<IconButton>(undoButton).onPressed, isNull);
-      expect(find.text('Lượt đi: Trắng'), findsOneWidget);
     },
   );
+
+  testWidgets('PvE hint button draws the suggested move on the board', (
+    tester,
+  ) async {
+    final ai = MockChessAi();
+    when(() => ai.chooseMove(any(), AiLevel.hard))
+        .thenAnswer((_) async => const Move(52, 36)); // e2e4
+    await pumpGame(
+      tester,
+      config: const GameConfig(mode: GameMode.pve),
+      ai: ai,
+    );
+
+    HighlightPainter painter() => tester
+        .widgetList<CustomPaint>(find.byType(CustomPaint))
+        .map((p) => p.painter)
+        .whereType<HighlightPainter>()
+        .single;
+
+    expect(painter().suggestion, isNull);
+    await tester.tap(find.text('Gợi ý (3)'));
+    await tester.pump();
+
+    expect(painter().suggestion, (from: 52, to: 36));
+    expect(find.text('Gợi ý (2)'), findsOneWidget);
+    final hintButton = find.widgetWithIcon(IconButton, Icons.lightbulb_outline);
+    expect(tester.widget<IconButton>(hintButton).onPressed, isNull);
+  });
 
   testWidgets(
     'PvE when human plays Black flips board (white pieces at top) and shows AI thinking indicator',
@@ -417,7 +456,6 @@ void main() {
       await tester.pump();
 
       final resignButton = find.widgetWithIcon(IconButton, Icons.flag);
-      final undoButton = find.widgetWithIcon(IconButton, Icons.undo);
 
       expect(tester.widget<IconButton>(resignButton).onPressed, isNotNull);
       expect(find.text('Lượt đi: Trắng'), findsOneWidget);
@@ -448,9 +486,8 @@ void main() {
       // Kết quả đúng: Trắng đầu hàng - Đen thắng
       expect(find.text('Trắng đầu hàng - Đen thắng'), findsOneWidget);
 
-      // Nút Đầu hàng và nút Đi lại bị disable
+      // Nút Đầu hàng bị disable
       expect(tester.widget<IconButton>(resignButton).onPressed, isNull);
-      expect(tester.widget<IconButton>(undoButton).onPressed, isNull);
     },
   );
 
@@ -461,13 +498,11 @@ void main() {
       await tester.pump();
 
       final resignButton = find.widgetWithIcon(IconButton, Icons.flag);
-      final undoButton = find.widgetWithIcon(IconButton, Icons.undo);
 
       // Đi e2 -> e4 để chuyển lượt sang Đen
       await tapSquare(tester, 'e2');
       await tapSquare(tester, 'e4');
       expect(find.text('Lượt đi: Đen'), findsOneWidget);
-      expect(tester.widget<IconButton>(undoButton).onPressed, isNotNull);
 
       // Bấm Đầu hàng và xác nhận
       await tester.tap(resignButton);
@@ -480,9 +515,8 @@ void main() {
       // Kết quả đúng: Đen đầu hàng - Trắng thắng
       expect(find.text('Đen đầu hàng - Trắng thắng'), findsOneWidget);
 
-      // Cả nút Đầu hàng và Đi lại đều bị disable
+      // Nút Đầu hàng bị disable
       expect(tester.widget<IconButton>(resignButton).onPressed, isNull);
-      expect(tester.widget<IconButton>(undoButton).onPressed, isNull);
     },
   );
 

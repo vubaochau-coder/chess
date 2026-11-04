@@ -43,6 +43,57 @@ void main() {
       expect(decoded.moves, ['e7e5']);
     });
 
+    test('round-trips undo and hint counters', () {
+      const saved = SavedGame(
+        startFen: Fen.initial,
+        moves: ['e2e4', 'e7e5'],
+        config: GameConfig(mode: GameMode.pve),
+        undosUsed: 2,
+        hintsUsed: 1,
+        undoLockedAt: 2,
+      );
+
+      final json = saved.toJson();
+      expect(json['undosUsed'], 2);
+      expect(json['hintsUsed'], 1);
+      expect(json['undoLockedAt'], 2);
+      expect(SavedGame.decode(saved.encode()), saved);
+    });
+
+    test('older saves without counters start with none used', () {
+      final json = const SavedGame(
+        startFen: Fen.initial,
+        moves: ['e2e4'],
+        config: GameConfig(mode: GameMode.pve),
+      ).toJson()..removeWhere((key, _) => key.endsWith('Used'));
+      expect(json.containsKey('undoLockedAt'), isFalse);
+
+      final decoded = SavedGame.fromJson(json);
+      expect(decoded.undosUsed, 0);
+      expect(decoded.hintsUsed, 0);
+      expect(decoded.undoLockedAt, isNull);
+    });
+
+    test('throws FormatException on invalid counters', () {
+      Map<String, dynamic> base() => const SavedGame(
+        startFen: Fen.initial,
+        moves: ['e2e4'],
+        config: GameConfig(mode: GameMode.pve),
+      ).toJson();
+
+      for (final bad in [
+        {'undosUsed': -1},
+        {'hintsUsed': 'x'},
+        {'undoLockedAt': 2},
+      ]) {
+        expect(
+          () => SavedGame.fromJson({...base(), ...bad}),
+          throwsFormatException,
+          reason: '$bad',
+        );
+      }
+    });
+
     test('throws FormatException on version != 1', () {
       expect(
         () => SavedGame.decode(
