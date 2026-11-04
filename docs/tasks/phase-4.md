@@ -294,10 +294,10 @@ theme `Gỗ` trùng màu nền, chấp nhận). Owner cho làm chung PR với T4
 ## T4.9 — Căn công tắc ở màn Cài đặt
 
 **Quyết định owner (2026-11-04):** các công tắc ở màn Cài đặt chưa thẳng hàng (dòng `Hiệu ứng chuyển động` lệch so
-với các thẻ dưới) và cách mép phải xa hơn lề trái của chữ cùng dòng; thu nhỏ công tắc còn 75% (trước là 80%).
+với các thẻ dưới) và cách mép phải xa hơn lề trái của chữ cùng dòng; thu nhỏ công tắc còn 65% (trước là 80%; owner chốt 65% sau khi xem thử 75%, 65%, 60%).
 
 **Phạm vi**
-- `_SettingSwitch`: công tắc thu còn 75%, đặt trong khung đúng bằng rãnh đã thu (39×24) để mép phải rãnh cách mép
+- `_SettingSwitch`: công tắc thu còn 65%, đặt trong khung đúng bằng rãnh đã thu (33,8×20,8) để mép phải rãnh cách mép
   thẻ 16, bằng lề trái của chữ. Dòng dùng lề ngang 16 cả hai bên (thay lề mặc định 16/24 của `ListTile`).
 - Cả dòng vẫn bấm được để bật/tắt.
 
@@ -309,6 +309,6 @@ với các thẻ dưới) và cách mép phải xa hơn lề trái của chữ c
 
 **Tiêu chí nghiệm thu**
 - [ ] Mọi công tắc thẳng một cột, mép phải cách mép thẻ bằng lề trái của chữ (16).
-- [ ] Công tắc vẽ ở 75%.
+- [ ] Công tắc vẽ ở 65%.
 - [ ] Widget test cho kích thước và căn lề.
 

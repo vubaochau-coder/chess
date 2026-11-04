@@ -217,7 +217,7 @@ class _SettingSwitch extends StatelessWidget {
   final void Function(SettingsCubit cubit, bool value) onChanged;
   final EdgeInsetsGeometry? contentPadding;
 
-  static const _switchScale = 0.75;
+  static const _switchScale = 0.65;
 
   /// Kích thước rãnh công tắc Material 3; công tắc vẽ rãnh ở giữa khung của nó.
   static const _trackSize = Size(52, 32);

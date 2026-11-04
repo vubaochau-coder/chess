@@ -182,7 +182,7 @@ void main() {
       verify(() => cubit.setHapticsEnabled(false)).called(1);
     });
 
-    testWidgets('switches are drawn at 75% size and toggle when tapped', (
+    testWidgets('switches are drawn at 65% size and toggle when tapped', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(800, 1600);
@@ -200,9 +200,9 @@ void main() {
       final scale = tester.widget<Transform>(
         find.ancestor(of: toggle, matching: find.byType(Transform)).first,
       );
-      expect(scale.transform.entry(0, 0), closeTo(0.75, 1e-9));
+      expect(scale.transform.entry(0, 0), closeTo(0.65, 1e-9));
       final box = find.ancestor(of: toggle, matching: find.byType(OverflowBox));
-      expect(tester.getSize(box), const Size(39, 24));
+      expect(tester.getSize(box), const Size(52 * 0.65, 32 * 0.65));
 
       await tester.tap(toggle);
       await tester.pump();
