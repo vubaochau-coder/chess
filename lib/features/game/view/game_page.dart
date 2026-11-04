@@ -14,9 +14,11 @@ import 'package:chess/features/game/widgets/game_labels.dart';
 import 'package:chess/features/game/widgets/game_over_dialog.dart';
 import 'package:chess/features/game/widgets/game_status_bar.dart';
 import 'package:chess/features/game/widgets/move_list.dart';
+import 'package:chess/features/game/widgets/piece_view.dart';
 import 'package:chess/features/game/widgets/promotion_dialog.dart';
 import 'package:chess/features/settings/cubit/settings_cubit.dart';
 import 'package:chess/features/settings/view/settings_page.dart';
+import 'package:chess/theme/piece_set.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -483,7 +485,8 @@ class _PlayerInfo extends StatelessWidget {
   }
 }
 
-/// Máy: icon robot; người: Vua theo màu quân. Viền nhấn khi tới lượt.
+/// Máy: icon robot; người: Vua theo màu quân, vẽ bằng bộ quân đang chọn trong
+/// cài đặt. Viền nhấn khi tới lượt.
 class _Avatar extends StatelessWidget {
   const _Avatar({
     required this.isWhite,
@@ -515,9 +518,13 @@ class _Avatar extends StatelessWidget {
       ),
       child: isMachine
           ? Icon(Icons.smart_toy_outlined, size: 20, color: accent)
-          : Text(
-              isWhite ? '♔︎' : '♚︎',
-              style: TextStyle(fontSize: 20, height: 1, color: accent),
+          : BlocSelector<SettingsCubit, AppSettings, PieceSet>(
+              selector: (settings) => settings.pieceSet,
+              builder: (context, pieceSet) => PieceView(
+                piece: isWhite ? 'K' : 'k',
+                size: 26,
+                pieceSet: pieceSet,
+              ),
             ),
     );
   }

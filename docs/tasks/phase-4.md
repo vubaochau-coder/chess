@@ -217,3 +217,27 @@ chỗ lệch mockup còn lại. Âm thanh vẫn dùng bộ file hiện có (bộ
 - [ ] Tiêu chí của T4.3 và T5.1.
 - [ ] Widget test: chiếu hết → sau 500 ms có `GameOverDialog`; `Ván mới` reset ván.
 - [ ] Test cũ chỉ sửa ở chỗ chữ hiển thị đổi theo mockup (tiêu đề, nhãn viết hoa, nút `Bài tiếp`).
+
+---
+
+## T4.7 — Avatar người chơi dùng bộ quân đang chọn
+
+**Quyết định owner (2026-11-04):** Vua trong avatar người chơi đang vẽ bằng ký tự Unicode `♔`/`♚`, hiển thị
+méo và phụ thuộc font của máy; đổi sang vẽ bằng bộ quân người dùng đã chọn trong Cài đặt.
+
+**Phạm vi**
+- `_Avatar` trong `GameView`: người chơi hiển thị Vua theo màu quân (`K`/`k`) bằng `PieceView` với
+  `pieceSet` lấy từ `SettingsCubit` (qua `BlocSelector`, chỉ build lại khi đổi bộ quân). Kích thước 26 trong vòng
+  tròn 38 hiện có.
+- Máy vẫn dùng icon robot. Không đổi kích thước, viền, màu của vòng tròn avatar.
+
+**Ngoài phạm vi:** đổi bố cục hàng người chơi, avatar trên màn chính, thêm cài đặt mới.
+
+**File được sửa:** `lib/features/game/view/game_page.dart`, `test/features/game/view/game_page_test.dart`.
+
+**Package được phép:** không.
+
+**Tiêu chí nghiệm thu**
+- [ ] Chơi 2 người: hai avatar là Vua trắng/đen đúng bộ quân đang chọn; đổi bộ quân trong Cài đặt thì avatar đổi theo.
+- [ ] Chơi với máy: avatar máy là robot, avatar người là Vua theo màu quân của người.
+- [ ] Widget test cho cả hai trường hợp trên.

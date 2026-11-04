@@ -17,6 +17,7 @@ import 'package:chess/features/game/widgets/piece_view.dart';
 import 'package:chess/features/game/widgets/promotion_dialog.dart';
 import 'package:chess/features/settings/cubit/settings_cubit.dart';
 import 'package:chess/features/settings/view/settings_page.dart';
+import 'package:chess/theme/piece_set.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -91,7 +92,13 @@ void main() {
     await pumpGame(tester);
 
     expect(find.text('Lượt đi: Trắng'), findsOneWidget);
-    expect(find.byType(PieceView), findsNWidgets(32));
+    expect(
+      find.descendant(
+        of: find.byType(ChessBoard),
+        matching: find.byType(PieceView),
+      ),
+      findsNWidgets(32),
+    );
     expect(pieceAt(tester, 'e1'), 'K');
     expect(pieceAt(tester, 'd8'), 'q');
   });
@@ -101,6 +108,50 @@ void main() {
 
     expect(find.text('Trắng'), findsOneWidget);
     expect(find.text('Đen'), findsOneWidget);
+  });
+
+  /// Quân [piece] trên bàn cờ (bỏ qua avatar Vua của người chơi).
+  Finder boardPiece(String piece) => find.descendant(
+    of: find.byType(ChessBoard),
+    matching: find.byWidgetPredicate((w) => w is PieceView && w.piece == piece),
+  );
+
+  /// Các quân vẽ ngoài bàn cờ (avatar người chơi, quân bị ăn).
+  List<PieceView> piecesOutsideBoard(WidgetTester tester) {
+    final onBoard = tester
+        .widgetList<PieceView>(
+          find.descendant(
+            of: find.byType(ChessBoard),
+            matching: find.byType(PieceView),
+          ),
+        )
+        .toSet();
+    return tester
+        .widgetList<PieceView>(find.byType(PieceView))
+        .where((p) => !onBoard.contains(p))
+        .toList();
+  }
+
+  testWidgets('PvP avatars draw both kings with the selected piece set', (
+    tester,
+  ) async {
+    await pumpGame(
+      tester,
+      settings: const AppSettings(pieceSet: PieceSet.wood),
+    );
+
+    final avatars = piecesOutsideBoard(tester);
+    expect(avatars.map((p) => p.piece), unorderedEquals(['K', 'k']));
+    expect(avatars.every((p) => p.pieceSet == PieceSet.wood), isTrue);
+  });
+
+  testWidgets('PvE avatars: robot for the machine, king for the human', (
+    tester,
+  ) async {
+    await pumpGame(tester, config: const GameConfig(mode: GameMode.pve));
+
+    expect(find.byIcon(Icons.smart_toy_outlined), findsOneWidget);
+    expect(piecesOutsideBoard(tester).map((p) => p.piece), ['K']);
   });
 
   testWidgets('PvE player rows show Bạn and Máy', (tester) async {
@@ -346,12 +397,8 @@ void main() {
       expect(spinnerBox.height, 16);
 
       // Bàn cờ lật: quân trắng nằm ở phía trên (y nhỏ hơn quân đen)
-      final whiteKingPos = tester.getCenter(
-        find.byWidgetPredicate((w) => w is PieceView && w.piece == 'K'),
-      );
-      final blackKingPos = tester.getCenter(
-        find.byWidgetPredicate((w) => w is PieceView && w.piece == 'k'),
-      );
+      final whiteKingPos = tester.getCenter(boardPiece('K'));
+      final blackKingPos = tester.getCenter(boardPiece('k'));
       expect(whiteKingPos.dy, lessThan(blackKingPos.dy));
 
       // Máy hoàn thành nước đi
@@ -454,12 +501,8 @@ void main() {
     expect(find.text('Cài đặt'), findsOneWidget);
   });
 
-  double pieceY(WidgetTester tester, String piece) {
-    final finder = find.byWidgetPredicate(
-      (w) => w is PieceView && w.piece == piece,
-    );
-    return tester.getCenter(finder).dy;
-  }
+  double pieceY(WidgetTester tester, String piece) =>
+      tester.getCenter(boardPiece(piece)).dy;
 
   testWidgets('Lật bàn cờ flips the board', (tester) async {
     await pumpGame(tester);
