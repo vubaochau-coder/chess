@@ -86,13 +86,27 @@ jobs:
           EOF
 
       - run: flutter pub get --enforce-lockfile
-      - run: flutter build apk --release
+
+      # Số build tự tăng theo số lần chạy workflow, không cần commit ngược vào
+      # repo; cộng với số build trong pubspec để không bao giờ thấp hơn nó.
+      - name: Compute build number
+        id: build
+        run: |
+          base=$(sed -n 's/^version: *[^+]*+\([0-9]*\).*/\1/p' pubspec.yaml)
+          name=$(sed -n 's/^version: *\([^+]*\).*/\1/p' pubspec.yaml)
+          number=$(( ${base:-0} + ${{ github.run_number }} ))
+          echo "number=$number" >> "$GITHUB_OUTPUT"
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+          echo "Version: $name ($number)"
+
+      - run: flutter build apk --release --build-number=${{ steps.build.outputs.number }}
 
       - name: Write release notes
         env:
           INPUT_NOTES: ${{ github.event.inputs.release_notes }}
           COMMIT_MESSAGE: ${{ github.event.workflow_run.head_commit.message }}
           SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+          VERSION: ${{ steps.build.outputs.name }} (${{ steps.build.outputs.number }})
         run: |
           {
             if [ -n "$INPUT_NOTES" ]; then
@@ -103,6 +117,7 @@ jobs:
               git log -1 --format=%B
             fi
             echo
+            echo "Version: $VERSION"
             echo "Commit: ${SHA:0:7}"
           } > release-notes.txt
           cat release-notes.txt
