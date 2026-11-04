@@ -1,9 +1,12 @@
 flutter_native_splash:
   color: "#F2E1C3"
+  # Matches the dark theme surface so dark-mode launches don't flash cream.
+  color_dark: "#17110D"
   image: assets/branding/icon_foreground.png
   android: true
   ios: false
   web: false
   android_12:
     color: "#F2E1C3"
+    color_dark: "#17110D"
     image: assets/branding/icon_foreground.png

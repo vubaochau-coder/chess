@@ -246,3 +246,46 @@ chính đổi thành logo app (T1.2).
 - [ ] Chơi với máy: avatar máy là robot, avatar người là Vua theo màu quân của người.
 - [ ] Màn chính hiển thị logo app phía trên tiêu đề `Cờ Vua`.
 - [ ] Widget test cho các trường hợp trên.
+
+---
+
+## T4.8 — Bảng màu sáng theo logo, splash theo chế độ sáng/tối
+
+**Quyết định owner (2026-11-04):** đổi bảng màu sáng cho đồng bộ với logo và splash (T1.2), nền màn hình trùng
+màu nền splash. Bảng màu tối giữ nguyên. Splash theo chế độ sáng/tối của hệ thống. Theme bàn cờ giữ nguyên (ô sáng
+theme `Gỗ` trùng màu nền, chấp nhận). Owner cho làm chung PR với T4.7.
+
+**Phạm vi**
+- `AppTheme.lightScheme` thay bảng màu sáng của T4.5 bằng bảng dưới (các token khác giữ nguyên):
+
+  | Token | Cũ | Mới |
+  |---|---|---|
+  | surface (nền), onInverseSurface | `#F6F0E4` | `#F2E1C3` |
+  | surfaceContainerLowest | `#FFFFFF` | `#FFF8EC` |
+  | surfaceContainerLow (thẻ) | `#FFFBF3` | `#FAF0DE` |
+  | surfaceContainer | `#F1E9D9` | `#EAD6B4` |
+  | surfaceContainerHigh | `#EBE1CD` | `#E3CCA6` |
+  | surfaceContainerHighest | `#E4D8C1` | `#DBC198` |
+  | primaryContainer | `#EADBBE` | `#E6CFA8` |
+  | onPrimary, onSecondary | `#F6F0E4` | `#FAF0DE` |
+  | secondary, onSurfaceVariant | `#6F5E48` | `#6B523C` |
+  | tertiary (nhãn nhóm, viền chọn) | `#8A6A2F` | `#855A38` |
+  | onTertiary | `#FFFBF3` | `#FFF8EC` |
+  | outline | `#A8833F` | `#9A6B45` |
+  | outlineVariant (viền) | `#E2D5BE` | `#DCC6A0` |
+
+- `flutter_native_splash.yaml`: thêm `color_dark: "#17110D"` (cả `android_12`), chạy lại generator.
+  Splash theo chế độ tối **của hệ thống** (Android không biết cài đặt theme trong app khi chưa chạy Flutter).
+
+**Ngoài phạm vi:** bảng màu tối, theme bàn cờ, icon app.
+
+**File được sửa:** `lib/theme/app_theme.dart`, `test/theme/app_theme_test.dart`, `flutter_native_splash.yaml`,
+`android/app/src/main/res/**`.
+
+**Package được phép:** không.
+
+**Tiêu chí nghiệm thu**
+- [ ] Chế độ sáng: nền màn chính/màn chơi là `#F2E1C3`, trùng nền splash.
+- [ ] Máy để chế độ tối: splash nền `#17110D`; chế độ sáng: `#F2E1C3`.
+- [ ] Test theme cập nhật theo bảng màu mới.
+
