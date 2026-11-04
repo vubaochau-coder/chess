@@ -1,8 +1,10 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:chess/core/settings/app_settings.dart';
+import 'package:chess/features/game/widgets/piece_view.dart';
 import 'package:chess/features/settings/cubit/settings_cubit.dart';
 import 'package:chess/features/settings/view/settings_page.dart';
 import 'package:chess/theme/board_theme.dart';
+import 'package:chess/theme/piece_set.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -38,7 +40,8 @@ void main() {
       expect(find.text('Sáng'), findsOneWidget);
       expect(find.text('Tối'), findsOneWidget);
       expect(find.text('Màu bàn cờ'), findsOneWidget);
-      expect(find.text('Gỗ'), findsOneWidget);
+      // Theme bàn cờ và bộ quân cùng có tên "Gỗ".
+      expect(find.text('Gỗ'), findsNWidgets(2));
       expect(find.text('Xanh lá'), findsOneWidget);
       expect(find.text('Xanh dương'), findsOneWidget);
       expect(find.text('Xám'), findsOneWidget);
@@ -79,6 +82,68 @@ void main() {
       await tester.pump();
 
       verify(() => cubit.setBoardTheme(BoardTheme.green)).called(1);
+    });
+
+    testWidgets('lists every piece set with a preview', (tester) async {
+      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      when(() => cubit.state).thenReturn(const AppSettings());
+
+      await tester.pumpWidget(buildSubject());
+
+      expect(find.text('Bộ quân cờ'), findsOneWidget);
+      for (final set in PieceSet.values) {
+        expect(find.text(set.label), findsAtLeastNWidgets(1));
+        final previews = find.byWidgetPredicate(
+          (w) => w is PieceView && w.pieceSet == set,
+        );
+        expect(tester.widgetList<PieceView>(previews).map((p) => p.piece), [
+          'K',
+          'n',
+        ]);
+      }
+    });
+
+    testWidgets('piece previews use the selected board colors', (tester) async {
+      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      when(() => cubit.state)
+          .thenReturn(const AppSettings(boardTheme: BoardTheme.purple));
+
+      await tester.pumpWidget(buildSubject());
+
+      final colors = BoardTheme.purple.colors;
+      Color squareBehind(String piece) {
+        final view = find.byWidgetPredicate(
+          (w) =>
+              w is PieceView && w.pieceSet == PieceSet.flat && w.piece == piece,
+        );
+        return tester
+            .widget<ColoredBox>(
+              find.ancestor(of: view, matching: find.byType(ColoredBox)).first,
+            )
+            .color;
+      }
+
+      expect(squareBehind('K'), colors.lightSquare);
+      expect(squareBehind('n'), colors.darkSquare);
+    });
+
+    testWidgets('tapping Phẳng calls cubit.setPieceSet(PieceSet.flat)', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      when(() => cubit.state).thenReturn(const AppSettings());
+
+      await tester.pumpWidget(buildSubject());
+      await tester.tap(find.text('Phẳng'));
+      await tester.pump();
+
+      verify(() => cubit.setPieceSet(PieceSet.flat)).called(1);
     });
 
     testWidgets('shows the board and sound sections', (tester) async {

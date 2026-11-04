@@ -56,7 +56,7 @@ lib/
       cubit/                # tutorial_cubit.dart (tiến độ), lesson_cubit.dart (bọc LessonBoard)
       view/                 # tutorial_page.dart (danh sách bài), lesson_page.dart (một bài)
       widgets/              # lesson_board_view.dart (dùng lại painter + PieceView của game)
-  theme/                    # board_theme.dart, app_theme.dart (ThemeData cổ điển), section_label.dart
+  theme/                    # board_theme.dart, piece_set.dart, app_theme.dart (ThemeData cổ điển), section_label.dart
 test/                       # song song với lib/, helper dùng chung ở test/helpers/
 ```
 

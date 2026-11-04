@@ -1,4 +1,5 @@
 import 'package:chess/theme/board_theme.dart';
+import 'package:chess/theme/piece_set.dart';
 import 'package:equatable/equatable.dart';
 
 enum AppThemeMode {
@@ -19,6 +20,7 @@ final class AppSettings extends Equatable {
   const AppSettings({
     this.themeMode = AppThemeMode.system,
     this.boardTheme = BoardTheme.wood,
+    this.pieceSet = PieceSet.classic,
     this.showCoordinates = true,
     this.showLegalMoves = true,
     this.highlightLastMove = true,
@@ -31,6 +33,7 @@ final class AppSettings extends Equatable {
 
   final AppThemeMode themeMode;
   final BoardTheme boardTheme;
+  final PieceSet pieceSet;
   final bool showCoordinates;
   final bool showLegalMoves;
   final bool highlightLastMove;
@@ -45,6 +48,7 @@ final class AppSettings extends Equatable {
   AppSettings copyWith({
     AppThemeMode? themeMode,
     BoardTheme? boardTheme,
+    PieceSet? pieceSet,
     bool? showCoordinates,
     bool? showLegalMoves,
     bool? highlightLastMove,
@@ -57,6 +61,7 @@ final class AppSettings extends Equatable {
     return AppSettings(
       themeMode: themeMode ?? this.themeMode,
       boardTheme: boardTheme ?? this.boardTheme,
+      pieceSet: pieceSet ?? this.pieceSet,
       showCoordinates: showCoordinates ?? this.showCoordinates,
       showLegalMoves: showLegalMoves ?? this.showLegalMoves,
       highlightLastMove: highlightLastMove ?? this.highlightLastMove,
@@ -72,6 +77,7 @@ final class AppSettings extends Equatable {
     return <String, dynamic>{
       'themeMode': themeMode.name,
       'boardTheme': boardTheme.name,
+      'pieceSet': pieceSet.name,
       'showCoordinates': showCoordinates,
       'showLegalMoves': showLegalMoves,
       'highlightLastMove': highlightLastMove,
@@ -98,6 +104,11 @@ final class AppSettings extends Equatable {
         ? BoardTheme.fromName(rawBoardTheme)
         : BoardTheme.wood;
 
+    final rawPieceSet = json['pieceSet'];
+    final pieceSet = rawPieceSet is String
+        ? PieceSet.fromName(rawPieceSet)
+        : PieceSet.classic;
+
     const defaults = AppSettings();
     final rawVolume = json['soundVolume'];
     final soundVolume = rawVolume is num
@@ -107,6 +118,7 @@ final class AppSettings extends Equatable {
     return AppSettings(
       themeMode: themeMode,
       boardTheme: boardTheme,
+      pieceSet: pieceSet,
       showCoordinates: _bool(json['showCoordinates'], defaults.showCoordinates),
       showLegalMoves: _bool(json['showLegalMoves'], defaults.showLegalMoves),
       highlightLastMove: _bool(
@@ -130,6 +142,7 @@ final class AppSettings extends Equatable {
   List<Object?> get props => [
     themeMode,
     boardTheme,
+    pieceSet,
     showCoordinates,
     showLegalMoves,
     highlightLastMove,

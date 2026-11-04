@@ -1,18 +1,34 @@
+import 'package:chess/theme/piece_set.dart';
 import 'package:chess_vectors_flutter/chess_vectors_flutter.dart' as vector;
 import 'package:flutter/widgets.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 /// Vẽ một quân cờ theo ký hiệu FEN (`K Q R B N P` trắng, chữ thường là đen).
 ///
-/// Đây là điểm mở rộng duy nhất cho kiểu quân cờ: khi thêm bộ quân mới
-/// (Giai đoạn 4) chỉ sửa widget này, không sửa nơi gọi.
+/// Đây là điểm mở rộng duy nhất cho kiểu quân cờ: thêm bộ quân mới chỉ sửa
+/// [PieceSet] và widget này, không sửa nơi gọi.
 class PieceView extends StatelessWidget {
-  const PieceView({super.key, required this.piece, required this.size});
+  const PieceView({
+    super.key,
+    required this.piece,
+    required this.size,
+    this.pieceSet = PieceSet.classic,
+  });
 
   final String piece;
   final double size;
+  final PieceSet pieceSet;
+
+  static const _pieces = {'K', 'Q', 'R', 'B', 'N', 'P'};
 
   @override
   Widget build(BuildContext context) {
+    if (!_pieces.contains(piece.toUpperCase())) return const SizedBox.shrink();
+
+    if (pieceSet.assetFor(piece) case final asset?) {
+      return SvgPicture.asset(asset, width: size, height: size);
+    }
+
     return switch (piece) {
       'K' => vector.WhiteKing(size: size),
       'Q' => vector.WhiteQueen(size: size),

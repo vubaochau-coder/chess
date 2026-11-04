@@ -23,6 +23,7 @@ dependencies:
   chess_vectors_flutter: 1.1.0
   equatable: 3.0.0
   flutter_bloc: 9.1.1
+  flutter_svg: 2.3.0
   shared_preferences: 2.5.6
 
 dev_dependencies:
@@ -38,3 +39,6 @@ flutter:
   uses-material-design: true
   assets:
     - assets/audio/
+    - assets/pieces/wood/
+    - assets/pieces/flat/
+    - assets/pieces/modern/

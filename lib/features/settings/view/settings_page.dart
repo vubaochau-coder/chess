@@ -1,8 +1,10 @@
 import 'package:chess/core/audio/sound_effect.dart';
 import 'package:chess/core/audio/sound_player.dart';
 import 'package:chess/core/settings/app_settings.dart';
+import 'package:chess/features/game/widgets/piece_view.dart';
 import 'package:chess/features/settings/cubit/settings_cubit.dart';
 import 'package:chess/theme/board_theme.dart';
+import 'package:chess/theme/piece_set.dart';
 import 'package:chess/theme/section_label.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -82,6 +84,38 @@ class SettingsPage extends StatelessWidget {
                                 onTap: () {
                                   context.read<SettingsCubit>().setBoardTheme(
                                     boardTheme,
+                                  );
+                                },
+                              ),
+                            ),
+                        ],
+                      );
+                    },
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    child: Divider(),
+                  ),
+                  Text('Bộ quân cờ', style: itemTitleStyle),
+                  const SizedBox(height: 12),
+                  BlocSelector<SettingsCubit, AppSettings, _PieceSetOptions>(
+                    selector: (settings) => (
+                      pieceSet: settings.pieceSet,
+                      boardTheme: settings.boardTheme,
+                    ),
+                    builder: (context, options) {
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          for (final pieceSet in PieceSet.values)
+                            Expanded(
+                              child: _PieceSetPreview(
+                                pieceSet: pieceSet,
+                                colors: options.boardTheme.colors,
+                                isSelected: pieceSet == options.pieceSet,
+                                onTap: () {
+                                  context.read<SettingsCubit>().setPieceSet(
+                                    pieceSet,
                                   );
                                 },
                               ),
@@ -286,6 +320,96 @@ class _BoardThemePreview extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+typedef _PieceSetOptions = ({PieceSet pieceSet, BoardTheme boardTheme});
+
+/// Vua trắng trên ô sáng và mã đen trên ô tối theo màu bàn cờ đang chọn,
+/// để thấy trước bộ quân có dễ nhìn trên bàn cờ hay không.
+class _PieceSetPreview extends StatelessWidget {
+  const _PieceSetPreview({
+    required this.pieceSet,
+    required this.colors,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  static const _squareSize = 30.0;
+
+  final PieceSet pieceSet;
+  final BoardColors colors;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Semantics(
+      selected: isSelected,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(3),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: isSelected
+                        ? colorScheme.tertiary
+                        : Colors.transparent,
+                    width: 1.5,
+                  ),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _square(colors.lightSquare, 'K'),
+                      _square(colors.darkSquare, 'n'),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                pieceSet.label,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                  color: isSelected
+                      ? colorScheme.tertiary
+                      : colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _square(Color color, String piece) {
+    return ColoredBox(
+      color: color,
+      child: SizedBox.square(
+        dimension: _squareSize,
+        child: Center(
+          child: PieceView(
+            piece: piece,
+            size: _squareSize * 0.85,
+            pieceSet: pieceSet,
           ),
         ),
       ),

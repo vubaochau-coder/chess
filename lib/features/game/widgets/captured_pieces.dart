@@ -1,6 +1,9 @@
 import 'package:chess/core/game/game_config.dart';
+import 'package:chess/core/settings/app_settings.dart';
 import 'package:chess/features/game/bloc/chess_game_bloc.dart';
 import 'package:chess/features/game/widgets/piece_view.dart';
+import 'package:chess/features/settings/cubit/settings_cubit.dart';
+import 'package:chess/theme/piece_set.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -20,6 +23,13 @@ class CapturedPieces extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return BlocSelector<SettingsCubit, AppSettings, PieceSet>(
+      selector: (settings) => settings.pieceSet,
+      builder: (context, pieceSet) => _buildCaptured(pieceSet),
+    );
+  }
+
+  Widget _buildCaptured(PieceSet pieceSet) {
     return BlocSelector<ChessGameBloc, ChessGameState, List<MoveRecord>>(
       selector: (state) => state.moves,
       builder: (context, moves) {
@@ -67,7 +77,7 @@ class CapturedPieces extends StatelessWidget {
           child: Row(
             children: [
               for (final piece in displayedPieces)
-                PieceView(piece: piece, size: 18),
+                PieceView(piece: piece, size: 18, pieceSet: pieceSet),
               if (diff > 0)
                 Container(
                   margin: const EdgeInsets.only(left: 6),

@@ -1,8 +1,10 @@
 import 'package:chess/core/engine/chess_rules.dart';
 import 'package:chess/core/engine/move.dart';
+import 'package:chess/core/settings/app_settings.dart';
 import 'package:chess/features/game/bloc/chess_game_bloc.dart';
 import 'package:chess/features/game/widgets/piece_view.dart';
 import 'package:chess/features/settings/cubit/settings_cubit.dart';
+import 'package:chess/theme/piece_set.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -140,27 +142,34 @@ class _MoveAnimationLayerState extends State<MoveAnimationLayer>
           previous.gameId != current.gameId,
       listener: _onMovesChanged,
       child: IgnorePointer(
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            for (final sprite in _sprites)
-              AnimatedBuilder(
-                animation: _progress,
-                child: Center(
-                  child: PieceView(piece: sprite.piece, size: cell * 0.68),
+        child: BlocSelector<SettingsCubit, AppSettings, PieceSet>(
+          selector: (settings) => settings.pieceSet,
+          builder: (context, pieceSet) => Stack(
+            fit: StackFit.expand,
+            children: [
+              for (final sprite in _sprites)
+                AnimatedBuilder(
+                  animation: _progress,
+                  child: Center(
+                    child: PieceView(
+                      piece: sprite.piece,
+                      size: cell * 0.68,
+                      pieceSet: pieceSet,
+                    ),
+                  ),
+                  builder: (context, child) {
+                    final offset = _positionOf(sprite);
+                    return Positioned(
+                      left: offset.dx,
+                      top: offset.dy,
+                      width: cell,
+                      height: cell,
+                      child: child!,
+                    );
+                  },
                 ),
-                builder: (context, child) {
-                  final offset = _positionOf(sprite);
-                  return Positioned(
-                    left: offset.dx,
-                    top: offset.dy,
-                    width: cell,
-                    height: cell,
-                    child: child!,
-                  );
-                },
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );

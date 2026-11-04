@@ -1,5 +1,6 @@
 import 'package:chess/core/settings/app_settings.dart';
 import 'package:chess/theme/board_theme.dart';
+import 'package:chess/theme/piece_set.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -104,6 +105,26 @@ void main() {
       test('fromJson clamps soundVolume into 0..1', () {
         expect(AppSettings.fromJson({'soundVolume': 3}).soundVolume, 1.0);
         expect(AppSettings.fromJson({'soundVolume': -1}).soundVolume, 0.0);
+      });
+
+      test('round-trip keeps every piece set', () {
+        for (final pieceSet in PieceSet.values) {
+          final settings = AppSettings(pieceSet: pieceSet);
+          expect(AppSettings.fromJson(settings.toJson()), settings);
+        }
+      });
+
+      test('pieceSet defaults to classic when missing or invalid', () {
+        expect(const AppSettings().pieceSet, PieceSet.classic);
+        expect(AppSettings.fromJson({}).pieceSet, PieceSet.classic);
+        expect(
+          AppSettings.fromJson({'pieceSet': 3}).pieceSet,
+          PieceSet.classic,
+        );
+        expect(
+          AppSettings.fromJson({'pieceSet': 'glass'}).pieceSet,
+          PieceSet.classic,
+        );
       });
 
       test('fromJson with unknown enum string falls back to default', () {
