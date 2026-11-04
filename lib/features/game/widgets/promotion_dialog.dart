@@ -26,11 +26,10 @@ class PromotionDialog extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 3),
                 child: Material(
-                  color: colorScheme.surface,
+                  color: colorScheme.surfaceContainerHighest,
                   clipBehavior: Clip.antiAlias,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: colorScheme.outlineVariant),
+                    borderRadius: BorderRadius.circular(16),
                   ),
                   child: InkWell(
                     onTap: () => Navigator.of(context).pop(piece),

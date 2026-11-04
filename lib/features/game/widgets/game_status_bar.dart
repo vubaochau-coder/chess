@@ -25,7 +25,6 @@ class GameStatusBar extends StatelessWidget {
         if (isAiThinking) {
           return _Pill(
             background: colorScheme.surfaceContainerLow,
-            border: colorScheme.outlineVariant,
             leading: SizedBox.square(
               dimension: 16,
               child: CircularProgressIndicator(
@@ -58,7 +57,6 @@ class GameStatusBar extends StatelessWidget {
         if (isCheck) {
           return _Pill(
             background: colorScheme.errorContainer,
-            border: colorScheme.error,
             leading: Icon(
               Icons.warning_amber_rounded,
               size: 18,
@@ -72,7 +70,6 @@ class GameStatusBar extends StatelessWidget {
         if (isGameOver) {
           return _Pill(
             background: colorScheme.primaryContainer,
-            border: colorScheme.tertiary,
             leading: Icon(
               Icons.emoji_events_outlined,
               size: 18,
@@ -85,7 +82,6 @@ class GameStatusBar extends StatelessWidget {
 
         return _Pill(
           background: colorScheme.surfaceContainerLow,
-          border: colorScheme.outlineVariant,
           leading: Container(
             width: 14,
             height: 14,
@@ -108,14 +104,12 @@ class GameStatusBar extends StatelessWidget {
 class _Pill extends StatelessWidget {
   const _Pill({
     required this.background,
-    required this.border,
     required this.leading,
     required this.text,
     required this.textColor,
   });
 
   final Color background;
-  final Color border;
   final Widget leading;
   final String text;
   final Color textColor;
@@ -127,7 +121,6 @@ class _Pill extends StatelessWidget {
       decoration: BoxDecoration(
         color: background,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: border),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

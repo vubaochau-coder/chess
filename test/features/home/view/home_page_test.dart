@@ -11,10 +11,12 @@ import 'package:chess/core/storage/saved_game.dart';
 import 'package:chess/core/storage/settings_repository.dart';
 import 'package:chess/core/storage/tutorial_progress_repository.dart';
 import 'package:chess/features/game/view/game_page.dart';
+import 'package:chess/features/game/widgets/piece_view.dart';
 import 'package:chess/features/home/view/home_page.dart';
 import 'package:chess/features/settings/cubit/settings_cubit.dart';
 import 'package:chess/features/settings/view/settings_page.dart';
 import 'package:chess/features/tutorial/view/tutorial_page.dart';
+import 'package:chess/theme/piece_set.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -104,6 +106,33 @@ void main() {
         tester.getCenter(logo).dy,
         lessThan(tester.getCenter(find.text('Cờ Vua')).dy),
       );
+    });
+
+    testWidgets('mode cards show a knight and a king in the chosen set', (
+      tester,
+    ) async {
+      await pumpHome(tester);
+
+      PieceView pieceIn(String title) => tester.widget<PieceView>(
+        find.descendant(
+          of: find.ancestor(
+            of: find.text(title),
+            matching: find.byType(InkWell),
+          ),
+          matching: find.byType(PieceView),
+        ),
+      );
+
+      expect(pieceIn('Chơi với máy').piece, 'N');
+      expect(pieceIn('2 người').piece, 'K');
+      expect(pieceIn('2 người').pieceSet, PieceSet.classic);
+
+      final context = tester.element(find.byType(HomeView));
+      context.read<SettingsCubit>().setPieceSet(PieceSet.wood);
+      await tester.pump();
+
+      expect(pieceIn('Chơi với máy').pieceSet, PieceSet.wood);
+      expect(pieceIn('2 người').pieceSet, PieceSet.wood);
     });
 
     testWidgets('renders initial elements in PvE mode by default', (

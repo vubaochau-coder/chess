@@ -56,7 +56,8 @@ lib/
       cubit/                # tutorial_cubit.dart (tiến độ), lesson_cubit.dart (bọc LessonBoard)
       view/                 # tutorial_page.dart (danh sách bài), lesson_page.dart (một bài)
       widgets/              # lesson_board_view.dart (dùng lại painter + PieceView của game)
-  theme/                    # board_theme.dart, piece_set.dart, app_theme.dart (ThemeData cổ điển), section_label.dart
+  theme/                    # board_theme.dart, piece_set.dart, app_theme.dart (ThemeData cổ điển, AppMotion),
+                            # section_label.dart, press_scale.dart (nút co nhẹ khi nhấn)
 test/                       # song song với lib/, helper dùng chung ở test/helpers/
 ```
 
@@ -151,6 +152,9 @@ final class SquareTapped extends ChessGameEvent {
 7. Không gọi `MediaQuery.of(context)` ở widget sâu; dùng `LayoutBuilder` hoặc `MediaQuery.sizeOf`.
 8. Animation dùng widget implicit (`AnimatedPositioned`, `AnimatedScale`…) hoặc `AnimationController`
    cục bộ; không emit state bloc theo từng frame.
+9. Hiệu ứng giao diện dùng chung (nút co khi nhấn `PressScale`, chuyển trang) đọc cờ `AppMotion` trong theme
+   (`AppMotion.enabledOf(context)`), được dựng từ cài đặt `Hiệu ứng chuyển động` ở `ChessApp`. Widget trong
+   `lib/theme/` không đọc `SettingsCubit`.
 
 ## 6. Thêm một tính năng mới (checklist)
 

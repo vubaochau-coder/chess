@@ -47,17 +47,21 @@ class ChessApp extends StatelessWidget {
             () => context.read<SettingsCubit>().state,
           ),
           dispose: (player) => unawaited(player.dispose()),
-          child: BlocSelector<SettingsCubit, AppSettings, ThemeMode>(
-            selector: (settings) => switch (settings.themeMode) {
-              AppThemeMode.light => ThemeMode.light,
-              AppThemeMode.dark => ThemeMode.dark,
-            },
-            builder: (context, themeMode) {
+          child: BlocSelector<SettingsCubit, AppSettings, (ThemeMode, bool)>(
+            selector: (settings) => (
+              switch (settings.themeMode) {
+                AppThemeMode.light => ThemeMode.light,
+                AppThemeMode.dark => ThemeMode.dark,
+              },
+              settings.animationsEnabled,
+            ),
+            builder: (context, value) {
+              final (themeMode, animations) = value;
               return MaterialApp(
                 title: 'Chess',
                 debugShowCheckedModeBanner: false,
-                theme: AppTheme.light(),
-                darkTheme: AppTheme.dark(),
+                theme: AppTheme.light(animations: animations),
+                darkTheme: AppTheme.dark(animations: animations),
                 themeMode: themeMode,
                 home: const HomePage(),
               );

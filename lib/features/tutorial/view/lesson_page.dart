@@ -4,6 +4,7 @@ import 'package:chess/core/tutorial/lesson_catalog.dart';
 import 'package:chess/features/tutorial/cubit/lesson_cubit.dart';
 import 'package:chess/features/tutorial/cubit/tutorial_cubit.dart';
 import 'package:chess/features/tutorial/widgets/lesson_board_view.dart';
+import 'package:chess/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -129,9 +130,6 @@ class LessonView extends StatelessWidget {
                         onPressed: () => context.read<LessonCubit>().reset(),
                         style: OutlinedButton.styleFrom(
                           minimumSize: const Size(64, 52),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
                         ),
                         child: const Text('Làm lại'),
                       ),
@@ -159,13 +157,12 @@ class _Frame extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
-      padding: const EdgeInsets.all(4),
+      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerHigh,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: colorScheme.outline),
+        borderRadius: BorderRadius.circular(22),
       ),
-      child: ClipRRect(borderRadius: BorderRadius.circular(2), child: child),
+      child: ClipRRect(borderRadius: BorderRadius.circular(16), child: child),
     );
   }
 }
@@ -220,9 +217,8 @@ class _ChallengeCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: colorScheme.outline),
+        color: AppTheme.cardColor(colorScheme),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
         children: [
@@ -274,7 +270,6 @@ class _Feedback extends StatelessWidget {
               icon: Icons.check_rounded,
               text: 'Tuyệt vời! Bạn đã hoàn thành thử thách.',
               background: colorScheme.primaryContainer,
-              border: colorScheme.tertiary,
               foreground: colorScheme.onPrimaryContainer,
             );
           case LessonResult.failed:
@@ -282,7 +277,6 @@ class _Feedback extends StatelessWidget {
               icon: Icons.refresh_rounded,
               text: 'Chưa đúng rồi. Bấm Làm lại để thử lần nữa nhé.',
               background: colorScheme.surfaceContainerHigh,
-              border: colorScheme.outlineVariant,
               foreground: colorScheme.onSurface,
             );
           case LessonResult.playing:
@@ -306,14 +300,12 @@ class _Banner extends StatelessWidget {
     required this.icon,
     required this.text,
     required this.background,
-    required this.border,
     required this.foreground,
   });
 
   final IconData icon;
   final String text;
   final Color background;
-  final Color border;
   final Color foreground;
 
   @override
@@ -322,8 +314,7 @@ class _Banner extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
         color: background,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: border),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
         children: [

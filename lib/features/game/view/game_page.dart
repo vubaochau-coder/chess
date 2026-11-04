@@ -18,7 +18,9 @@ import 'package:chess/features/game/widgets/piece_view.dart';
 import 'package:chess/features/game/widgets/promotion_dialog.dart';
 import 'package:chess/features/settings/cubit/settings_cubit.dart';
 import 'package:chess/features/settings/view/settings_page.dart';
+import 'package:chess/theme/app_theme.dart';
 import 'package:chess/theme/piece_set.dart';
+import 'package:chess/theme/press_scale.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -152,7 +154,7 @@ class GameView extends StatelessWidget {
                 const MoveList(),
                 const SizedBox(height: 14),
                 const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  padding: EdgeInsets.symmetric(horizontal: 16),
                   child: _Controls(),
                 ),
                 const SizedBox(height: 16),
@@ -184,13 +186,20 @@ class _Controls extends StatelessWidget {
           if (isPve) ...[const _UndoButton(), const _HintButton()],
           const _ResignButton(),
         ];
-        return Row(
-          children: [
-            for (final (i, button) in buttons.indexed) ...[
-              if (i > 0) SizedBox(width: isPve ? 8 : 10),
-              Expanded(child: button),
+        return Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: AppTheme.cardColor(Theme.of(context).colorScheme),
+            borderRadius: BorderRadius.circular(26),
+          ),
+          child: Row(
+            children: [
+              for (final (i, button) in buttons.indexed) ...[
+                if (i > 0) const SizedBox(width: 4),
+                Expanded(child: button),
+              ],
             ],
-          ],
+          ),
         );
       },
     );
@@ -395,7 +404,7 @@ class _FlipSelector extends StatelessWidget {
   }
 }
 
-/// Khung viền đồng quanh bàn cờ.
+/// Khung bo tròn quanh bàn cờ, phẳng: không viền, không bóng.
 class _BoardFrame extends StatelessWidget {
   const _BoardFrame({required this.child});
 
@@ -406,20 +415,12 @@ class _BoardFrame extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
-      padding: const EdgeInsets.all(4),
+      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerHigh,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: colorScheme.outline),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.shadow.withValues(alpha: 0.25),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(22),
       ),
-      child: ClipRRect(borderRadius: BorderRadius.circular(2), child: child),
+      child: ClipRRect(borderRadius: BorderRadius.circular(16), child: child),
     );
   }
 }
@@ -473,8 +474,19 @@ class _PlayerInfo extends StatelessWidget {
             ? 'Lượt của máy'
             : 'Lượt của bạn';
 
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: active
+                ? colorScheme.primaryContainer
+                : AppTheme.cardColor(colorScheme),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: active ? colorScheme.tertiary : Colors.transparent,
+              width: 1.5,
+            ),
+          ),
           child: Row(
             children: [
               _Avatar(isWhite: isWhite, isMachine: isMachine, active: active),
@@ -526,7 +538,7 @@ class _PlayerInfo extends StatelessWidget {
 }
 
 /// Máy: icon robot; người: Vua theo màu quân, vẽ bằng bộ quân đang chọn trong
-/// cài đặt. Viền nhấn khi tới lượt.
+/// cài đặt. Nền đậm hơn khi tới lượt.
 class _Avatar extends StatelessWidget {
   const _Avatar({
     required this.isWhite,
@@ -544,17 +556,14 @@ class _Avatar extends StatelessWidget {
     final accent = active ? colorScheme.tertiary : colorScheme.onSurfaceVariant;
 
     return Container(
-      width: 38,
-      height: 38,
+      width: 40,
+      height: 40,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        shape: BoxShape.circle,
         color: active
-            ? colorScheme.surfaceContainerHigh
-            : colorScheme.surfaceContainer,
-        border: Border.all(
-          color: active ? colorScheme.tertiary : colorScheme.outlineVariant,
-        ),
+            ? colorScheme.surfaceContainerHighest
+            : colorScheme.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(14),
       ),
       child: isMachine
           ? Icon(Icons.smart_toy_outlined, size: 20, color: accent)
@@ -593,47 +602,47 @@ class _ControlButton extends StatelessWidget {
         ? colorScheme.onSurface
         : colorScheme.onSurfaceVariant.withValues(alpha: 0.45);
 
-    return SizedBox(
-      height: 64,
-      child: IconButton(
-        onPressed: onPressed,
-        style: IconButton.styleFrom(
-          backgroundColor: colorScheme.surfaceContainerLow,
-          disabledBackgroundColor: colorScheme.surfaceContainerLow,
-          side: BorderSide(color: colorScheme.outlineVariant),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-        ),
-        icon: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (loading)
-              SizedBox.square(
-                dimension: 20,
-                child: Padding(
-                  padding: const EdgeInsets.all(2),
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: colorScheme.tertiary,
-                  ),
-                ),
-              )
-            else
-              Icon(icon, size: 20, color: foreground),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              maxLines: 1,
-              softWrap: false,
-              overflow: TextOverflow.fade,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: foreground,
-              ),
+    return PressScale(
+      enabled: onPressed != null,
+      child: SizedBox(
+        height: 60,
+        child: IconButton(
+          onPressed: onPressed,
+          style: IconButton.styleFrom(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
             ),
-          ],
+          ),
+          icon: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (loading)
+                SizedBox.square(
+                  dimension: 20,
+                  child: Padding(
+                    padding: const EdgeInsets.all(2),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: colorScheme.tertiary,
+                    ),
+                  ),
+                )
+              else
+                Icon(icon, size: 20, color: foreground),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                maxLines: 1,
+                softWrap: false,
+                overflow: TextOverflow.fade,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: foreground,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
