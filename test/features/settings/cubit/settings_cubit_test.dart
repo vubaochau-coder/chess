@@ -114,5 +114,16 @@ void main() {
       act: (cubit) => cubit.setSoundVolume(1.5),
       expect: () => [const AppSettings(soundVolume: 1)],
     );
+
+    blocTest<SettingsCubit, AppSettings>(
+      'setAnimationsEnabled emits updated state',
+      setUp: () {
+        when(repository.load).thenReturn(const AppSettings());
+        when(() => repository.save(any())).thenAnswer((_) async {});
+      },
+      build: () => SettingsCubit(repository: repository),
+      act: (cubit) => cubit.setAnimationsEnabled(false),
+      expect: () => [const AppSettings(animationsEnabled: false)],
+    );
   });
 }

@@ -90,6 +90,16 @@ class SettingsPage extends StatelessWidget {
                       );
                     },
                   ),
+                  const Padding(
+                    padding: EdgeInsets.only(top: 12),
+                    child: Divider(),
+                  ),
+                  _SettingSwitch(
+                    title: 'Hiệu ứng chuyển động',
+                    contentPadding: EdgeInsets.zero,
+                    select: (s) => s.animationsEnabled,
+                    onChanged: (cubit, v) => cubit.setAnimationsEnabled(v),
+                  ),
                 ],
               ),
             ),
@@ -162,11 +172,13 @@ class _SettingSwitch extends StatelessWidget {
     required this.title,
     required this.select,
     required this.onChanged,
+    this.contentPadding,
   });
 
   final String title;
   final bool Function(AppSettings settings) select;
   final void Function(SettingsCubit cubit, bool value) onChanged;
+  final EdgeInsetsGeometry? contentPadding;
 
   @override
   Widget build(BuildContext context) {
@@ -174,6 +186,7 @@ class _SettingSwitch extends StatelessWidget {
       selector: select,
       builder: (context, value) => SwitchListTile(
         title: Text(title, style: const TextStyle(fontSize: 14)),
+        contentPadding: contentPadding,
         value: value,
         onChanged: (v) => onChanged(context.read<SettingsCubit>(), v),
       ),

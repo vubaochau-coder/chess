@@ -26,6 +26,7 @@ final class AppSettings extends Equatable {
     this.soundEnabled = true,
     this.soundVolume = 0.8,
     this.hapticsEnabled = true,
+    this.animationsEnabled = true,
   });
 
   final AppThemeMode themeMode;
@@ -39,6 +40,7 @@ final class AppSettings extends Equatable {
   /// Âm lượng hiệu ứng, từ 0 đến 1.
   final double soundVolume;
   final bool hapticsEnabled;
+  final bool animationsEnabled;
 
   AppSettings copyWith({
     AppThemeMode? themeMode,
@@ -50,6 +52,7 @@ final class AppSettings extends Equatable {
     bool? soundEnabled,
     double? soundVolume,
     bool? hapticsEnabled,
+    bool? animationsEnabled,
   }) {
     return AppSettings(
       themeMode: themeMode ?? this.themeMode,
@@ -61,6 +64,7 @@ final class AppSettings extends Equatable {
       soundEnabled: soundEnabled ?? this.soundEnabled,
       soundVolume: soundVolume ?? this.soundVolume,
       hapticsEnabled: hapticsEnabled ?? this.hapticsEnabled,
+      animationsEnabled: animationsEnabled ?? this.animationsEnabled,
     );
   }
 
@@ -75,6 +79,7 @@ final class AppSettings extends Equatable {
       'soundEnabled': soundEnabled,
       'soundVolume': soundVolume,
       'hapticsEnabled': hapticsEnabled,
+      'animationsEnabled': animationsEnabled,
     };
   }
 
@@ -112,6 +117,10 @@ final class AppSettings extends Equatable {
       soundEnabled: _bool(json['soundEnabled'], defaults.soundEnabled),
       soundVolume: soundVolume,
       hapticsEnabled: _bool(json['hapticsEnabled'], defaults.hapticsEnabled),
+      animationsEnabled: _bool(
+        json['animationsEnabled'],
+        defaults.animationsEnabled,
+      ),
     );
   }
 
@@ -128,5 +137,6 @@ final class AppSettings extends Equatable {
     soundEnabled,
     soundVolume,
     hapticsEnabled,
+    animationsEnabled,
   ];
 }

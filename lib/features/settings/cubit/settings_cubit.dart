@@ -39,6 +39,9 @@ class SettingsCubit extends Cubit<AppSettings> {
   void setHapticsEnabled(bool value) =>
       _update(state.copyWith(hapticsEnabled: value));
 
+  void setAnimationsEnabled(bool value) =>
+      _update(state.copyWith(animationsEnabled: value));
+
   void _update(AppSettings next) {
     if (next == state) return;
     emit(next);

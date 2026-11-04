@@ -85,6 +85,7 @@ void main() {
           soundEnabled: false,
           soundVolume: 0.35,
           hapticsEnabled: false,
+          animationsEnabled: false,
         );
 
         expect(AppSettings.fromJson(settings.toJson()), settings);

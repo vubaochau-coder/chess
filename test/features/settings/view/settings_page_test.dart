@@ -116,6 +116,19 @@ void main() {
       verify(() => cubit.setHapticsEnabled(false)).called(1);
     });
 
+    testWidgets('motion switch calls setAnimationsEnabled', (tester) async {
+      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      when(() => cubit.state).thenReturn(const AppSettings());
+
+      await tester.pumpWidget(buildSubject());
+      await tester.tap(find.text('Hiệu ứng chuyển động'));
+      await tester.pump();
+
+      verify(() => cubit.setAnimationsEnabled(false)).called(1);
+    });
+
     testWidgets('volume slider is disabled when sound is off', (tester) async {
       tester.view.physicalSize = const Size(800, 1600);
       tester.view.devicePixelRatio = 1;
