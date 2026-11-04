@@ -1,5 +1,6 @@
 import 'package:chess/core/engine/chess_rules.dart';
 import 'package:chess/core/engine/fen.dart';
+import 'package:chess/core/engine/move.dart';
 import 'package:chess/core/game/game_config.dart';
 import 'package:chess/core/settings/app_settings.dart';
 import 'package:chess/core/storage/settings_repository.dart';
@@ -11,6 +12,7 @@ import 'package:chess/features/settings/cubit/settings_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
 import '../../../helpers/mocks.dart';
 
@@ -23,15 +25,20 @@ void main() {
     WidgetTester tester, {
     AppSettings settings = const AppSettings(),
     GamePosition? startPosition,
+    GameConfig config = const GameConfig.pvp(),
   }) async {
     tester.view.physicalSize = const Size(800, 800);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
+    // Khi chơi với máy, máy luôn trả lời 1... e5.
+    final ai = MockChessAi();
+    when(() => ai.chooseMove(any(), any()))
+        .thenAnswer((_) async => const Move(12, 28));
     final bloc = ChessGameBloc(
       soundPlayer: MockSoundPlayer(),
-      ai: MockChessAi(),
-      config: const GameConfig.pvp(),
+      ai: ai,
+      config: config,
       startPosition: startPosition,
     );
     addTearDown(bloc.close);
@@ -118,7 +125,11 @@ void main() {
   });
 
   testWidgets('undo is not animated', (tester) async {
-    final bloc = await pumpBoard(tester);
+    // Chỉ chơi với máy mới được đi lại.
+    final bloc = await pumpBoard(
+      tester,
+      config: const GameConfig(mode: GameMode.pve),
+    );
     await move(tester, bloc, 'e2', 'e4');
     await tester.pumpAndSettle();
 

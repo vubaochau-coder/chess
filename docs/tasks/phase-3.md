@@ -321,3 +321,46 @@ Engine công khai (`ChessRules`, `GamePosition`) **giữ nguyên**, UI vẫn dù
 - [ ] Test bloc: lưu sau mỗi nước/undo; xóa khi ván kết thúc; khôi phục ở lượt máy thì máy đi tiếp.
 - [ ] Widget test màn chính: có ván lưu → hiện nút Tiếp tục; không có → ẩn.
 - [ ] Thử thực tế trên Android: đi vài nước, tắt hẳn app, mở lại → tiếp tục đúng thế cờ.
+
+---
+
+## T3.8 — Giới hạn đi lại, gợi ý nước đi khi chơi với máy
+
+**Quyết định owner (2026-11-04):**
+- Chơi 2 người: **không** cho đi lại; ẩn nút `Đi lại`.
+- Chơi với máy: đi lại tối đa **3 lần mỗi ván**. Mỗi lần lùi 1 lượt (nước của người + nước máy đã trả lời; nếu máy
+  đang nghĩ thì chỉ lùi nước của người). Không được đi lại 2 lần liên tiếp: phải đi một nước rồi mới được đi lại tiếp.
+- Chơi với máy có nút `Gợi ý`: tối đa **3 lần mỗi ván**, tính bằng AI mức `Khó`, hiển thị bằng cách tô ô đi/ô đến
+  và mũi tên trên bàn cờ cho tới khi người đi quân (hoặc đi lại / ván mới).
+
+**Phạm vi**
+- `ChessGameState`: thêm `undosUsed`, `hintsUsed` (đếm trong ván), `undoLockedAt` (số nước lúc vừa đi lại; chỉ đi
+  lại tiếp khi `moves.length > undoLockedAt`), `hint` (`Move?`), `isHintLoading`. Hằng số `maxUndos = 3`,
+  `maxHints = 3`; getter `undosLeft`, `hintsLeft`, `canHint`.
+  - `canUndo`: PvP luôn `false`; PvE thêm điều kiện còn lượt và không bị khóa.
+  - `canHint`: PvE, chưa kết thúc, lượt người, máy không nghĩ, không đang tính gợi ý, chưa có gợi ý đang hiện,
+    còn lượt.
+  - Đi quân, đi lại, ván mới: xóa `hint` / `isHintLoading`.
+- Bloc: sự kiện `HintRequested`: bật `isHintLoading`, gọi `ChessAi.chooseMove(history, AiLevel.hard)`;
+  nếu ván/thế cờ đã đổi trong lúc tính thì bỏ kết quả và **không** trừ lượt; ngược lại hiện gợi ý, `hintsUsed + 1`,
+  lưu ván.
+- `SavedGame`: lưu `undosUsed`, `hintsUsed`, `undoLockedAt` (khóa JSON tùy chọn, giữ `version: 1`; ván lưu cũ thiếu
+  khóa → 0 / null). Khôi phục ván giữ đúng số lượt đã dùng.
+- `GameView`: PvP 2 nút (`Ván mới`, `Đầu hàng`); PvE 4 nút (`Ván mới`, `Đi lại (n)`, `Gợi ý (n)`, `Đầu hàng`), n là
+  số lượt còn lại; nút `Gợi ý` hiện vòng xoay khi đang tính.
+- `HighlightPainter`: vẽ gợi ý (tô ô đi/đến + mũi tên) bằng một màu cố định, khác màu tô nước vừa đi.
+
+**Ngoài phạm vi:** giới hạn theo mức độ khó, cài đặt bật/tắt gợi ý, giải thích lý do của nước gợi ý.
+
+**File được sửa:** `lib/features/game/**`, `lib/core/storage/saved_game.dart`, `test/**`, `docs/architecture.md`.
+
+**Package được phép:** không.
+
+**Tiêu chí nghiệm thu**
+- [ ] PvP: không có nút `Đi lại`; `canUndo` luôn `false`.
+- [ ] PvE: đi lại tối đa 3 lần; không đi lại 2 lần liên tiếp khi chưa đi nước mới; nhãn hiện số lượt còn lại.
+- [ ] PvE: gợi ý tối đa 3 lần, dùng mức `Khó`; gợi ý hiện trên bàn cờ và mất khi đi quân; kết quả cũ bị bỏ khi
+      thế cờ đã đổi (không trừ lượt).
+- [ ] Thoát và tiếp tục ván: số lượt đi lại/gợi ý còn lại giữ nguyên; ván lưu cũ (chưa có các khóa mới) vẫn mở được.
+- [ ] Test bloc, test lưu ván, widget test các nút.
+

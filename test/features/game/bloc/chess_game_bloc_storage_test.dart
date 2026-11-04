@@ -43,36 +43,66 @@ void main() {
       expect(saved.config.mode, GameMode.pvp);
     });
 
-    test('saves after human move and after undo in PvP', () async {
+    test('saves undo and hint counters in PvE', () async {
+      when(() => ai.chooseMove(any(), AiLevel.medium))
+          .thenAnswer((_) async => const Move(12, 28)); // e7e5
+      when(() => ai.chooseMove(any(), AiLevel.hard))
+          .thenAnswer((_) async => const Move(51, 35)); // d2d4
+
       final bloc = ChessGameBloc(
         soundPlayer: sound,
         ai: ai,
         gameRepository: repo,
-        config: const GameConfig.pvp(),
+        config: const GameConfig(mode: GameMode.pve),
       );
-
-      // Initial save
       verify(() => repo.save(any())).called(1);
 
-      // Human moves e2 -> e4
-      bloc.add(const SquareTapped(52)); // e2
-      bloc.add(const SquareTapped(36)); // e4
+      // Người đi e2e4, máy trả lời e7e5.
+      bloc
+        ..add(const SquareTapped(52))
+        ..add(const SquareTapped(36));
       await pumpEventQueue();
+      final afterMoves = verify(() => repo.save(captureAny())).captured;
+      expect((afterMoves.last as SavedGame).moves, ['e2e4', 'e7e5']);
 
-      final capturedMoves = verify(() => repo.save(captureAny())).captured;
-      expect(capturedMoves, hasLength(1));
-      final afterMove = capturedMoves.first as SavedGame;
-      expect(afterMove.moves, ['e2e4']);
-
-      // Undo
       bloc.add(const UndoRequested());
       await pumpEventQueue();
-
-      final capturedUndo = verify(() => repo.save(captureAny())).captured;
-      expect(capturedUndo, hasLength(1));
-      final afterUndo = capturedUndo.first as SavedGame;
+      final afterUndo =
+          verify(() => repo.save(captureAny())).captured.single as SavedGame;
       expect(afterUndo.moves, isEmpty);
+      expect(afterUndo.undosUsed, 1);
+      expect(afterUndo.undoLockedAt, 0);
 
+      bloc.add(const HintRequested());
+      await pumpEventQueue();
+      final afterHint =
+          verify(() => repo.save(captureAny())).captured.single as SavedGame;
+      expect(afterHint.hintsUsed, 1);
+      expect(afterHint.undosUsed, 1);
+
+      await bloc.close();
+    });
+
+    test('restoring a game keeps the used undos and hints', () async {
+      final bloc = ChessGameBloc(
+        soundPlayer: sound,
+        ai: ai,
+        gameRepository: repo,
+        config: const GameConfig(mode: GameMode.pve),
+        restore: const SavedGame(
+          startFen: Fen.initial,
+          moves: ['e2e4', 'e7e5'],
+          config: GameConfig(mode: GameMode.pve),
+          undosUsed: 2,
+          hintsUsed: 3,
+          undoLockedAt: 2,
+        ),
+      );
+
+      expect(bloc.state.undosLeft, 1);
+      expect(bloc.state.hintsLeft, 0);
+      expect(bloc.state.canUndo, isFalse, reason: 'locked until next move');
+      expect(bloc.state.canHint, isFalse);
       await bloc.close();
     });
 

@@ -136,6 +136,7 @@ typedef _Highlights = ({
   LastMove? lastMove,
   List<int> targets,
   int? checkSquare,
+  LastMove? hint,
 });
 
 class _HighlightLayer extends StatelessWidget {
@@ -159,6 +160,10 @@ class _HighlightLayer extends StatelessWidget {
         lastMove: state.lastMove,
         targets: state.legalTargets,
         checkSquare: state.checkSquare,
+        hint: switch (state.hint) {
+          final hint? => (from: hint.from, to: hint.to),
+          null => null,
+        },
       ),
       builder: (context, h) {
         final lastMove = showLastMove ? h.lastMove : null;
@@ -172,6 +177,7 @@ class _HighlightLayer extends StatelessWidget {
             targets: showTargets ? h.targets : const [],
             checkSquare: h.checkSquare,
             flipped: flipped,
+            suggestion: h.hint,
           ),
         );
       },

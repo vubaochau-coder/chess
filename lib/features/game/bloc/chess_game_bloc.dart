@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:bloc_concurrency/bloc_concurrency.dart';
+import 'package:chess/core/ai/ai_level.dart';
 import 'package:chess/core/ai/chess_ai.dart';
 import 'package:chess/core/audio/sound_effect.dart';
 import 'package:chess/core/audio/sound_player.dart';
@@ -53,6 +54,7 @@ class ChessGameBloc extends Bloc<ChessGameEvent, ChessGameState> {
     on<PromotionPieceSelected>(_onPromotionPieceSelected);
     on<PromotionCancelled>(_onPromotionCancelled);
     on<UndoRequested>(_onUndoRequested);
+    on<HintRequested>(_onHintRequested);
     on<ResignRequested>(_onResignRequested);
     on<BoardFlipToggled>(_onBoardFlipToggled);
     on<_AiMoveRequested>(_onAiMoveRequested, transformer: restartable());
@@ -190,6 +192,34 @@ class ChessGameBloc extends Bloc<ChessGameEvent, ChessGameState> {
     _checkRequestAiMove();
   }
 
+  Future<void> _onHintRequested(
+    HintRequested event,
+    Emitter<ChessGameState> emit,
+  ) async {
+    if (!state.canHint) return;
+    final gameId = state.gameId;
+    final ply = state.moves.length;
+    bool stillCurrent() =>
+        state.gameId == gameId &&
+        state.moves.length == ply &&
+        state.isHintLoading;
+
+    emit(state.copyWith(isHintLoading: true));
+    final Move move;
+    try {
+      // Gợi ý luôn dùng mức mạnh nhất, không phụ thuộc mức độ của ván.
+      move = await _ai.chooseMove(state.history, AiLevel.hard);
+    } on Object {
+      // Lỗi khi tính: tắt trạng thái chờ, không trừ lượt để người bấm lại.
+      if (stillCurrent()) emit(state.copyWith(isHintLoading: false));
+      return;
+    }
+    // Thế cờ đã đổi (đi quân, đi lại, ván mới) thì bỏ gợi ý và không trừ lượt.
+    if (!stillCurrent()) return;
+    emit(state.withHint(move));
+    _saveGame();
+  }
+
   void _onResignRequested(ResignRequested event, Emitter<ChessGameState> emit) {
     if (state.isGameOver) return;
 
@@ -254,6 +284,9 @@ class ChessGameBloc extends Bloc<ChessGameEvent, ChessGameState> {
       startFen: Fen.format(_start),
       moves: uciMoves,
       config: state.config,
+      undosUsed: state.undosUsed,
+      hintsUsed: state.hintsUsed,
+      undoLockedAt: state.undoLockedAt,
     );
     unawaited(_repository.save(saved));
   }
