@@ -71,6 +71,8 @@ fvm flutter test                         # toàn bộ test
 fvm flutter run                          # chạy trên thiết bị / emulator Android
 fvm flutter build apk --release
 fvm flutter build appbundle              # AAB để upload Google Play
+fvm dart run flutter_launcher_icons -f flutter_launcher_icons.yaml        # tái tạo icon app
+fvm dart run flutter_native_splash:create --path=flutter_native_splash.yaml # tái tạo splash
 ```
 
 ## 5. Quy tắc code
