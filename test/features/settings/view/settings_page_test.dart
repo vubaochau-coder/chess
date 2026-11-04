@@ -36,7 +36,7 @@ void main() {
       expect(find.text('Cài đặt'), findsOneWidget);
       expect(find.text('GIAO DIỆN'), findsOneWidget);
       expect(find.text('Chế độ màu'), findsOneWidget);
-      expect(find.text('Theo hệ thống'), findsOneWidget);
+      expect(find.text('Theo hệ thống'), findsNothing);
       expect(find.text('Sáng'), findsOneWidget);
       expect(find.text('Tối'), findsOneWidget);
       expect(find.text('Màu bàn cờ'), findsOneWidget);
@@ -51,7 +51,8 @@ void main() {
     testWidgets('tapping Tối calls cubit.setThemeMode(AppThemeMode.dark)', (
       tester,
     ) async {
-      when(() => cubit.state).thenReturn(const AppSettings());
+      when(() => cubit.state)
+          .thenReturn(const AppSettings(themeMode: AppThemeMode.light));
 
       await tester.pumpWidget(buildSubject());
       await tester.tap(find.text('Tối'));
@@ -178,6 +179,37 @@ void main() {
 
       verify(() => cubit.setShowCoordinates(false)).called(1);
       verify(() => cubit.setAutoFlipInPvp(true)).called(1);
+      verify(() => cubit.setHapticsEnabled(false)).called(1);
+    });
+
+    testWidgets('switches are drawn at 80% size and toggle when tapped', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      when(() => cubit.state).thenReturn(const AppSettings());
+
+      await tester.pumpWidget(buildSubject());
+
+      final rung = find.ancestor(
+        of: find.text('Rung'),
+        matching: find.byType(ListTile),
+      );
+      final toggle = find.descendant(of: rung, matching: find.byType(Switch));
+      final scale = tester.widget<Transform>(
+        find.ancestor(
+          of: toggle,
+          matching: find.byWidgetPredicate(
+            (w) => w is Transform && w.child is Switch,
+          ),
+        ),
+      );
+      expect(scale.transform.entry(0, 0), closeTo(0.8, 1e-9));
+
+      await tester.tap(toggle);
+      await tester.pump();
+
       verify(() => cubit.setHapticsEnabled(false)).called(1);
     });
 

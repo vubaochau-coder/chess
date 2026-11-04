@@ -6,10 +6,10 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   group('AppSettings', () {
     test(
-      'default constructor sets themeMode to system and boardTheme to wood',
+      'default constructor sets themeMode to dark and boardTheme to wood',
       () {
         const settings = AppSettings();
-        expect(settings.themeMode, AppThemeMode.system);
+        expect(settings.themeMode, AppThemeMode.dark);
         expect(settings.boardTheme, BoardTheme.wood);
       },
     );
@@ -73,7 +73,7 @@ void main() {
           'themeMode': 12345,
           'boardTheme': 67890,
         });
-        expect(restored.themeMode, AppThemeMode.system);
+        expect(restored.themeMode, AppThemeMode.dark);
         expect(restored.boardTheme, BoardTheme.wood);
       });
 
@@ -127,12 +127,19 @@ void main() {
         );
       });
 
+      test('saved system theme mode migrates to dark', () {
+        expect(
+          AppSettings.fromJson({'themeMode': 'system'}).themeMode,
+          AppThemeMode.dark,
+        );
+      });
+
       test('fromJson with unknown enum string falls back to default', () {
         final restored = AppSettings.fromJson({
           'themeMode': 'high_contrast',
           'boardTheme': 'neon_rainbow',
         });
-        expect(restored.themeMode, AppThemeMode.system);
+        expect(restored.themeMode, AppThemeMode.dark);
         expect(restored.boardTheme, BoardTheme.wood);
       });
     });

@@ -30,7 +30,9 @@ class SettingsPage extends StatelessWidget {
           const SizedBox(height: 10),
           Card(
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              // Dòng công tắc cuối đã có đệm dọc riêng; lề dưới nhỏ hơn để
+              // khoảng trống trên/dưới dòng đó cân nhau.
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -42,10 +44,6 @@ class SettingsPage extends StatelessWidget {
                       return SegmentedButton<AppThemeMode>(
                         showSelectedIcon: false,
                         segments: const [
-                          ButtonSegment(
-                            value: AppThemeMode.system,
-                            label: Text('Theo hệ thống'),
-                          ),
                           ButtonSegment(
                             value: AppThemeMode.light,
                             label: Text('Sáng'),
@@ -201,6 +199,9 @@ class SettingsPage extends StatelessWidget {
 }
 
 /// Một công tắc cài đặt; chỉ rebuild khi đúng field nó hiển thị thay đổi.
+///
+/// Công tắc thu nhỏ còn [_switchScale] cho gọn; cả dòng vẫn bấm được nên vùng
+/// chạm không nhỏ đi.
 class _SettingSwitch extends StatelessWidget {
   const _SettingSwitch({
     required this.title,
@@ -214,16 +215,26 @@ class _SettingSwitch extends StatelessWidget {
   final void Function(SettingsCubit cubit, bool value) onChanged;
   final EdgeInsetsGeometry? contentPadding;
 
+  static const _switchScale = 0.8;
+
   @override
   Widget build(BuildContext context) {
     return BlocSelector<SettingsCubit, AppSettings, bool>(
       selector: select,
-      builder: (context, value) => SwitchListTile(
-        title: Text(title, style: const TextStyle(fontSize: 14)),
-        contentPadding: contentPadding,
-        value: value,
-        onChanged: (v) => onChanged(context.read<SettingsCubit>(), v),
-      ),
+      builder: (context, value) {
+        void toggle(bool v) => onChanged(context.read<SettingsCubit>(), v);
+        return MergeSemantics(
+          child: ListTile(
+            title: Text(title, style: const TextStyle(fontSize: 14)),
+            contentPadding: contentPadding,
+            onTap: () => toggle(!value),
+            trailing: Transform.scale(
+              scale: _switchScale,
+              child: Switch(value: value, onChanged: toggle),
+            ),
+          ),
+        );
+      },
     );
   }
 }

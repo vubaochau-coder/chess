@@ -5,9 +5,13 @@ Không thêm tính năng gameplay trong giai đoạn này.
 
 ---
 
-## T1.1 — Cấu hình build release (R8, AAB trong CI)
+## T1.1 — Cấu hình build release (R8) và tinh gọn CI
 
-**Mục tiêu:** bản release được thu gọn mã/tài nguyên, CI xuất cả APK và AAB.
+**Mục tiêu:** bản release được thu gọn mã/tài nguyên; CI chỉ kiểm tra (format, analyze, test) để PR chạy
+nhanh, việc build release chỉ còn ở workflow `Distribute`.
+
+> Đặc tả đổi theo quyết định owner (2026-11-04): bản đầu yêu cầu CI build thêm AAB; nay bỏ hẳn bước build
+> khỏi `ci.yml` vì `Distribute` đã build APK release trên `main`. AAB đã ký do T1.4 (`release.yml`) tạo.
 
 **Phạm vi**
 - Trong `android/app/build.gradle.kts`, block `buildTypes.release`: khai báo tường minh
@@ -15,22 +19,21 @@ Không thêm tính năng gameplay trong giai đoạn này.
   `proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")`.
 - Tạo `android/app/proguard-rules.pro` (được phép rỗng, chỉ thêm rule khi build/chạy release lỗi;
   mỗi rule có comment giải thích).
-- Trong `.github/workflows/ci.yml`, job `build-android`: thêm bước
-  `flutter build appbundle --release` sau bước build APK (CI gọi `flutter` trực tiếp, không qua fvm) và upload `build/app/outputs/bundle/release/app-release.aab`
-  thành artifact `app-release-aab` (retention 7 ngày). Giữ nguyên các bước khác.
+- Trong `.github/workflows/ci.yml`: xóa job `build-android`. Giữ nguyên job `check`.
 - Chạy bản release trên thiết bị/emulator, kiểm tra: mở app, đi vài nước, âm thanh phát, chiếu hết hiển thị đúng.
 
-**Ngoài phạm vi:** ký app bằng keystore thật (T1.4), đổi version, icon, đổi `applicationId`.
+**Ngoài phạm vi:** ký app bằng keystore thật (T1.4), build AAB, sửa `distribute.yml`, đổi version, icon,
+đổi `applicationId`.
 
 **File được sửa:** `android/app/build.gradle.kts`, `android/app/proguard-rules.pro`, `.github/workflows/ci.yml`.
 
 **Package được phép:** không.
 
 **Tiêu chí nghiệm thu**
-- [ ] `fvm flutter build apk --release` và `fvm flutter build appbundle --release` thành công cục bộ.
-- [ ] CI xanh, có 2 artifact `app-release-apk` và `app-release-aab`.
+- [ ] `fvm flutter build apk --release` thành công cục bộ.
+- [ ] CI xanh và không còn job build; workflow `Distribute` trên `main` build và đẩy bản release thành công.
 - [ ] Bản release chạy đúng trên Android (ghi model thiết bị/emulator + API level trong PR).
-- [ ] Ghi kích thước APK và AAB trước/sau trong mô tả PR.
+- [ ] Ghi kích thước APK trước/sau trong mô tả PR.
 
 ---
 

@@ -3,22 +3,18 @@ import 'package:chess/theme/piece_set.dart';
 import 'package:equatable/equatable.dart';
 
 enum AppThemeMode {
-  system,
   light,
   dark;
 
+  /// Giá trị cũ `system` (đã bỏ) và giá trị lạ đều về [dark], chế độ mặc định.
   static AppThemeMode fromName(String? name) {
-    return switch (name) {
-      'light' => AppThemeMode.light,
-      'dark' => AppThemeMode.dark,
-      _ => AppThemeMode.system,
-    };
+    return name == 'light' ? AppThemeMode.light : AppThemeMode.dark;
   }
 }
 
 final class AppSettings extends Equatable {
   const AppSettings({
-    this.themeMode = AppThemeMode.system,
+    this.themeMode = AppThemeMode.dark,
     this.boardTheme = BoardTheme.wood,
     this.pieceSet = PieceSet.classic,
     this.showCoordinates = true,
@@ -97,7 +93,7 @@ final class AppSettings extends Equatable {
     final rawThemeMode = json['themeMode'];
     final themeMode = rawThemeMode is String
         ? AppThemeMode.fromName(rawThemeMode)
-        : AppThemeMode.system;
+        : AppThemeMode.dark;
 
     final rawBoardTheme = json['boardTheme'];
     final boardTheme = rawBoardTheme is String
