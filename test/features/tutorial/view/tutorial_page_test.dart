@@ -56,6 +56,23 @@ void main() {
     expect(find.text('Bảo vệ Vua'), findsOneWidget);
   });
 
+  testWidgets('only the last lesson of a chapter has no bottom rule', (
+    tester,
+  ) async {
+    await pumpTutorial(tester);
+
+    Decoration? decorationOf(String title) => tester
+        .widget<Container>(
+          find
+              .ancestor(of: find.text(title), matching: find.byType(Container))
+              .first,
+        )
+        .decoration;
+
+    expect(decorationOf('Vua'), isA<BoxDecoration>());
+    expect(decorationOf('Tốt'), isNull);
+  });
+
   testWidgets('completing the knight challenge updates progress', (
     tester,
   ) async {

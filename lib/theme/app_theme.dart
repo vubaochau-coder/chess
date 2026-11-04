@@ -65,12 +65,27 @@ abstract final class AppTheme {
     onInverseSurface: Color(0xFFF2E1C3),
   );
 
-  static ThemeData light() => _build(lightScheme);
+  /// [animations] theo cài đặt `Hiệu ứng chuyển động`: tắt thì chuyển trang
+  /// ngay và nút không co khi nhấn.
+  static ThemeData light({bool animations = true}) =>
+      _build(lightScheme, animations: animations);
 
-  static ThemeData dark() => _build(darkScheme);
+  static ThemeData dark({bool animations = true}) =>
+      _build(darkScheme, animations: animations);
 
-  static ThemeData _build(ColorScheme scheme) {
+  /// Nền thẻ: nền tối cần thẻ sáng hơn hẳn nền vì không có viền hay bóng để
+  /// tách; nền sáng thì thẻ sáng hơn nền.
+  static Color cardColor(ColorScheme scheme) =>
+      scheme.brightness == Brightness.dark
+      ? scheme.surfaceContainer
+      : scheme.surfaceContainerLow;
+
+  static ThemeData _build(ColorScheme scheme, {required bool animations}) {
     final base = ThemeData(colorScheme: scheme, useMaterial3: true);
+    final cardColor = AppTheme.cardColor(scheme);
+    final transitions = animations
+        ? const _FadePageTransitionsBuilder()
+        : const _NoPageTransitionsBuilder();
     final textTheme = base.textTheme.copyWith(
       displayLarge: _serif(base.textTheme.displayLarge),
       displayMedium: _serif(base.textTheme.displayMedium),
@@ -84,6 +99,12 @@ abstract final class AppTheme {
     return base.copyWith(
       scaffoldBackgroundColor: scheme.surface,
       textTheme: textTheme,
+      extensions: [AppMotion(enabled: animations)],
+      pageTransitionsTheme: PageTransitionsTheme(
+        builders: {
+          for (final platform in TargetPlatform.values) platform: transitions,
+        },
+      ),
       appBarTheme: AppBarTheme(
         backgroundColor: scheme.surface,
         foregroundColor: scheme.onSurface,
@@ -99,13 +120,10 @@ abstract final class AppTheme {
         actionsIconTheme: IconThemeData(color: scheme.onSurfaceVariant),
       ),
       cardTheme: CardThemeData(
-        color: scheme.surfaceContainerLow,
+        color: cardColor,
         elevation: 0,
         margin: EdgeInsets.zero,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-          side: BorderSide(color: scheme.outlineVariant),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       ),
       dividerTheme: DividerThemeData(
         color: scheme.outlineVariant,
@@ -114,10 +132,8 @@ abstract final class AppTheme {
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          minimumSize: const Size(64, 54),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
+          minimumSize: const Size(64, 56),
+          shape: const StadiumBorder(),
           textStyle: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -125,19 +141,21 @@ abstract final class AppTheme {
           ),
         ),
       ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          shape: const StadiumBorder(),
+          side: BorderSide(color: scheme.outlineVariant),
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(shape: const StadiumBorder()),
+      ),
       segmentedButtonTheme: SegmentedButtonThemeData(
         style: ButtonStyle(
           minimumSize: const WidgetStatePropertyAll(Size(0, 44)),
-          shape: WidgetStatePropertyAll(
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          ),
-          side: WidgetStatePropertyAll(
-            BorderSide(color: scheme.outlineVariant),
-          ),
-          backgroundColor: _whenSelected(
-            scheme.primary,
-            scheme.surfaceContainerLow,
-          ),
+          shape: const WidgetStatePropertyAll(StadiumBorder()),
+          side: const WidgetStatePropertyAll(BorderSide.none),
+          backgroundColor: _whenSelected(scheme.primary, cardColor),
           foregroundColor: _whenSelected(scheme.onPrimary, scheme.onSurface),
         ),
       ),
@@ -152,12 +170,12 @@ abstract final class AppTheme {
         thumbColor: scheme.tertiary,
       ),
       dialogTheme: DialogThemeData(
-        backgroundColor: scheme.surfaceContainerLow,
+        // Không viền: nền tối cần sáng hẳn lên mới tách khỏi lớp phủ phía sau.
+        backgroundColor: scheme.brightness == Brightness.dark
+            ? scheme.surfaceContainerHigh
+            : scheme.surfaceContainerLow,
         surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-          side: BorderSide(color: scheme.outline),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
         titleTextStyle: TextStyle(
           fontFamily: serifFamily,
           fontSize: 26,
@@ -180,4 +198,66 @@ abstract final class AppTheme {
       WidgetStateProperty.resolveWith(
         (states) => states.contains(WidgetState.selected) ? on : off,
       );
+}
+
+/// Cờ bật/tắt hiệu ứng chuyển động cho widget dùng chung (vd. [PressScale]),
+/// lấy từ cài đặt khi dựng theme để widget không phải đọc cubit cài đặt.
+@immutable
+final class AppMotion extends ThemeExtension<AppMotion> {
+  const AppMotion({required this.enabled});
+
+  final bool enabled;
+
+  /// Mặc định bật khi theme không có extension này (vd. test dựng theme riêng).
+  static bool enabledOf(BuildContext context) =>
+      Theme.of(context).extension<AppMotion>()?.enabled ?? true;
+
+  @override
+  AppMotion copyWith({bool? enabled}) =>
+      AppMotion(enabled: enabled ?? this.enabled);
+
+  @override
+  AppMotion lerp(AppMotion? other, double t) =>
+      t < 0.5 ? this : (other ?? this);
+}
+
+/// Trang mới hiện mờ dần lên trên trang cũ.
+final class _FadePageTransitionsBuilder extends PageTransitionsBuilder {
+  const _FadePageTransitionsBuilder();
+
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    return FadeTransition(
+      opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
+      child: child,
+    );
+  }
+}
+
+/// Tắt hiệu ứng: trang mới hiện ngay.
+final class _NoPageTransitionsBuilder extends PageTransitionsBuilder {
+  const _NoPageTransitionsBuilder();
+
+  @override
+  Duration get transitionDuration => Duration.zero;
+
+  @override
+  Duration get reverseTransitionDuration => Duration.zero;
+
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    return child;
+  }
 }

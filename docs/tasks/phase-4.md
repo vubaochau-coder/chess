@@ -312,3 +312,44 @@ với các thẻ dưới) và cách mép phải xa hơn lề trái của chữ c
 - [ ] Công tắc vẽ ở 65%.
 - [ ] Widget test cho kích thước và căn lề.
 
+
+## T4.10 — Giao diện mềm, phẳng (hướng A)
+
+**Quyết định owner (2026-11-04):** UI "mềm mại, sáng tạo hơn" theo hướng A của mockup
+(https://claude.ai/artifact/4mJ4aXcMP3tGQdnwMvyJhW), với điều kiện **không đổ bóng, không gradient**. Giữ bảng màu
+sáng/tối hiện tại. Danh sách nước đi ở màn ván cờ giữ nguyên. Ô chọn bộ quân ở Cài đặt giữ kiểu xem trước (Vua trắng
+trên ô sáng, Mã đen trên ô tối theo màu bàn cờ). Quân cờ, màu bàn cờ, ô tô sáng và chấm nước đi giữ nguyên. Thẻ chế độ
+ở màn chính dùng hình quân cờ theo bộ quân đang chọn. Thêm hiệu ứng co nhẹ khi nhấn và chuyển trang mờ dần, tắt theo
+cài đặt `Hiệu ứng chuyển động`.
+
+**Phạm vi**
+- `AppTheme`: thẻ bo 24, không viền; nền thẻ `surfaceContainer` (tối) / `surfaceContainerLow` (sáng). Nút
+  Filled/Outlined/Text dạng viên thuốc, nút Filled cao 56. `SegmentedButton` dạng viên thuốc, không viền. Dialog bo 28,
+  không viền. Chuyển trang `MaterialPageRoute` mờ dần; tắt hiệu ứng thì chuyển ngay. `ThemeExtension` `AppMotion`
+  mang cờ bật/tắt hiệu ứng cho widget dùng chung.
+- `PressScale` (`lib/theme/press_scale.dart`): co còn 96% khi nhấn giữ, không chặn chạm; không co khi tắt hiệu ứng hoặc
+  nút bị vô hiệu.
+- Màn chính: nút `Học chơi cờ` và nút Cài đặt nền đặc, không viền. Logo bo vuông 28, bỏ viền tròn và đường kẻ trang
+  trí. Thẻ `Tiếp tục ván` bo 22, không viền. Thẻ chế độ bo 24, chọn thì nền `primaryContainer` + viền 2 màu nhấn,
+  icon là Mã (`Chơi với máy`) / Vua (`2 người`) theo bộ quân đang chọn.
+- Màn ván cờ: khung bàn cờ bo 22 (bàn trong bo 16), không viền, không bóng. Thông tin người chơi thành thẻ bo 20, bên
+  đang tới lượt nền `primaryContainer` + viền nhấn. Dòng trạng thái bỏ viền. Các nút điều khiển gom vào một thanh bo 26,
+  từng nút không viền.
+- Cài đặt: ô xem trước màu bàn cờ / bộ quân bo to hơn (14 / 10), giữ nguyên nội dung và bố cục.
+- Học chơi cờ, bài học, hộp thoại phong cấp: bỏ viền thẻ/khung, bo theo cùng hệ.
+- `PressScale` cho thẻ chế độ, thẻ tiếp tục ván, nút Bắt đầu, các nút điều khiển ván cờ.
+
+**Ngoài phạm vi:** bảng màu, font, nội dung chữ, danh sách nước đi, bàn cờ và quân cờ, thứ tự các mục trong Cài đặt.
+
+**File được sửa:** `lib/app.dart`, `lib/theme/`, `lib/features/home/view/`, `lib/features/game/view/`,
+`lib/features/game/widgets/{game_status_bar,promotion_dialog}.dart`, `lib/features/settings/view/`,
+`lib/features/tutorial/view/`, test tương ứng trong `test/`, `docs/architecture.md`.
+
+**Package được phép:** không.
+
+**Tiêu chí nghiệm thu**
+- [ ] Không còn `BoxShadow`/gradient trong UI; thẻ, khung bàn cờ, dialog không viền (trừ viền nhấn của mục đang chọn).
+- [ ] Thẻ chế độ hiện Mã/Vua theo bộ quân đang chọn.
+- [ ] Nhấn nút co nhẹ; chuyển trang mờ dần; tắt `Hiệu ứng chuyển động` thì không co, không mờ.
+- [ ] Danh sách nước đi, bàn cờ, ô xem trước bộ quân giữ như cũ.
+- [ ] Widget test cho `PressScale` và chuyển trang theo cài đặt.

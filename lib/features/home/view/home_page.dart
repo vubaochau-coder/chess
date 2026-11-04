@@ -3,15 +3,19 @@ import 'dart:math' as math;
 import 'package:chess/core/ai/ai_level.dart';
 import 'package:chess/core/engine/fen.dart';
 import 'package:chess/core/game/game_config.dart';
+import 'package:chess/core/settings/app_settings.dart';
 import 'package:chess/core/storage/game_repository.dart';
 import 'package:chess/core/storage/saved_game.dart';
 import 'package:chess/features/game/view/game_page.dart';
 import 'package:chess/features/game/widgets/game_labels.dart';
 import 'package:chess/features/game/widgets/piece_view.dart';
 import 'package:chess/features/home/cubit/home_cubit.dart';
+import 'package:chess/features/settings/cubit/settings_cubit.dart';
 import 'package:chess/features/settings/view/settings_page.dart';
 import 'package:chess/features/tutorial/view/tutorial_page.dart';
 import 'package:chess/theme/app_theme.dart';
+import 'package:chess/theme/piece_set.dart';
+import 'package:chess/theme/press_scale.dart';
 import 'package:chess/theme/section_label.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -106,19 +110,20 @@ class HomeView extends StatelessWidget {
           alignment: Alignment.centerLeft,
           child: Padding(
             padding: const EdgeInsets.only(left: 12),
-            child: OutlinedButton.icon(
+            child: TextButton.icon(
               onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute<void>(builder: (_) => const TutorialPage()),
                 );
               },
-              style: OutlinedButton.styleFrom(
-                minimumSize: const Size(0, 36),
-                padding: const EdgeInsets.fromLTRB(10, 0, 14, 0),
-                shape: const StadiumBorder(),
+              style: TextButton.styleFrom(
+                minimumSize: const Size(0, 40),
+                padding: const EdgeInsets.fromLTRB(12, 0, 16, 0),
+                backgroundColor: Theme.of(context)
+                    .colorScheme
+                    .surfaceContainerHigh,
                 foregroundColor: Theme.of(context).colorScheme.onSurface,
-                side: BorderSide(color: Theme.of(context).colorScheme.outline),
               ),
               icon: Icon(
                 Icons.school_outlined,
@@ -133,6 +138,11 @@ class HomeView extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.settings_outlined),
             tooltip: 'Cài đặt',
+            style: IconButton.styleFrom(
+              backgroundColor: Theme.of(context)
+                  .colorScheme
+                  .surfaceContainerHigh,
+            ),
             onPressed: () {
               Navigator.push(
                 context,
@@ -140,6 +150,8 @@ class HomeView extends StatelessWidget {
               );
             },
           ),
+
+          const SizedBox(width: 12),
         ],
       ),
       body: SafeArea(
@@ -169,7 +181,7 @@ class HomeView extends StatelessWidget {
                         children: [
                           Expanded(
                             child: _ModeCard(
-                              icon: Icons.smart_toy_outlined,
+                              piece: 'N',
                               title: 'Chơi với máy',
                               subtitle: 'Ba mức độ khó',
                               selected: state.mode == GameMode.pve,
@@ -179,7 +191,7 @@ class HomeView extends StatelessWidget {
                           const SizedBox(width: 12),
                           Expanded(
                             child: _ModeCard(
-                              icon: Icons.people_outline,
+                              piece: 'K',
                               title: '2 người',
                               subtitle: 'Cùng một máy',
                               selected: state.mode == GameMode.pvp,
@@ -240,9 +252,11 @@ class HomeView extends StatelessWidget {
                         ),
                       ],
                       const SizedBox(height: 28),
-                      FilledButton(
-                        onPressed: () => _startGame(context, state),
-                        child: const Text('Bắt đầu'),
+                      PressScale(
+                        child: FilledButton(
+                          onPressed: () => _startGame(context, state),
+                          child: const Text('Bắt đầu'),
+                        ),
                       ),
                     ],
                   );
@@ -256,7 +270,7 @@ class HomeView extends StatelessWidget {
   }
 }
 
-/// Logo app, tên game và đường kẻ trang trí.
+/// Logo app và tên game.
 class _Hero extends StatelessWidget {
   const _Hero();
 
@@ -267,23 +281,24 @@ class _Hero extends StatelessWidget {
 
     return Column(
       children: [
+        // Khung nền đặc: nửa trái logo trùng màu nền sáng, không có khung thì
+        // logo bị mất một nửa.
         Container(
-          width: 84,
-          height: 84,
-          padding: const EdgeInsets.all(5),
+          padding: const EdgeInsets.all(6),
           decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: colorScheme.tertiary),
+            color: colorScheme.surfaceContainerHigh,
+            borderRadius: BorderRadius.circular(30),
           ),
-          child: ClipOval(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(24),
             child: SvgPicture.asset(
               'assets/branding/icon.svg',
-              width: 74,
-              height: 74,
+              width: 84,
+              height: 84,
             ),
           ),
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 16),
         Text(
           'Cờ Vua',
           style: theme.textTheme.displaySmall?.copyWith(
@@ -299,24 +314,6 @@ class _Hero extends StatelessWidget {
             letterSpacing: 2.4,
             color: colorScheme.onSurfaceVariant,
           ),
-        ),
-        const SizedBox(height: 14),
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(width: 70, height: 1, color: colorScheme.outline),
-            const SizedBox(width: 10),
-            Transform.rotate(
-              angle: math.pi / 4,
-              child: Container(
-                width: 7,
-                height: 7,
-                color: colorScheme.tertiary,
-              ),
-            ),
-            const SizedBox(width: 10),
-            Container(width: 70, height: 1, color: colorScheme.outline),
-          ],
         ),
       ],
     );
@@ -345,55 +342,58 @@ class _ResumeCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
-        side: BorderSide(color: colorScheme.outline),
-      ),
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 14, 14, 14),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Tiếp tục ván đang chơi',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: colorScheme.onSurface,
+    return PressScale(
+      child: Card(
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(14, 14, 12, 14),
+            child: Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Icon(
+                    Icons.play_arrow_rounded,
+                    color: colorScheme.tertiary,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Tiếp tục ván đang chơi',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: colorScheme.onSurface,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      _summary,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: colorScheme.onSurfaceVariant,
+                      const SizedBox(height: 3),
+                      Text(
+                        _summary,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: colorScheme.primary,
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: colorScheme.onSurfaceVariant,
                 ),
-                child: Icon(
-                  Icons.play_arrow_rounded,
-                  color: colorScheme.onPrimary,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -401,16 +401,18 @@ class _ResumeCard extends StatelessWidget {
   }
 }
 
+/// Thẻ chọn chế độ; icon là quân cờ vẽ bằng bộ quân đang chọn trong cài đặt.
 class _ModeCard extends StatelessWidget {
   const _ModeCard({
-    required this.icon,
+    required this.piece,
     required this.title,
     required this.subtitle,
     required this.selected,
     required this.onTap,
   });
 
-  final IconData icon;
+  /// Ký hiệu FEN của quân làm icon.
+  final String piece;
   final String title;
   final String subtitle;
   final bool selected;
@@ -423,51 +425,62 @@ class _ModeCard extends StatelessWidget {
     return Semantics(
       button: true,
       selected: selected,
-      child: Material(
-        color: selected
-            ? colorScheme.surfaceContainerHigh
-            : colorScheme.surfaceContainerLow,
-        clipBehavior: Clip.antiAlias,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-          side: BorderSide(
-            color: selected ? colorScheme.tertiary : colorScheme.outlineVariant,
-            width: selected ? 1.5 : 1,
+      child: PressScale(
+        child: Material(
+          color: selected
+              ? colorScheme.primaryContainer
+              : AppTheme.cardColor(colorScheme),
+          clipBehavior: Clip.antiAlias,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+            side: BorderSide(
+              color: selected ? colorScheme.tertiary : Colors.transparent,
+              width: 2,
+            ),
           ),
-        ),
-        child: InkWell(
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(
-                  icon,
-                  size: 26,
-                  color: selected
-                      ? colorScheme.tertiary
-                      : colorScheme.onSurfaceVariant,
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontFamily: AppTheme.serifFamily,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    color: colorScheme.onSurface,
+          child: InkWell(
+            onTap: onTap,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: selected
+                          ? colorScheme.surfaceContainerHighest
+                          : colorScheme.surfaceContainerHigh,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: BlocSelector<SettingsCubit, AppSettings, PieceSet>(
+                      selector: (settings) => settings.pieceSet,
+                      builder: (context, pieceSet) =>
+                          PieceView(piece: piece, size: 32, pieceSet: pieceSet),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: colorScheme.onSurfaceVariant,
+                  const SizedBox(height: 12),
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontFamily: AppTheme.serifFamily,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: colorScheme.onSurface,
+                    ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

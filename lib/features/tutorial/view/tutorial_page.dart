@@ -62,6 +62,9 @@ class TutorialView extends StatelessWidget {
                             number: i + 1,
                             done: completed.contains(lessons[i].id),
                             isNext: i == nextIndex,
+                            isLast:
+                                i == lessons.length - 1 ||
+                                lessons[i + 1].chapter != c,
                           ),
                     ],
                   ),
@@ -92,10 +95,6 @@ class _ProgressCard extends StatelessWidget {
     final nextLesson = next;
 
     return Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
-        side: BorderSide(color: colorScheme.outline),
-      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
@@ -104,8 +103,8 @@ class _ProgressCard extends StatelessWidget {
               width: 52,
               height: 52,
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: colorScheme.tertiary),
+                color: colorScheme.primaryContainer,
+                borderRadius: BorderRadius.circular(16),
               ),
               child: Icon(Icons.school_outlined, color: colorScheme.tertiary),
             ),
@@ -203,12 +202,16 @@ class _LessonTile extends StatelessWidget {
     required this.number,
     required this.done,
     required this.isNext,
+    required this.isLast,
   });
 
   final int index;
   final int number;
   final bool done;
   final bool isNext;
+
+  /// Dòng cuối thẻ không kẻ dưới: thẻ không viền nên đường kẻ sẽ lộ ở đáy thẻ.
+  final bool isLast;
 
   @override
   Widget build(BuildContext context) {
@@ -222,11 +225,13 @@ class _LessonTile extends StatelessWidget {
         child: Container(
           constraints: const BoxConstraints(minHeight: 60),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(color: colorScheme.outlineVariant),
-            ),
-          ),
+          decoration: isLast
+              ? null
+              : BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(color: colorScheme.outlineVariant),
+                  ),
+                ),
           child: Row(
             children: [
               Container(
