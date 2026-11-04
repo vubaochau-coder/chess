@@ -4,6 +4,7 @@ import 'package:bloc/bloc.dart';
 import 'package:chess/core/settings/app_settings.dart';
 import 'package:chess/core/storage/settings_repository.dart';
 import 'package:chess/theme/board_theme.dart';
+import 'package:chess/theme/piece_set.dart';
 
 class SettingsCubit extends Cubit<AppSettings> {
   SettingsCubit({required SettingsRepository repository})
@@ -17,6 +18,9 @@ class SettingsCubit extends Cubit<AppSettings> {
 
   void setBoardTheme(BoardTheme theme) =>
       _update(state.copyWith(boardTheme: theme));
+
+  void setPieceSet(PieceSet pieceSet) =>
+      _update(state.copyWith(pieceSet: pieceSet));
 
   void setShowCoordinates(bool value) =>
       _update(state.copyWith(showCoordinates: value));

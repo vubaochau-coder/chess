@@ -3,6 +3,7 @@ import 'package:chess/core/settings/app_settings.dart';
 import 'package:chess/core/storage/settings_repository.dart';
 import 'package:chess/features/settings/cubit/settings_cubit.dart';
 import 'package:chess/theme/board_theme.dart';
+import 'package:chess/theme/piece_set.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -86,6 +87,22 @@ void main() {
       expect: () => <AppSettings>[],
       verify: (_) {
         verifyNever(() => repository.save(any()));
+      },
+    );
+
+    blocTest<SettingsCubit, AppSettings>(
+      'setPieceSet emits updated state and saves it',
+      setUp: () {
+        when(repository.load).thenReturn(const AppSettings());
+        when(() => repository.save(any())).thenAnswer((_) async {});
+      },
+      build: () => SettingsCubit(repository: repository),
+      act: (cubit) => cubit.setPieceSet(PieceSet.flat),
+      expect: () => [const AppSettings(pieceSet: PieceSet.flat)],
+      verify: (_) {
+        verify(
+          () => repository.save(const AppSettings(pieceSet: PieceSet.flat)),
+        ).called(1);
       },
     );
 

@@ -72,7 +72,7 @@ Mỗi đặc tả task có các mục:
 | T4.1 | Hạ tầng cài đặt + màn Cài đặt + chế độ sáng/tối | T3.5 | — | review |
 | T4.2 | Theme màu bàn cờ | T4.1 | — | review |
 | T4.3 | Tùy chọn hiển thị bàn cờ | T4.1 | — | done (trong T4.6) |
-| T4.4 | Bộ quân cờ | T4.1 | File SVG + giấy phép | todo |
+| T4.4 | Bộ quân cờ | T4.1 | File SVG + giấy phép | done |
 | T4.5 | Giao diện cổ điển (nâng cấp UI) | T4.2 | — | done |
 | T4.6 | Hoàn thiện giao diện theo mockup (gộp T4.3, T5.1, dialog kết thúc ván) | T4.5 | — | done |
 

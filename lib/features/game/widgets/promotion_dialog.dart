@@ -1,5 +1,7 @@
 import 'package:chess/features/game/widgets/piece_view.dart';
+import 'package:chess/features/settings/cubit/settings_cubit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class PromotionDialog extends StatelessWidget {
   const PromotionDialog({super.key, required this.white});
@@ -10,6 +12,7 @@ class PromotionDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     const pieces = [('q', 'Hậu'), ('r', 'Xe'), ('b', 'Tượng'), ('n', 'Mã')];
     final colorScheme = Theme.of(context).colorScheme;
+    final pieceSet = context.read<SettingsCubit>().state.pieceSet;
 
     return AlertDialog(
       title: const Text('Phong cấp', textAlign: TextAlign.center),
@@ -39,6 +42,7 @@ class PromotionDialog extends StatelessWidget {
                           PieceView(
                             piece: white ? piece.toUpperCase() : piece,
                             size: 40,
+                            pieceSet: pieceSet,
                           ),
                           const SizedBox(height: 4),
                           Text(

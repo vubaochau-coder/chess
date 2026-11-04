@@ -9,6 +9,7 @@ import 'package:chess/features/game/widgets/move_animation_layer.dart';
 import 'package:chess/features/game/widgets/piece_view.dart';
 import 'package:chess/features/settings/cubit/settings_cubit.dart';
 import 'package:chess/theme/board_theme.dart';
+import 'package:chess/theme/piece_set.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -191,20 +192,24 @@ class _PiecesLayer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        for (var row = 0; row < 8; row++)
-          Row(
-            children: [
-              for (var col = 0; col < 8; col++)
-                _SquarePiece(
-                  index: flipped ? (63 - (row * 8 + col)) : (row * 8 + col),
-                  cellSize: cellSize,
-                  hiddenSquares: hiddenSquares,
-                ),
-            ],
-          ),
-      ],
+    return BlocSelector<SettingsCubit, AppSettings, PieceSet>(
+      selector: (settings) => settings.pieceSet,
+      builder: (context, pieceSet) => Column(
+        children: [
+          for (var row = 0; row < 8; row++)
+            Row(
+              children: [
+                for (var col = 0; col < 8; col++)
+                  _SquarePiece(
+                    index: flipped ? (63 - (row * 8 + col)) : (row * 8 + col),
+                    cellSize: cellSize,
+                    pieceSet: pieceSet,
+                    hiddenSquares: hiddenSquares,
+                  ),
+              ],
+            ),
+        ],
+      ),
     );
   }
 }
@@ -213,11 +218,13 @@ class _SquarePiece extends StatelessWidget {
   const _SquarePiece({
     required this.index,
     required this.cellSize,
+    required this.pieceSet,
     required this.hiddenSquares,
   });
 
   final int index;
   final double cellSize;
+  final PieceSet pieceSet;
   final ValueNotifier<Set<int>> hiddenSquares;
 
   @override
@@ -238,6 +245,7 @@ class _SquarePiece extends StatelessWidget {
               child: PieceView(
                 piece: piece,
                 size: cellSize * (isSelected ? 0.8 : 0.68),
+                pieceSet: pieceSet,
               ),
             ),
           );
