@@ -16,3 +16,9 @@ Ghi chú bộ RhosGFX (Gỗ, Phẳng, Hiện đại):
 - Văn bản giấy phép gốc trong file zip của tác giả được lưu nguyên tại `assets/pieces/RHOSGFX_LICENSE.txt`.
 - Các file SVG đã được chỉnh sửa (CC0 cho phép): chuyển class CSS trong thẻ `<style>` thành thuộc tính
   trên từng phần tử, vì `flutter_svg` không hỗ trợ thẻ `<style>`. Hình hiển thị không đổi.
+
+## 2. Nhận diện thương hiệu (Branding)
+
+| File | Nguồn | Giấy phép | Ghi chú |
+|---|---|---|---|
+| `assets/branding/icon.png`, `icon_foreground.png`, `icon_background.png` (và file `.svg` nguồn cùng tên) | Ghép từ `assets/pieces/wood/bK.svg` và `wK.svg` (RhosGFX, [Vector Chess Pieces Pack](https://rhosgfx.itch.io/vector-chess-pieces)) | [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) | Logo app: quân Vua chia đôi, nửa trái quân đen trên nền `#F2E1C3`, nửa phải quân trắng trên nền `#9A6B45`. PNG 1024×1024 xuất từ SVG nguồn |
