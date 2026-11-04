@@ -17,6 +17,7 @@ import 'package:chess/features/settings/view/settings_page.dart';
 import 'package:chess/features/tutorial/view/tutorial_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -88,6 +89,23 @@ void main() {
   }
 
   group('HomePage', () {
+    testWidgets('shows the app logo above the title', (tester) async {
+      await pumpHome(tester);
+
+      final logo = find.byWidgetPredicate(
+        (w) =>
+            w is SvgPicture &&
+            w.bytesLoader is SvgAssetLoader &&
+            (w.bytesLoader as SvgAssetLoader).assetName ==
+                'assets/branding/icon.svg',
+      );
+      expect(logo, findsOneWidget);
+      expect(
+        tester.getCenter(logo).dy,
+        lessThan(tester.getCenter(find.text('Cờ Vua')).dy),
+      );
+    });
+
     testWidgets('renders initial elements in PvE mode by default', (
       tester,
     ) async {

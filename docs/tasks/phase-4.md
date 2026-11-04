@@ -220,24 +220,29 @@ chỗ lệch mockup còn lại. Âm thanh vẫn dùng bộ file hiện có (bộ
 
 ---
 
-## T4.7 — Avatar người chơi dùng bộ quân đang chọn
+## T4.7 — Avatar người chơi theo bộ quân, logo app ở màn chính
 
 **Quyết định owner (2026-11-04):** Vua trong avatar người chơi đang vẽ bằng ký tự Unicode `♔`/`♚`, hiển thị
-méo và phụ thuộc font của máy; đổi sang vẽ bằng bộ quân người dùng đã chọn trong Cài đặt.
+méo và phụ thuộc font của máy; đổi sang vẽ bằng bộ quân người dùng đã chọn trong Cài đặt. Emblem quân Mã ở màn
+chính đổi thành logo app (T1.2).
 
 **Phạm vi**
 - `_Avatar` trong `GameView`: người chơi hiển thị Vua theo màu quân (`K`/`k`) bằng `PieceView` với
   `pieceSet` lấy từ `SettingsCubit` (qua `BlocSelector`, chỉ build lại khi đổi bộ quân). Kích thước 26 trong vòng
   tròn 38 hiện có.
 - Máy vẫn dùng icon robot. Không đổi kích thước, viền, màu của vòng tròn avatar.
+- Màn chính (`_Hero`): thay vòng tròn trong chứa quân Mã bằng `assets/branding/icon.svg` cắt tròn (`ClipOval`),
+  giữ vòng viền ngoài. Khai báo riêng file `assets/branding/icon.svg` trong `pubspec.yaml` (không cả thư mục).
 
-**Ngoài phạm vi:** đổi bố cục hàng người chơi, avatar trên màn chính, thêm cài đặt mới.
+**Ngoài phạm vi:** đổi bố cục hàng người chơi, icon Vua ở nút chọn quân màn chính, thêm cài đặt mới.
 
-**File được sửa:** `lib/features/game/view/game_page.dart`, `test/features/game/view/game_page_test.dart`.
+**File được sửa:** `lib/features/game/view/game_page.dart`, `lib/features/home/view/home_page.dart`, `pubspec.yaml`,
+`test/features/game/view/game_page_test.dart`, `test/features/home/view/home_page_test.dart`.
 
 **Package được phép:** không.
 
 **Tiêu chí nghiệm thu**
 - [ ] Chơi 2 người: hai avatar là Vua trắng/đen đúng bộ quân đang chọn; đổi bộ quân trong Cài đặt thì avatar đổi theo.
 - [ ] Chơi với máy: avatar máy là robot, avatar người là Vua theo màu quân của người.
-- [ ] Widget test cho cả hai trường hợp trên.
+- [ ] Màn chính hiển thị logo app phía trên tiêu đề `Cờ Vua`.
+- [ ] Widget test cho các trường hợp trên.

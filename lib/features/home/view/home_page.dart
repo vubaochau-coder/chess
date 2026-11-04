@@ -15,6 +15,7 @@ import 'package:chess/theme/app_theme.dart';
 import 'package:chess/theme/section_label.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key, this.random});
@@ -255,7 +256,7 @@ class HomeView extends StatelessWidget {
   }
 }
 
-/// Emblem, tên game và đường kẻ trang trí.
+/// Logo app, tên game và đường kẻ trang trí.
 class _Hero extends StatelessWidget {
   const _Hero();
 
@@ -274,13 +275,12 @@ class _Hero extends StatelessWidget {
             shape: BoxShape.circle,
             border: Border.all(color: colorScheme.tertiary),
           ),
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: colorScheme.surfaceContainer,
-              border: Border.all(color: colorScheme.outline),
+          child: ClipOval(
+            child: SvgPicture.asset(
+              'assets/branding/icon.svg',
+              width: 74,
+              height: 74,
             ),
-            child: const Center(child: PieceView(piece: 'N', size: 44)),
           ),
         ),
         const SizedBox(height: 14),

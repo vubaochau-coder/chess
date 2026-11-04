@@ -41,6 +41,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/audio/
+    - assets/branding/icon.svg
     - assets/pieces/wood/
     - assets/pieces/flat/
     - assets/pieces/modern/
