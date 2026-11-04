@@ -217,3 +217,75 @@ chỗ lệch mockup còn lại. Âm thanh vẫn dùng bộ file hiện có (bộ
 - [ ] Tiêu chí của T4.3 và T5.1.
 - [ ] Widget test: chiếu hết → sau 500 ms có `GameOverDialog`; `Ván mới` reset ván.
 - [ ] Test cũ chỉ sửa ở chỗ chữ hiển thị đổi theo mockup (tiêu đề, nhãn viết hoa, nút `Bài tiếp`).
+
+---
+
+## T4.7 — Avatar người chơi theo bộ quân, logo app ở màn chính
+
+**Quyết định owner (2026-11-04):** Vua trong avatar người chơi đang vẽ bằng ký tự Unicode `♔`/`♚`, hiển thị
+méo và phụ thuộc font của máy; đổi sang vẽ bằng bộ quân người dùng đã chọn trong Cài đặt. Emblem quân Mã ở màn
+chính đổi thành logo app (T1.2).
+
+**Phạm vi**
+- `_Avatar` trong `GameView`: người chơi hiển thị Vua theo màu quân (`K`/`k`) bằng `PieceView` với
+  `pieceSet` lấy từ `SettingsCubit` (qua `BlocSelector`, chỉ build lại khi đổi bộ quân). Kích thước 26 trong vòng
+  tròn 38 hiện có.
+- Máy vẫn dùng icon robot. Không đổi kích thước, viền, màu của vòng tròn avatar.
+- Màn chính (`_Hero`): thay vòng tròn trong chứa quân Mã bằng `assets/branding/icon.svg` cắt tròn (`ClipOval`),
+  giữ vòng viền ngoài. Khai báo riêng file `assets/branding/icon.svg` trong `pubspec.yaml` (không cả thư mục).
+
+**Ngoài phạm vi:** đổi bố cục hàng người chơi, icon Vua ở nút chọn quân màn chính, thêm cài đặt mới.
+
+**File được sửa:** `lib/features/game/view/game_page.dart`, `lib/features/home/view/home_page.dart`, `pubspec.yaml`,
+`test/features/game/view/game_page_test.dart`, `test/features/home/view/home_page_test.dart`.
+
+**Package được phép:** không.
+
+**Tiêu chí nghiệm thu**
+- [ ] Chơi 2 người: hai avatar là Vua trắng/đen đúng bộ quân đang chọn; đổi bộ quân trong Cài đặt thì avatar đổi theo.
+- [ ] Chơi với máy: avatar máy là robot, avatar người là Vua theo màu quân của người.
+- [ ] Màn chính hiển thị logo app phía trên tiêu đề `Cờ Vua`.
+- [ ] Widget test cho các trường hợp trên.
+
+---
+
+## T4.8 — Bảng màu sáng theo logo, splash theo chế độ sáng/tối
+
+**Quyết định owner (2026-11-04):** đổi bảng màu sáng cho đồng bộ với logo và splash (T1.2), nền màn hình trùng
+màu nền splash. Bảng màu tối giữ nguyên. Splash theo chế độ sáng/tối của hệ thống. Theme bàn cờ giữ nguyên (ô sáng
+theme `Gỗ` trùng màu nền, chấp nhận). Owner cho làm chung PR với T4.7.
+
+**Phạm vi**
+- `AppTheme.lightScheme` thay bảng màu sáng của T4.5 bằng bảng dưới (các token khác giữ nguyên):
+
+  | Token | Cũ | Mới |
+  |---|---|---|
+  | surface (nền), onInverseSurface | `#F6F0E4` | `#F2E1C3` |
+  | surfaceContainerLowest | `#FFFFFF` | `#FFF8EC` |
+  | surfaceContainerLow (thẻ) | `#FFFBF3` | `#FAF0DE` |
+  | surfaceContainer | `#F1E9D9` | `#EAD6B4` |
+  | surfaceContainerHigh | `#EBE1CD` | `#E3CCA6` |
+  | surfaceContainerHighest | `#E4D8C1` | `#DBC198` |
+  | primaryContainer | `#EADBBE` | `#E6CFA8` |
+  | onPrimary, onSecondary | `#F6F0E4` | `#FAF0DE` |
+  | secondary, onSurfaceVariant | `#6F5E48` | `#6B523C` |
+  | tertiary (nhãn nhóm, viền chọn) | `#8A6A2F` | `#855A38` |
+  | onTertiary | `#FFFBF3` | `#FFF8EC` |
+  | outline | `#A8833F` | `#9A6B45` |
+  | outlineVariant (viền) | `#E2D5BE` | `#DCC6A0` |
+
+- `flutter_native_splash.yaml`: thêm `color_dark: "#17110D"` (cả `android_12`), chạy lại generator.
+  Splash theo chế độ tối **của hệ thống** (Android không biết cài đặt theme trong app khi chưa chạy Flutter).
+
+**Ngoài phạm vi:** bảng màu tối, theme bàn cờ, icon app.
+
+**File được sửa:** `lib/theme/app_theme.dart`, `test/theme/app_theme_test.dart`, `flutter_native_splash.yaml`,
+`android/app/src/main/res/**`.
+
+**Package được phép:** không.
+
+**Tiêu chí nghiệm thu**
+- [ ] Chế độ sáng: nền màn chính/màn chơi là `#F2E1C3`, trùng nền splash.
+- [ ] Máy để chế độ tối: splash nền `#17110D`; chế độ sáng: `#F2E1C3`.
+- [ ] Test theme cập nhật theo bảng màu mới.
+

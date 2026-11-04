@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
-/// Theme cổ điển của app: nâu gỗ / ngà / vàng đồng (tối) và giấy cũ / nâu đậm
-/// (sáng). Bảng màu chốt trong đặc tả T4.5.
+/// Theme cổ điển của app: nâu gỗ / ngà / vàng đồng (tối) và kem / nâu gỗ (sáng).
+/// Bảng màu tối chốt trong T4.5; bảng màu sáng lấy theo logo và splash (T4.8),
+/// nền sáng trùng màu nền splash để mở app không bị đổi màu đột ngột.
 abstract final class AppTheme {
   /// Font có chân của hệ thống (Noto Serif trên Android, có dấu tiếng Việt).
   static const String serifFamily = 'serif';
@@ -38,30 +39,30 @@ abstract final class AppTheme {
   static const ColorScheme lightScheme = ColorScheme(
     brightness: Brightness.light,
     primary: Color(0xFF2A1E16),
-    onPrimary: Color(0xFFF6F0E4),
-    primaryContainer: Color(0xFFEADBBE),
+    onPrimary: Color(0xFFFAF0DE),
+    primaryContainer: Color(0xFFE6CFA8),
     onPrimaryContainer: Color(0xFF2A1E16),
-    secondary: Color(0xFF6F5E48),
-    onSecondary: Color(0xFFF6F0E4),
-    tertiary: Color(0xFF8A6A2F),
-    onTertiary: Color(0xFFFFFBF3),
+    secondary: Color(0xFF6B523C),
+    onSecondary: Color(0xFFFAF0DE),
+    tertiary: Color(0xFF855A38),
+    onTertiary: Color(0xFFFFF8EC),
     error: Color(0xFFA4483A),
     onError: Color(0xFFFBF6EA),
     errorContainer: Color(0xFFF5D9D3),
     onErrorContainer: Color(0xFF4A2019),
-    surface: Color(0xFFF6F0E4),
+    surface: Color(0xFFF2E1C3),
     onSurface: Color(0xFF2A1E16),
-    onSurfaceVariant: Color(0xFF6F5E48),
-    surfaceContainerLowest: Color(0xFFFFFFFF),
-    surfaceContainerLow: Color(0xFFFFFBF3),
-    surfaceContainer: Color(0xFFF1E9D9),
-    surfaceContainerHigh: Color(0xFFEBE1CD),
-    surfaceContainerHighest: Color(0xFFE4D8C1),
-    outline: Color(0xFFA8833F),
-    outlineVariant: Color(0xFFE2D5BE),
+    onSurfaceVariant: Color(0xFF6B523C),
+    surfaceContainerLowest: Color(0xFFFFF8EC),
+    surfaceContainerLow: Color(0xFFFAF0DE),
+    surfaceContainer: Color(0xFFEAD6B4),
+    surfaceContainerHigh: Color(0xFFE3CCA6),
+    surfaceContainerHighest: Color(0xFFDBC198),
+    outline: Color(0xFF9A6B45),
+    outlineVariant: Color(0xFFDCC6A0),
     shadow: Color(0xFF000000),
     inverseSurface: Color(0xFF2A1E16),
-    onInverseSurface: Color(0xFFF6F0E4),
+    onInverseSurface: Color(0xFFF2E1C3),
   );
 
   static ThemeData light() => _build(lightScheme);
