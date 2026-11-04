@@ -45,13 +45,17 @@ nhanh, việc build release chỉ còn ở workflow `Distribute`.
 - `assets/branding/icon.png` — 1024×1024, nền đặc (không trong suốt).
 - `assets/branding/icon_foreground.png` — 1024×1024, nền trong suốt, nội dung nằm trong vùng an toàn
   ở giữa (~66%) cho adaptive icon.
-- Mã màu nền adaptive icon và màu nền splash (hex).
+- `assets/branding/icon_background.png` — 1024×1024, nền đặc, dùng làm lớp nền adaptive icon
+  (owner chốt dùng ảnh thay cho mã màu vì nền logo chia đôi hai màu).
+- Mã màu nền splash (hex).
 - Tên hiển thị của app trên launcher (hiện là `Chess`).
 
 **Phạm vi**
 - Thêm 2 dev dependency bên dưới, cấu hình trong file riêng `flutter_launcher_icons.yaml` và
   `flutter_native_splash.yaml` ở thư mục gốc (không cấu hình trong `pubspec.yaml`).
 - Chỉ bật cho Android (`android: true`, `ios: false`, không web/desktop).
+- Adaptive icon: `adaptive_icon_background` trỏ tới `assets/branding/icon_background.png`,
+  `adaptive_icon_foreground` trỏ tới `assets/branding/icon_foreground.png`.
 - Splash: màu nền + `assets/branding/icon_foreground.png` ở giữa, có cấu hình `android_12`.
 - Chạy generator, commit các file sinh ra trong `android/app/src/main/res/`.
 - Đổi `android:label` trong `AndroidManifest.xml` thành tên owner cung cấp.
