@@ -181,6 +181,37 @@ void main() {
       verify(() => cubit.setHapticsEnabled(false)).called(1);
     });
 
+    testWidgets('switches are drawn at 80% size and toggle when tapped', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      when(() => cubit.state).thenReturn(const AppSettings());
+
+      await tester.pumpWidget(buildSubject());
+
+      final rung = find.ancestor(
+        of: find.text('Rung'),
+        matching: find.byType(ListTile),
+      );
+      final toggle = find.descendant(of: rung, matching: find.byType(Switch));
+      final scale = tester.widget<Transform>(
+        find.ancestor(
+          of: toggle,
+          matching: find.byWidgetPredicate(
+            (w) => w is Transform && w.child is Switch,
+          ),
+        ),
+      );
+      expect(scale.transform.entry(0, 0), closeTo(0.8, 1e-9));
+
+      await tester.tap(toggle);
+      await tester.pump();
+
+      verify(() => cubit.setHapticsEnabled(false)).called(1);
+    });
+
     testWidgets('motion switch calls setAnimationsEnabled', (tester) async {
       tester.view.physicalSize = const Size(800, 1600);
       tester.view.devicePixelRatio = 1;
