@@ -38,7 +38,7 @@ Mỗi đặc tả task có các mục:
 | Mã | Task | Phụ thuộc | Đầu vào owner | Trạng thái |
 |---|---|---|---|---|
 | T1.1 | Cấu hình build release (R8), tinh gọn CI | — | — | done |
-| T1.2 | Icon app và splash screen | — | Ảnh icon | todo |
+| T1.2 | Icon app và splash screen | — | Ảnh icon | done |
 | T1.3 | Thay bộ âm thanh có giấy phép | — | File âm thanh | todo |
 | T1.4 | Ký app trong CI bằng GitHub Secrets | T1.1 | Keystore + secrets | todo |
 
