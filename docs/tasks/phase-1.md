@@ -90,10 +90,13 @@ castle, check, promote, gameEnd`, kèm nguồn tải và tên giấy phép của
 - Cập nhật đường dẫn trong `lib/core/audio/sound_effect.dart` (chỉ đổi chuỗi đường dẫn, giữ nguyên tên enum).
 - Đổi khai báo asset trong `pubspec.yaml` thành `assets/audio/standard/`.
 - Tạo `assets/LICENSES.md`: bảng gồm file, nguồn (URL), tác giả, giấy phép.
+- Thêm `Credit` cho bộ âm thanh vào `lib/core/credits/credits.dart` (T1.5); nếu giấy phép yêu cầu kèm văn bản,
+  lưu vào `assets/licenses/` và đặt `licenseAsset`.
 
 **Ngoài phạm vi:** thêm hiệu ứng mới, chỉnh âm lượng, chọn bộ âm thanh (T5.x), sửa `SoundPlayer`.
 
-**File được sửa:** `assets/audio/**`, `assets/LICENSES.md`, `lib/core/audio/sound_effect.dart`, `pubspec.yaml`.
+**File được sửa:** `assets/audio/**`, `assets/LICENSES.md`, `lib/core/audio/sound_effect.dart`, `pubspec.yaml`,
+`lib/core/credits/credits.dart`, `assets/licenses/**`.
 
 **Package được phép:** không.
 
@@ -141,10 +144,10 @@ castle, check, promote, gameEnd`, kèm nguồn tải và tên giấy phép của
 **Mục tiêu:** trước khi phát hành, app hiển thị ghi công tác giả tài nguyên và đầy đủ thông báo giấy phép
 (bắt buộc với BSD/MIT/Apache khi phát hành dạng app), từ một mục `Giới thiệu` ở màn Cài đặt.
 
-**Quyết định owner (2026-11-05):** làm sau T1.3 để ghi công luôn bộ âm thanh mới. Không thêm package; không mở
-link ngoài (chỉ hiện chữ).
+**Quyết định owner (2026-11-05):** làm ngay, không chờ T1.3; bộ âm thanh hiện tại chưa rõ nguồn nên **chưa**
+ghi công — T1.3 thêm `Credit` cho bộ âm thanh mới. Không thêm package; không mở link ngoài (chỉ hiện chữ).
 
-**Đầu vào cần owner:** không (nguồn và giấy phép bộ âm thanh lấy từ `assets/LICENSES.md` sau T1.3).
+**Đầu vào cần owner:** không.
 
 **Phạm vi**
 - `lib/core/credits/credits.dart` (thuần Dart): danh sách ghi công là **nguồn duy nhất** cho cả UI và trang giấy
@@ -160,9 +163,10 @@ link ngoài (chỉ hiện chữ).
   const List<Credit> credits = [...];
   ```
   Gồm: bộ quân Cổ điển (Cburnett, BSD), bộ quân Gỗ/Phẳng/Hiện đại (RhosGFX, CC0), logo app (ghép từ bộ Gỗ,
-  CC0), bộ âm thanh của T1.3 (theo `assets/LICENSES.md`).
-- Văn bản giấy phép BSD của Cburnett lưu nguyên văn tại `assets/licenses/CBURNETT_LICENSE.txt` (nguồn: trang tác
-  giả ghi trong `assets/LICENSES.md`), khai báo riêng từng file giấy phép trong `pubspec.yaml`.
+  CC0).
+- Văn bản giấy phép BSD của Cburnett lưu nguyên văn tại `assets/licenses/CBURNETT_LICENSE.txt` (nguồn: mục
+  Licensing trên Wikimedia Commons, vd. `File:Chess_klt45.svg`; trang chỉ ghi chủ sở hữu là "The author" nên thêm
+  một dòng đầu nêu tác giả và nguồn), khai báo riêng từng file giấy phép trong `pubspec.yaml`.
 - Đăng ký giấy phép tài nguyên vào `LicenseRegistry.addLicense` (trong `main()`, trước `runApp`), đọc file qua
   `rootBundle`, cho mọi `Credit` có `licenseAsset`, để chúng hiện chung với giấy phép package trong trang có sẵn
   của Flutter.
@@ -181,7 +185,8 @@ web, chính sách quyền riêng tư, đánh giá app, trang cảm ơn người 
 **Package được phép:** không.
 
 **Tiêu chí nghiệm thu**
-- [ ] Màn Cài đặt có nhóm `Giới thiệu` với logo, tên app, danh sách ghi công khớp `assets/LICENSES.md`.
+- [ ] Màn Cài đặt có nhóm `Giới thiệu` với logo, tên app, danh sách ghi công khớp `assets/LICENSES.md`
+      (trừ âm thanh, chờ T1.3).
 - [ ] `Giấy phép mã nguồn mở` mở trang giấy phép; trang có mục giấy phép của bộ quân Cổ điển cùng các package.
 - [ ] Mọi tài nguyên trong `assets/LICENSES.md` đều có `Credit` tương ứng (liệt kê đối chiếu trong mô tả PR).
 - [ ] Widget test: nhóm `Giới thiệu` hiển thị đủ ghi công; bấm `Giấy phép mã nguồn mở` mở `LicensePage`.

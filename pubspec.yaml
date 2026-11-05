@@ -42,6 +42,7 @@ flutter:
   assets:
     - assets/audio/
     - assets/branding/icon.svg
+    - assets/licenses/CBURNETT_LICENSE.txt
     - assets/pieces/wood/
     - assets/pieces/flat/
     - assets/pieces/modern/
