@@ -1,4 +1,5 @@
 import 'package:bloc_test/bloc_test.dart';
+import 'package:chess/core/credits/credits.dart';
 import 'package:chess/core/settings/app_settings.dart';
 import 'package:chess/features/game/widgets/piece_view.dart';
 import 'package:chess/features/settings/cubit/settings_cubit.dart';
@@ -265,6 +266,39 @@ void main() {
       await tester.pumpWidget(buildSubject());
 
       expect(tester.widget<Slider>(find.byType(Slider)).onChanged, isNull);
+    });
+
+    testWidgets('about section lists every credit', (tester) async {
+      tester.view.physicalSize = const Size(800, 3000);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      when(() => cubit.state).thenReturn(const AppSettings());
+
+      await tester.pumpWidget(buildSubject());
+
+      expect(find.text('GIỚI THIỆU'), findsOneWidget);
+      expect(find.text('Cờ Vua'), findsOneWidget);
+      for (final credit in credits) {
+        expect(find.text(credit.title), findsOneWidget);
+        expect(
+          find.text('${credit.author} · ${credit.license}'),
+          findsOneWidget,
+        );
+      }
+    });
+
+    testWidgets('Giấy phép mã nguồn mở opens the license page', (tester) async {
+      tester.view.physicalSize = const Size(800, 3000);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      when(() => cubit.state).thenReturn(const AppSettings());
+
+      await tester.pumpWidget(buildSubject());
+      await tester.tap(find.text('Giấy phép mã nguồn mở'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(find.byType(LicensePage), findsOneWidget);
     });
   });
 }

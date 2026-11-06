@@ -41,6 +41,7 @@ Mỗi đặc tả task có các mục:
 | T1.2 | Icon app và splash screen | — | Ảnh icon | done |
 | T1.3 | Thay bộ âm thanh có giấy phép | — | File âm thanh | todo |
 | T1.4 | Ký app trong CI bằng GitHub Secrets | T1.1 | Keystore + secrets | todo |
+| T1.5 | Mục Giới thiệu: ghi công và giấy phép | — | — | done |
 
 ### Giai đoạn 2 — Hoàn thiện lõi game ([phase-2.md](phase-2.md))
 

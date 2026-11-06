@@ -18,6 +18,7 @@ Tài liệu này là **chuẩn bắt buộc**. Code mới phải theo đúng cá
 │   settings/ AppSettings             (thuần Dart)           │
 │   audio/    SoundPlayer             (plugin audioplayers)  │
 │   storage/  repository lưu trữ      (shared_preferences)   │
+│   credits/  ghi công tài nguyên     (thuần Dart)           │
 └────────────────────────────────────────────────────────────┘
 ```
 
@@ -31,13 +32,14 @@ Feature không import nội bộ của feature khác (chỉ dùng qua `lib/core/
 
 ```
 lib/
-  main.dart                 # chỉ khởi tạo (ensureInitialized, load repository) rồi runApp
+  main.dart                 # chỉ khởi tạo (ensureInitialized, đăng ký giấy phép tài nguyên, load repository) rồi runApp
   app.dart                  # ChessApp: RepositoryProvider cho service dùng chung + MaterialApp
   core/
     engine/                 # chess_rules.dart, fen.dart, square.dart
     audio/                  # sound_effect.dart, sound_player.dart, feedback_sound_player.dart (áp cài đặt âm thanh/rung)
     ai/                     # (Giai đoạn 3) SearchBoard, search, ChessAi
     game/                   # (Giai đoạn 3) GameConfig, (Giai đoạn 6) ChessClock
+    credits/                # danh sách ghi công tài nguyên (mục Giới thiệu + trang giấy phép)
     settings/               # app_settings.dart
     storage/                # saved_game.dart, game_repository.dart, settings_repository.dart,
                             # tutorial_progress_repository.dart

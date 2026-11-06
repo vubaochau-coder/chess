@@ -1,5 +1,6 @@
 import 'package:chess/core/audio/sound_effect.dart';
 import 'package:chess/core/audio/sound_player.dart';
+import 'package:chess/core/credits/credits.dart';
 import 'package:chess/core/settings/app_settings.dart';
 import 'package:chess/features/game/widgets/piece_view.dart';
 import 'package:chess/features/settings/cubit/settings_cubit.dart';
@@ -8,6 +9,7 @@ import 'package:chess/theme/piece_set.dart';
 import 'package:chess/theme/section_label.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -190,6 +192,120 @@ class SettingsPage extends StatelessWidget {
                   onChanged: (cubit, v) => cubit.setHapticsEnabled(v),
                 ),
               ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          const SectionLabel('Giới thiệu'),
+          const SizedBox(height: 10),
+          const _AboutCard(),
+        ],
+      ),
+    );
+  }
+}
+
+/// Logo app cắt tròn, có viền: nửa kem của logo trùng màu nền sáng nên cần viền
+/// để thấy được hình tròn.
+class _AppLogo extends StatelessWidget {
+  const _AppLogo({required this.size});
+
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      position: DecorationPosition.foreground,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: Theme.of(context).colorScheme.outline),
+      ),
+      child: ClipOval(
+        child: SvgPicture.asset(
+          'assets/branding/icon.svg',
+          width: size,
+          height: size,
+        ),
+      ),
+    );
+  }
+}
+
+/// Logo, tên app, ghi công tài nguyên và lối vào trang giấy phép.
+class _AboutCard extends StatelessWidget {
+  const _AboutCard();
+
+  static const _appName = 'Cờ Vua';
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final secondaryStyle = TextStyle(
+      fontSize: 12,
+      color: colorScheme.onSurfaceVariant,
+    );
+
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                const _AppLogo(size: 40),
+                const SizedBox(width: 12),
+                Text(_appName, style: theme.textTheme.titleLarge),
+              ],
+            ),
+          ),
+          const Divider(),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
+            child: Text(
+              'Ghi công',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: colorScheme.onSurface,
+              ),
+            ),
+          ),
+          for (final credit in credits)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(credit.title, style: const TextStyle(fontSize: 14)),
+                  const SizedBox(height: 2),
+                  Text(
+                    '${credit.author} · ${credit.license}',
+                    style: secondaryStyle,
+                  ),
+                ],
+              ),
+            ),
+          const SizedBox(height: 6),
+          const Divider(),
+          ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+            title: const Text(
+              'Giấy phép mã nguồn mở',
+              style: TextStyle(fontSize: 14),
+            ),
+            trailing: Icon(
+              Icons.chevron_right,
+              color: colorScheme.onSurfaceVariant,
+            ),
+            onTap: () => showLicensePage(
+              context: context,
+              applicationName: _appName,
+              applicationIcon: const Padding(
+                padding: EdgeInsets.all(12),
+                child: _AppLogo(size: 64),
+              ),
             ),
           ),
         ],

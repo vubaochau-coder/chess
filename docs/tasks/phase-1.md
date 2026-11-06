@@ -90,10 +90,13 @@ castle, check, promote, gameEnd`, kèm nguồn tải và tên giấy phép của
 - Cập nhật đường dẫn trong `lib/core/audio/sound_effect.dart` (chỉ đổi chuỗi đường dẫn, giữ nguyên tên enum).
 - Đổi khai báo asset trong `pubspec.yaml` thành `assets/audio/standard/`.
 - Tạo `assets/LICENSES.md`: bảng gồm file, nguồn (URL), tác giả, giấy phép.
+- Thêm `Credit` cho bộ âm thanh vào `lib/core/credits/credits.dart` (T1.5); nếu giấy phép yêu cầu kèm văn bản,
+  lưu vào `assets/licenses/` và đặt `licenseAsset`.
 
 **Ngoài phạm vi:** thêm hiệu ứng mới, chỉnh âm lượng, chọn bộ âm thanh (T5.x), sửa `SoundPlayer`.
 
-**File được sửa:** `assets/audio/**`, `assets/LICENSES.md`, `lib/core/audio/sound_effect.dart`, `pubspec.yaml`.
+**File được sửa:** `assets/audio/**`, `assets/LICENSES.md`, `lib/core/audio/sound_effect.dart`, `pubspec.yaml`,
+`lib/core/credits/credits.dart`, `assets/licenses/**`.
 
 **Package được phép:** không.
 
@@ -133,3 +136,59 @@ castle, check, promote, gameEnd`, kèm nguồn tải và tên giấy phép của
 - [ ] Chạy `workflow_dispatch` với secrets đầy đủ → có AAB; `jarsigner -verify` báo đã ký bằng upload key (ghi kết quả vào PR).
 - [ ] Thiếu secret → fail với thông báo rõ ràng.
 - [ ] Không có keystore, mật khẩu hay `key.properties` nào bị commit hoặc in ra log.
+
+---
+
+## T1.5 — Mục Giới thiệu: ghi công và giấy phép
+
+**Mục tiêu:** trước khi phát hành, app hiển thị ghi công tác giả tài nguyên và đầy đủ thông báo giấy phép
+(bắt buộc với BSD/MIT/Apache khi phát hành dạng app), từ một mục `Giới thiệu` ở màn Cài đặt.
+
+**Quyết định owner (2026-11-05):** làm ngay, không chờ T1.3; bộ âm thanh hiện tại chưa rõ nguồn nên **chưa**
+ghi công — T1.3 thêm `Credit` cho bộ âm thanh mới. Không thêm package; không mở link ngoài (chỉ hiện chữ).
+
+**Đầu vào cần owner:** không.
+
+**Phạm vi**
+- `lib/core/credits/credits.dart` (thuần Dart): danh sách ghi công là **nguồn duy nhất** cho cả UI và trang giấy
+  phép.
+  ```dart
+  final class Credit {
+    const Credit({required this.title, required this.author, required this.license, this.licenseAsset});
+    final String title;        // 'Bộ quân Cổ điển'
+    final String author;       // 'Colin M.L. Burnett (Cburnett)'
+    final String license;      // 'BSD'
+    final String? licenseAsset; // file văn bản giấy phép đầy đủ, null nếu không cần (vd. CC0)
+  }
+  const List<Credit> credits = [...];
+  ```
+  Gồm: bộ quân Cổ điển (Cburnett, BSD), bộ quân Gỗ/Phẳng/Hiện đại (RhosGFX, CC0), logo app (ghép từ bộ Gỗ,
+  CC0).
+- Văn bản giấy phép BSD của Cburnett lưu nguyên văn tại `assets/licenses/CBURNETT_LICENSE.txt` (nguồn: mục
+  Licensing trên Wikimedia Commons, vd. `File:Chess_klt45.svg`; trang chỉ ghi chủ sở hữu là "The author" nên thêm
+  một dòng đầu nêu tác giả và nguồn), khai báo riêng từng file giấy phép trong `pubspec.yaml`.
+- Đăng ký giấy phép tài nguyên vào `LicenseRegistry.addLicense` (trong `main()`, trước `runApp`), đọc file qua
+  `rootBundle`, cho mọi `Credit` có `licenseAsset`, để chúng hiện chung với giấy phép package trong trang có sẵn
+  của Flutter.
+- Màn Cài đặt: thêm nhóm cuối `Giới thiệu` (`SectionLabel` + `Card` như các nhóm khác):
+  - Dòng đầu: logo app (`assets/branding/icon.svg`, cắt tròn) + tên `Cờ Vua`.
+  - Phần `Ghi công`: mỗi `Credit` một dòng — tiêu đề, tác giả, giấy phép.
+  - Dòng `Giấy phép mã nguồn mở` (có mũi tên) mở `showLicensePage(applicationName: 'Cờ Vua', applicationIcon: logo)`.
+- Cập nhật `docs/architecture.md`: thêm `lib/core/credits/` vào sơ đồ thư mục.
+
+**Ngoài phạm vi:** hiển thị số phiên bản (cần package `package_info_plus` — task riêng nếu owner muốn), mở link
+web, chính sách quyền riêng tư, đánh giá app, trang cảm ơn người ủng hộ.
+
+**File được sửa:** `lib/core/credits/**`, `lib/main.dart`, `lib/features/settings/view/settings_page.dart`,
+`assets/licenses/**`, `pubspec.yaml`, `test/**`, `docs/architecture.md`.
+
+**Package được phép:** không.
+
+**Tiêu chí nghiệm thu**
+- [ ] Màn Cài đặt có nhóm `Giới thiệu` với logo, tên app, danh sách ghi công khớp `assets/LICENSES.md`
+      (trừ âm thanh, chờ T1.3).
+- [ ] `Giấy phép mã nguồn mở` mở trang giấy phép; trang có mục giấy phép của bộ quân Cổ điển cùng các package.
+- [ ] Mọi tài nguyên trong `assets/LICENSES.md` đều có `Credit` tương ứng (liệt kê đối chiếu trong mô tả PR).
+- [ ] Widget test: nhóm `Giới thiệu` hiển thị đủ ghi công; bấm `Giấy phép mã nguồn mở` mở `LicensePage`.
+- [ ] Unit test: mỗi `licenseAsset` khai báo tồn tại trong bundle và không rỗng.
+
