@@ -1,120 +1,69 @@
-# Chess
+<p align="center">
+  <img src="assets/branding/icon.png" alt="Logo Cờ Vua" width="128">
+</p>
 
-Game cờ vua cho **Android** viết bằng Flutter: chơi với máy (AI tự viết bằng Dart, 3 mức độ) hoặc 2 người
-cùng máy, đủ luật cờ vua chuẩn, có bài hướng dẫn cho người mới. Giao diện tiếng Việt.
+<h1 align="center">Cờ Vua</h1>
 
-- App id: `com.chauvb.chess`
-- Nền tảng: chỉ Android (các thư mục `ios/`, `web/`, `linux/`, `macos/`, `windows/` không được duy trì)
+<p align="center">
+  <b>Trí tuệ &amp; chiến thuật đỉnh cao</b><br>
+  Game cờ vua cho Android: chơi với máy, chơi 2 người cùng máy, học chơi cờ từ con số 0.
+</p>
 
-## Tính năng
+<p align="center">
+  <img src="docs/screenshots/home.png" alt="Màn hình chính" width="240">
+  <img src="docs/screenshots/game_dark.png" alt="Ván cờ, giao diện tối" width="240">
+  <img src="docs/screenshots/game_light.png" alt="Ván cờ, giao diện sáng" width="240">
+</p>
 
-**Chơi cờ**
+## Chơi với máy
 
-- Chơi với máy (PvE) với 3 mức **Dễ / Trung bình / Khó**, chọn cầm quân Trắng, Đen hoặc ngẫu nhiên.
-- Chơi 2 người cùng máy (PvP), có tùy chọn tự lật bàn sau mỗi nước.
-- Đủ luật: nhập thành, bắt tốt qua đường, phong cấp (chọn Hậu/Xe/Tượng/Mã), chiếu hết, hết nước đi.
-- Hòa tự động: luật 50 nước, lặp lại 3 lần, không đủ quân chiếu hết.
-- Danh sách nước đi theo ký hiệu SAN, hiển thị quân bị ăn.
-- Đi lại (undo), gợi ý nước đi khi chơi với máy, đầu hàng.
-- Tự lưu ván đang chơi và tiếp tục khi mở lại app.
+Thử sức với máy ở 3 mức **Dễ**, **Trung bình** và **Khó**. Bạn chọn cầm quân Trắng, Đen hoặc để app chọn
+ngẫu nhiên. Máy nghĩ ngay trên điện thoại, không cần mạng.
 
-**Tùy biến**
+- Đi nhầm? Bấm **Đi lại** để rút nước (có giới hạn số lần mỗi ván).
+- Bí nước? Bấm **Gợi ý** để máy chỉ cho một nước đi tốt.
+- Thấy hết cửa thì **Đầu hàng** và bắt đầu ván mới.
+- Thoát app giữa chừng cũng không sao: ván đang chơi được lưu lại để chơi tiếp.
 
-- Chế độ sáng / tối.
+## Chơi 2 người
+
+Hai người chơi chung một điện thoại. Bàn cờ có thể tự lật sau mỗi nước để người đến lượt luôn ngồi đúng
+phía của mình.
+
+## Đầy đủ luật cờ vua
+
+- Nhập thành, bắt tốt qua đường, phong cấp (tự chọn Hậu, Xe, Tượng hoặc Mã).
+- Chiếu hết, hết nước đi.
+- Tự động xử hòa khi lặp lại thế cờ 3 lần, theo luật 50 nước, hoặc khi cả hai bên không đủ quân để chiếu hết.
+- Danh sách nước đi theo ký hiệu cờ vua chuẩn và quân bị ăn của mỗi bên.
+
+## Học chơi cờ
+
+<p align="center">
+  <img src="docs/screenshots/tutorial.png" alt="Danh sách bài học" width="240">
+  <img src="docs/screenshots/lesson.png" alt="Bài học nhập thành" width="240">
+</p>
+
+17 bài học ngắn cho người mới, chia thành các chương: cách đi từng quân, các luật đặc biệt, chiếu hết và hòa,
+mẹo cơ bản. Mỗi bài có bàn cờ để chạm thử và thử thách nhỏ để kiểm tra. Tiến độ được lưu lại, học tới đâu
+tiếp tục tới đó.
+
+## Tùy biến theo ý bạn
+
+<p align="center">
+  <img src="docs/screenshots/settings.png" alt="Màn Cài đặt" width="240">
+</p>
+
+- Giao diện **sáng** hoặc **tối**.
 - 5 màu bàn cờ: Gỗ, Xanh lá, Xanh dương, Xám, Tím.
 - 4 bộ quân: Cổ điển, Gỗ, Phẳng, Hiện đại.
-- Bật/tắt tọa độ, nước đi hợp lệ, tô nước vừa đi, hiệu ứng chuyển động.
-- Âm thanh (có chỉnh âm lượng) và rung.
+- Bật/tắt tọa độ, chấm gợi ý nước đi hợp lệ, tô nước vừa đi, hiệu ứng chuyển động.
+- Âm thanh (chỉnh được âm lượng) và rung.
 
-**Học chơi cờ**
+## Nền tảng
 
-- 17 bài: cách đi từng quân, luật đặc biệt, chiếu hết và hòa, mẹo cơ bản.
-- Bàn cờ tương tác để thử, thử thách có chấm điểm, lưu tiến độ.
+Android. Giao diện tiếng Việt, chơi offline hoàn toàn.
 
-## Công nghệ
+---
 
-| Thành phần | Lựa chọn |
-|---|---|
-| Framework | Flutter 3.47.7 (Dart 3.13), quản lý phiên bản qua [FVM](https://fvm.app) |
-| State management | `bloc` / `flutter_bloc` (Bloc cho màn hình, Cubit cho phần đơn giản) |
-| Điều hướng | `Navigator` + `MaterialPageRoute` |
-| Lưu trữ | `shared_preferences` |
-| Âm thanh | `audioplayers` |
-| Đồ họa quân cờ | SVG qua `flutter_svg`, `chess_vectors_flutter` |
-| Build Android | AGP 9.1 / Gradle 9.3 (Kotlin DSL), R8 cho bản release |
-
-### Engine và AI
-
-Toàn bộ luật cờ và AI viết bằng **Dart thuần** trong `lib/core/`, không phụ thuộc Flutter và không dùng
-engine bên ngoài (không Stockfish).
-
-- **Engine luật** (`lib/core/engine/`): sinh nước đi hợp lệ, FEN, SAN; kiểm chứng bằng perft test.
-- **AI** (`lib/core/ai/`): bàn cờ nội bộ `Int8List` với Zobrist hash và make/unmake tại chỗ; tìm kiếm
-  alpha-beta có giới hạn thời gian, quiescence search, transposition table, killer move.
-  AI chạy trong **Isolate** riêng nên giao diện không bị giật khi máy đang nghĩ.
-- Mức độ khó điều chỉnh qua độ sâu, thời gian nghĩ và độ ngẫu nhiên (mức Dễ cố tình đi sai đôi lúc).
-
-## Cấu trúc thư mục
-
-```
-lib/
-  core/        # thuần Dart: engine, ai, game, settings, storage, audio, tutorial, credits
-  features/    # game, home, settings, tutorial — mỗi feature gồm bloc/cubit + view + widgets
-  theme/       # theme app, màu bàn cờ, bộ quân
-test/          # song song với lib/
-tool/          # perft_bench.dart, ai_match.dart (đấu AI các mức với nhau), distribute.sh
-docs/          # kiến trúc, lộ trình, đặc tả task
-```
-
-Chi tiết xem [docs/architecture.md](docs/architecture.md).
-
-## Bắt đầu
-
-Yêu cầu [FVM](https://fvm.app) 3.x và Java 17+. Mọi lệnh Flutter đều chạy qua `fvm`.
-
-```bash
-fvm install
-```
-
-```bash
-fvm flutter pub get --enforce-lockfile
-```
-
-```bash
-fvm flutter run
-```
-
-### Lệnh thường dùng
-
-```bash
-fvm dart format lib test                 # format
-fvm flutter analyze                      # phải "No issues found!"
-fvm flutter test                         # chạy toàn bộ test
-fvm flutter build apk --release          # build APK
-fvm flutter build appbundle              # build AAB cho Google Play
-fvm dart run tool/perft_bench.dart       # benchmark engine
-fvm dart run tool/ai_match.dart          # cho các mức AI đấu với nhau
-```
-
-Bản release cần file `android/key.properties` và keystore (không commit vào repo).
-
-## CI
-
-- **CI** (`.github/workflows/ci.yml`): kiểm tra version Flutter khớp `.fvmrc`, `pub get --enforce-lockfile`,
-  format, analyze, test.
-- **Distribute** (`.github/workflows/distribute.yml`): build APK release đã ký và đẩy lên Firebase App
-  Distribution cho tester.
-
-## Đóng góp
-
-Dự án phát triển theo task có đặc tả sẵn. Trước khi làm bất cứ việc gì, đọc theo thứ tự:
-
-1. [AGENTS.md](AGENTS.md) — quy tắc bắt buộc (cho cả người và AI agent)
-2. [docs/architecture.md](docs/architecture.md) — kiến trúc và chuẩn code
-3. [docs/tasks/README.md](docs/tasks/README.md) — quy trình và danh sách task
-4. [docs/ROADMAP.md](docs/ROADMAP.md) — lộ trình tổng thể
-
-## Giấy phép tài nguyên
-
-Nguồn gốc và giấy phép của quân cờ, âm thanh, icon được kê khai trong
-[assets/LICENSES.md](assets/LICENSES.md). Trong app, xem tại **Cài đặt → Giới thiệu**.
+Nguồn gốc và giấy phép của quân cờ, âm thanh, logo: [assets/LICENSES.md](assets/LICENSES.md).
